@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OTD Engenharia — Planejamento e Controle</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --azul:    #1F3864;
+    --azul2:   #2d4f8e;
+    --verde:   #28a745;
+    --laranja: #FF8C00;
+    --vermelho:#dc3545;
+    --amarelo: #ffc107;
+    --cinza:   #6c757d;
+    --bg:      #f0f2f5;
+    --card:    #ffffff;
+    --border:  #dde3ec;
+    --text:    #212529;
+    --text2:   #5a6478;
+    --sidebar: 220px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: var(--sidebar); background: var(--azul); color: #fff;
+    display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100;
+  }
+  .sidebar-logo {
+    padding: 20px 16px 16px; border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .sidebar-logo .logo-text { font-size: 11px; opacity: .7; letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+  .sidebar-logo .logo-title { font-size: 15px; font-weight: 700; line-height: 1.3; }
+  .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+  .nav-section { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; opacity: .5; padding: 16px 16px 4px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; cursor: pointer; font-size: 13.5px;
+    color: rgba(255,255,255,.8); border-left: 3px solid transparent;
+    transition: all .15s;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+  .nav-item.active { background: rgba(255,255,255,.12); color: #fff; border-left-color: #fff; font-weight: 600; }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .sidebar-footer { padding: 14px 16px; border-top: 1px solid rgba(255,255,255,.1); font-size: 11px; opacity: .5; }
+
+  /* MAIN */
+  #main { margin-left: var(--sidebar); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+  #topbar {
+    background: var(--card); border-bottom: 1px solid var(--border);
+    padding: 0 28px; height: 56px; display: flex; align-items: center;
+    justify-content: space-between; position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-title { font-size: 16px; font-weight: 700; color: var(--azul); }
+  .topbar-sub   { font-size: 12px; color: var(--text2); }
+  .topbar-right { display: flex; gap: 10px; align-items: center; }
+  #content { padding: 24px 28px; flex: 1; }
+
+  /* CARDS KPI */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .kpi-card {
+    background: var(--card); border-radius: 10px; padding: 18px 20px;
+    border: 1px solid var(--border); border-left: 4px solid var(--azul);
+  }
+  .kpi-card.verde  { border-left-color: var(--verde); }
+  .kpi-card.laranja{ border-left-color: var(--laranja); }
+  .kpi-card.vermelho{ border-left-color: var(--vermelho); }
+  .kpi-card.amarelo{ border-left-color: var(--amarelo); }
+  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--text2); margin-bottom: 6px; }
+  .kpi-value { font-size: 28px; font-weight: 700; color: var(--azul); line-height: 1; }
+  .kpi-card.verde   .kpi-value { color: var(--verde); }
+  .kpi-card.laranja .kpi-value { color: var(--laranja); }
+  .kpi-card.vermelho.kpi-value { color: var(--vermelho); }
+
+  /* BOTÕES */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
+  .btn-primary { background: var(--azul); color: #fff; }
+  .btn-primary:hover { background: var(--azul2); }
+  .btn-success { background: var(--verde); color: #fff; }
+  .btn-success:hover { filter: brightness(1.1); }
+  .btn-danger  { background: var(--vermelho); color: #fff; }
+  .btn-danger:hover  { filter: brightness(1.1); }
+  .btn-outline { background: transparent; color: var(--azul); border: 1.5px solid var(--azul); }
+  .btn-outline:hover { background: var(--azul); color: #fff; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* TABELA */
+  .card { background: var(--card); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; overflow: hidden; }
+  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-header h3 { font-size: 14px; font-weight: 700; color: var(--azul); }
+  .card-body { padding: 0; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f7f9fc; padding: 10px 14px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--text2); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 10px 14px; border-bottom: 1px solid #f0f2f5; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f7f9fc; }
+
+  /* BADGES */
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-verde   { background: #d4edda; color: #155724; }
+  .badge-azul    { background: #d0e8ff; color: #1a4a8a; }
+  .badge-laranja { background: #ffe8cc; color: #7a4000; }
+  .badge-vermelho{ background: #f8d7da; color: #721c24; }
+  .badge-cinza   { background: #e2e3e5; color: #383d41; }
+  .badge-amarelo { background: #fff3cd; color: #856404; }
+
+  /* PROGRESS */
+  .progress { height: 6px; background: #e9ecef; border-radius: 4px; overflow: hidden; min-width: 80px; }
+  .progress-bar { height: 100%; border-radius: 4px; transition: width .3s; }
+
+  /* MODAL */
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-bg.open { display: flex; }
+  .modal { background: #fff; border-radius: 12px; width: 90%; max-width: 620px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+  .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h3 { font-size: 16px; font-weight: 700; color: var(--azul); }
+  .modal-body { padding: 20px 24px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+  .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text2); line-height: 1; }
+  .close-btn:hover { color: var(--vermelho); }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; font-weight: 600; color: var(--text2); }
+  input, select, textarea {
+    padding: 8px 11px; border: 1.5px solid var(--border); border-radius: 7px;
+    font-size: 13px; color: var(--text); background: #fff; width: 100%;
+    transition: border-color .15s;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--azul); }
+  textarea { resize: vertical; min-height: 60px; }
+
+  /* DISC LIST dentro do contrato */
+  .disc-list { padding: 0 20px 16px; }
+  .disc-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; background: #f7f9fc; border-radius: 8px;
+    border: 1px solid var(--border); margin-bottom: 8px;
+  }
+  .disc-nome { font-weight: 600; font-size: 13px; flex: 1; }
+  .disc-info { font-size: 12px; color: var(--text2); }
+
+  /* TABS internas */
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
+  .tab-btn { padding: 10px 18px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; }
+  .tab-btn.active { color: var(--azul); border-bottom-color: var(--azul); }
+  .tab-btn:hover:not(.active) { color: var(--azul); }
+
+  /* SEARCH */
+  .search-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+  .search-input { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 13px; min-width: 240px; }
+  .search-input:focus { outline: none; border-color: var(--azul); }
+
+  /* LOADING */
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-row td { text-align: center; color: var(--text2); padding: 30px; }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text2); }
+  .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* TOAST */
+  #toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+  .toast-item { padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.2); animation: slideIn .2s ease; }
+  .toast-item.success { background: var(--verde); }
+  .toast-item.error   { background: var(--vermelho); }
+  .toast-item.info    { background: var(--azul); }
+  @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* DISCIPLINA MODAL — lista acumulada */
+  #disc-added-list { margin-top: 14px; }
+  .disc-added-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f0f6ff; border-radius: 6px; margin-bottom: 6px; font-size: 13px; }
+  .disc-added-item .rm { cursor: pointer; color: var(--vermelho); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="background:#fff;color:var(--azul);font-weight:900;font-size:14px;padding:4px 7px;border-radius:5px">OTD</div>
+      <div>
+        <div class="logo-title">Planejamento</div>
+        <div class="logo-text">e Controle</div>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Visão Geral</div>
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <span class="icon">📊</span> Dashboard
+    </div>
+    <div class="nav-section">Cadastros</div>
+    <div class="nav-item" onclick="showPage('contratos')">
+      <span class="icon">📋</span> Contratos
+    </div>
+    <div class="nav-item" onclick="showPage('colaboradores')">
+      <span class="icon">👷</span> Colaboradores
+    </div>
+    <div class="nav-section">Operação</div>
+    <div class="nav-item" onclick="showPage('producao')">
+      <span class="icon">⚡</span> Lançar Produção
+    </div>
+    <div class="nav-item" onclick="showPage('recursos')">
+      <span class="icon">📅</span> Recursos
+    </div>
+  </div>
+  <div class="sidebar-footer">OTD Engenharia © 2026</div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <div>
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-sub" id="page-sub">Visão geral do planejamento</div>
+    </div>
+    <div class="topbar-right">
+      <span id="last-update" style="font-size:11px;color:var(--text2)"></span>
+      <button class="btn btn-primary btn-sm" onclick="loadAll()">↻ Atualizar</button>
+    </div>
+  </div>
+  <div id="content"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MODAL CONTRATO -->
+<div class="modal-bg" id="modal-contrato">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-contrato-title">Novo Contrato</h3>
+      <button class="close-btn" onclick="closeModal('modal-contrato')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="contrato-id">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nome do Contrato *</label>
+          <input id="c-nome" placeholder="Ex: EPR - Vias do Café">
+        </div>
+        <div class="form-group">
+          <label>Cliente *</label>
+          <select id="c-cliente"></select>
+        </div>
+        <div class="form-group">
+          <label>Ciclo / Ano</label>
+          <input id="c-ano" placeholder="Ex: 2026.1">
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <input id="c-estado" placeholder="Ex: MG">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="c-status">
+            <option>Aguardando início</option>
+            <option>Em campo</option>
+            <option>Em atraso</option>
+            <option>Concluído</option>
+            <option>Pausado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Início Planejado</label>
+          <input type="date" id="c-ini-plan">
+        </div>
+        <div class="form-group">
+          <label>Término Planejado (prazo cliente)</label>
+          <input type="date" id="c-fim-plan">
+        </div>
+        <div class="form-group">
+          <label>Início Real</label>
+          <input type="date" id="c-ini-real">
+        </div>
+        <div class="form-group">
+          <label>Término Estimado (nossa previsão)</label>
+          <input type="date" id="c-fim-est">
+        </div>
+        <div class="form-group full">
+          <label>Observações</label>
+          <textarea id="c-obs" rows="2"></textarea>
+        </div>
+      </div>
+
+      <!-- DISCIPLINAS -->
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <strong style="font-size:13px;color:var(--azul)">Disciplinas / Frentes</strong>
+          <button class="btn btn-outline btn-sm" onclick="toggleDiscForm()">+ Adicionar</button>
+        </div>
+        <div id="disc-form" style="display:none;background:#f7f9fc;padding:14px;border-radius:8px;margin-bottom:12px">
+          <div class="form-grid col3">
+            <div class="form-group">
+              <label>Disciplina *</label>
+              <select id="d-nome">
+                <option value="">Selecione...</option>
+                <option>Terrapleno</option>
+                <option>Drenagem</option>
+                <option>Sinalização Horizontal</option>
+                <option>Sinalização Vertical</option>
+                <option>Edificações (EDF)</option>
+                <option>Faixa de Domínio (AC e OC)</option>
+                <option>Faixa de Domínio (Cercas)</option>
+                <option>EPS</option>
+                <option>Pontos de Iluminação e EDE</option>
+                <option>Outro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Unidade</label>
+              <select id="d-unidade">
+                <option>Und</option><option>m²</option><option>m³</option>
+                <option>m</option><option>km</option><option>KM</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Nº Frentes</label>
+              <input type="number" id="d-frentes" value="1" min="1">
+            </div>
+            <div class="form-group">
+              <label>Qtd. Prevista</label>
+              <input type="number" id="d-qtd-prev" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Qtd. Real (contratada)</label>
+              <input type="number" id="d-qtd-real" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Prod./frente/dia</label>
+              <input type="number" id="d-prod" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label>Início Planejado</label>
+              <input type="date" id="d-ini">
+            </div>
+            <div class="form-group">
+              <label>Término Planejado</label>
+              <input type="date" id="d-fim">
+            </div>
+            <div class="form-group">
+              <label>Término Estimado</label>
+              <input type="date" id="d-est">
+            </div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn btn-success btn-sm" onclick="addDisc()">✓ Confirmar disciplina</button>
+            <button class="btn btn-sm btn-outline" onclick="toggleDiscForm()">Cancelar</button>
+          </div>
+        </div>
+        <div id="disc-added-list"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-contrato')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-salvar-contrato" onclick="salvarContrato()">Salvar Contrato</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COLABORADOR -->
+<div class="modal-bg" id="modal-colab">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-colab-title">Novo Colaborador</h3>
+      <button class="close-btn" onclick="closeModal('modal-colab')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="colab-id">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nome *</label>
+          <input id="col-nome" placeholder="Nome completo">
+        </div>
+        <div class="form-group">
+          <label>Função</label>
+          <select id="col-funcao">
+            <option>Ajudante</option>
+            <option>Auxiliar</option>
+            <option>Terceirizado</option>
+            <option>Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Situação</label>
+          <select id="col-situacao">
+            <option>Ativo</option>
+            <option>Desligado</option>
+            <option>INSS</option>
+            <option>Desistiu</option>
+            <option>Contratação</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <input id="col-estado" placeholder="Ex: MG">
+        </div>
+        <div class="form-group">
+          <label>Taxa (R$/dia)</label>
+          <input type="number" id="col-taxa" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Admissão</label>
+          <input type="date" id="col-admissao">
+        </div>
+        <div class="form-group">
+          <label>Desligamento</label>
+          <input type="date" id="col-desligamento">
+        </div>
+        <div class="form-group">
+          <label>Promoção (data)</label>
+          <input type="date" id="col-promo-data">
+        </div>
+        <div class="form-group">
+          <label>Novo Cargo (após promoção)</label>
+          <input id="col-novo-cargo" placeholder="Ex: Auxiliar">
+        </div>
+        <div class="form-group full">
+          <label>Observações</label>
+          <textarea id="col-obs" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-colab')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarColab()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRODUÇÃO -->
+<div class="modal-bg" id="modal-prod">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <h3>Lançar Produção</h3>
+      <button class="close-btn" onclick="closeModal('modal-prod')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Contrato *</label>
+          <select id="p-contrato" onchange="loadDiscByContrato()"></select>
+        </div>
+        <div class="form-group full">
+          <label>Disciplina *</label>
+          <select id="p-disc"></select>
+        </div>
+        <div class="form-group">
+          <label>Data *</label>
+          <input type="date" id="p-data">
+        </div>
+        <div class="form-group">
+          <label>Quantidade *</label>
+          <input type="number" id="p-qtd" placeholder="0">
+        </div>
+        <div class="form-group full">
+          <label>Colaborador responsável</label>
+          <input id="p-colab" placeholder="Nome do colaborador">
+        </div>
+        <div class="form-group full">
+          <label>Observação</label>
+          <textarea id="p-obs" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-prod')">Cancelar</button>
+      <button class="btn btn-success" onclick="salvarProducao()">Lançar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────
+const SUPA_URL = 'https://uouyhhekfxfgaxhbnnjw.supabase.co';
+const SUPA_KEY = 'sb_publishable_zXDofvqd-soKxH6hR7qp6w_eHS5X9Ja';
+
+const H = {
+  'Content-Type': 'application/json',
+  'apikey': SUPA_KEY,
+  'Authorization': 'Bearer ' + SUPA_KEY,
+  'Prefer': 'return=representation'
+};
+
+async function db(path, method='GET', body=null) {
+  const r = await fetch(SUPA_URL + '/rest/v1/' + path, {
+    method, headers: H, body: body ? JSON.stringify(body) : null
+  });
+  if (!r.ok) { const e = await r.json(); throw new Error(e.message || 'Erro'); }
+  return r.status === 204 ? null : r.json();
+}
+
+// ── ESTADO ──────────────────────────────────────────────────
+let clientes = [], contratos = [], disciplinas = [], colaboradores = [], producao = [];
+let discTemp  = [];    // disciplinas pendentes no modal
+let currentPage = 'dashboard';
+
+// ── NAVEGAÇÃO ───────────────────────────────────────────────
+function showPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const titles = {
+    dashboard: ['Dashboard', 'Visão geral do planejamento'],
+    contratos: ['Contratos', 'Gerencie contratos e disciplinas'],
+    colaboradores: ['Colaboradores', 'Equipe de campo'],
+    producao: ['Lançar Produção', 'Registro diário de produção'],
+    recursos: ['Recursos', 'Pessoas e carros por período'],
+  };
+  const [t, s] = titles[page] || ['', ''];
+  document.getElementById('page-title').textContent = t;
+  document.getElementById('page-sub').textContent   = s;
+  renderPage(page);
+}
+
+function renderPage(page) {
+  const pages = { dashboard: renderDashboard, contratos: renderContratos, colaboradores: renderColaboradores, producao: renderProducao, recursos: renderRecursos };
+  if (pages[page]) pages[page]();
+}
+
+// ── LOAD ALL ─────────────────────────────────────────────────
+async function loadAll() {
+  try {
+    [clientes, contratos, disciplinas, colaboradores] = await Promise.all([
+      db('clientes?order=nome'),
+      db('contratos?order=nome&select=*,clientes(nome,sigla)'),
+      db('disciplinas?order=nome&select=*,contratos(nome)'),
+      db('colaboradores?order=nome'),
+    ]);
+    document.getElementById('last-update').textContent = 'Atualizado ' + new Date().toLocaleTimeString('pt-BR');
+    renderPage(currentPage);
+  } catch(e) { toast('Erro ao carregar: ' + e.message, 'error'); }
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────
+function renderDashboard() {
+  const total   = contratos.length;
+  const concl   = contratos.filter(c => c.status === 'Concluído').length;
+  const campo   = contratos.filter(c => c.status === 'Em campo').length;
+  const atraso  = contratos.filter(c => c.status === 'Em atraso').length;
+  const aguard  = contratos.filter(c => c.status === 'Aguardando início').length;
+
+  // % médio de avanço
+  const comQtd = disciplinas.filter(d => d.qtd_real > 0);
+  const avgPct = comQtd.length
+    ? Math.round(comQtd.reduce((s, d) => s + Math.min(100, (d.qtd_feita||0)/d.qtd_real*100), 0) / comQtd.length)
+    : 0;
+
+  document.getElementById('content').innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Total Contratos</div><div class="kpi-value">${total}</div></div>
+      <div class="kpi-card verde"><div class="kpi-label">Concluídos</div><div class="kpi-value">${concl}</div></div>
+      <div class="kpi-card azul"><div class="kpi-label">Em Campo</div><div class="kpi-value">${campo}</div></div>
+      <div class="kpi-card vermelho"><div class="kpi-label">Em Atraso</div><div class="kpi-value">${atraso}</div></div>
+      <div class="kpi-card amarelo"><div class="kpi-label">Aguardando</div><div class="kpi-value">${aguard}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Avanço Médio</div><div class="kpi-value">${avgPct}%</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>Contratos ativos / em atraso</h3></div>
+      <div class="card-body">
+        <table>
+          <thead><tr><th>Contrato</th><th>Cliente</th><th>Disciplinas</th><th>Status</th><th>Prazo Cliente</th></tr></thead>
+          <tbody>
+            ${contratos.filter(c=>c.status!=='Concluído'&&c.status!=='Aguardando início').map(c=>{
+              const discs = disciplinas.filter(d=>d.contrato_id===c.id).length;
+              return `<tr>
+                <td><strong>${c.nome}</strong><br><small style="color:var(--text2)">${c.ano||''}</small></td>
+                <td>${c.clientes?.nome||''}</td>
+                <td><span class="badge badge-azul">${discs} disc.</span></td>
+                <td>${badgeStatus(c.status)}</td>
+                <td>${c.termino_planejado ? fmtDate(c.termino_planejado) : '—'}</td>
+              </tr>`;
+            }).join('') || '<tr><td colspan="5" class="loading-row">Nenhum contrato ativo. <a href="#" onclick="showPageLink(\'contratos\')">Cadastre um contrato.</a></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ── CONTRATOS ────────────────────────────────────────────────
+function renderContratos() {
+  const q = (document.getElementById('busca-contrato')?.value || '').toLowerCase();
+  const filtered = contratos.filter(c =>
+    c.nome.toLowerCase().includes(q) || (c.clientes?.nome||'').toLowerCase().includes(q)
+  );
+
+  document.getElementById('content').innerHTML = `
+    <div class="search-bar">
+      <input class="search-input" id="busca-contrato" placeholder="Buscar contrato ou cliente..." oninput="renderContratos()" value="${q}">
+      <button class="btn btn-primary" onclick="abrirModalContrato()">+ Novo Contrato</button>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>${filtered.length} contrato(s)</h3></div>
+      <div class="card-body">
+        <table>
+          <thead><tr>
+            <th>Contrato</th><th>Cliente</th><th>Ano</th><th>Status</th>
+            <th>Disciplinas</th><th>Prazo Cliente</th><th>Previsão OTD</th><th>Ações</th>
+          </tr></thead>
+          <tbody>
+            ${filtered.length === 0 ? `<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>Nenhum contrato cadastrado ainda.<br>Clique em "+ Novo Contrato" para começar.</p></div></td></tr>` :
+            filtered.map(c => {
+              const discs = disciplinas.filter(d => d.contrato_id === c.id);
+              const pct   = calcPct(discs);
+              return `<tr>
+                <td>
+                  <strong>${c.nome}</strong>
+                  ${c.estado ? `<span style="font-size:11px;color:var(--text2);margin-left:6px">${c.estado}</span>` : ''}
+                </td>
+                <td>${c.clientes?.sigla || c.clientes?.nome || '—'}</td>
+                <td>${c.ano || '—'}</td>
+                <td>${badgeStatus(c.status)}</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div class="progress"><div class="progress-bar" style="width:${pct}%;background:${pct>=100?'#28a745':pct>=50?'#1F3864':'#FF8C00'}"></div></div>
+                    <span style="font-size:12px;font-weight:600">${pct}%</span>
+                    <span class="badge badge-azul">${discs.length}</span>
+                  </div>
+                </td>
+                <td>${c.termino_planejado ? fmtDate(c.termino_planejado) : '—'}</td>
+                <td>${c.termino_estimado ? fmtDate(c.termino_estimado) : '—'}</td>
+                <td>
+                  <button class="btn btn-sm btn-outline" onclick="editarContrato('${c.id}')">✏️</button>
+                  <button class="btn btn-sm btn-danger" onclick="deletarContrato('${c.id}')">🗑</button>
+                </td>
+              </tr>
+              ${discs.length ? `<tr style="background:#f9fafb">
+                <td colspan="8" style="padding:0">
+                  <div class="disc-list">
+                    ${discs.map(d => {
+                      const p = d.qtd_real > 0 ? Math.min(100, Math.round((d.qtd_feita||0)/d.qtd_real*100)) : 0;
+                      return `<div class="disc-item">
+                        <div class="disc-nome">${d.nome}</div>
+                        <div class="disc-info">${d.qtd_feita||0} / ${d.qtd_real||0} ${d.unidade||''}</div>
+                        <div class="progress" style="width:120px"><div class="progress-bar" style="width:${p}%;background:${p>=100?'#28a745':p>=50?'#1F3864':'#FF8C00'}"></div></div>
+                        <span style="font-size:12px;font-weight:600;min-width:32px">${p}%</span>
+                        <span class="disc-info">${d.inicio_planejado?fmtDate(d.inicio_planejado):''} → ${d.termino_planejado?fmtDate(d.termino_planejado):''}</span>
+                        <button class="btn btn-sm btn-danger" onclick="deletarDisc('${d.id}')">🗑</button>
+                      </div>`;
+                    }).join('')}
+                  </div>
+                </td>
+              </tr>` : ''}`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ── COLABORADORES ─────────────────────────────────────────────
+function renderColaboradores() {
+  const ativos   = colaboradores.filter(c => c.situacao === 'Ativo');
+  const inativos = colaboradores.filter(c => c.situacao !== 'Ativo');
+  const q = (document.getElementById('busca-colab')?.value || '').toLowerCase();
+  const filtered = colaboradores.filter(c => c.nome.toLowerCase().includes(q));
+
+  document.getElementById('content').innerHTML = `
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:480px">
+      <div class="kpi-card verde"><div class="kpi-label">Ativos</div><div class="kpi-value">${ativos.length}</div></div>
+      <div class="kpi-card vermelho"><div class="kpi-label">Inativos</div><div class="kpi-value">${inativos.length}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value">${colaboradores.length}</div></div>
+    </div>
+    <div class="search-bar">
+      <input class="search-input" id="busca-colab" placeholder="Buscar colaborador..." oninput="renderColaboradores()" value="${q}">
+      <button class="btn btn-primary" onclick="abrirModalColab()">+ Novo Colaborador</button>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <table>
+          <thead><tr><th>Nome</th><th>Função</th><th>Situação</th><th>Estado</th><th>Admissão</th><th>Desligamento</th><th>Ações</th></tr></thead>
+          <tbody>
+            ${filtered.length === 0 ? `<tr><td colspan="7"><div class="empty-state"><div class="icon">👷</div><p>Nenhum colaborador cadastrado.</p></div></td></tr>` :
+            filtered.map(c => `<tr>
+              <td><strong>${c.nome}</strong></td>
+              <td>${c.funcao||'—'}</td>
+              <td>${badgeSituacao(c.situacao)}</td>
+              <td>${c.estado||'—'}</td>
+              <td>${c.admissao ? fmtDate(c.admissao) : '—'}</td>
+              <td>${c.desligamento ? fmtDate(c.desligamento) : '—'}</td>
+              <td>
+                <button class="btn btn-sm btn-outline" onclick="editarColab('${c.id}')">✏️</button>
+                <button class="btn btn-sm btn-danger" onclick="deletarColab('${c.id}')">🗑</button>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ── PRODUÇÃO ──────────────────────────────────────────────────
+function renderProducao() {
+  document.getElementById('content').innerHTML = `
+    <div class="card" style="max-width:600px">
+      <div class="card-header"><h3>Lançamento de Produção Diária</h3></div>
+      <div class="card-body" style="padding:20px">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Contrato *</label>
+            <select id="p-contrato" onchange="loadDiscByContrato()">
+              <option value="">Selecione o contrato...</option>
+              ${contratos.map(c=>`<option value="${c.id}">${c.nome} ${c.ano?'('+c.ano+')':''}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group full">
+            <label>Disciplina *</label>
+            <select id="p-disc"><option value="">Selecione o contrato primeiro...</option></select>
+          </div>
+          <div class="form-group">
+            <label>Data *</label>
+            <input type="date" id="p-data" value="${new Date().toISOString().split('T')[0]}">
+          </div>
+          <div class="form-group">
+            <label>Quantidade *</label>
+            <input type="number" id="p-qtd" placeholder="0" min="0">
+          </div>
+          <div class="form-group full">
+            <label>Colaborador responsável</label>
+            <input id="p-colab" list="colab-list" placeholder="Nome do colaborador">
+            <datalist id="colab-list">
+              ${colaboradores.filter(c=>c.situacao==='Ativo').map(c=>`<option value="${c.nome}">`).join('')}
+            </datalist>
+          </div>
+          <div class="form-group full">
+            <label>Observação</label>
+            <textarea id="p-obs" rows="2"></textarea>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn btn-success" style="width:100%" onclick="salvarProducao()">⚡ Lançar Produção</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── RECURSOS ──────────────────────────────────────────────────
+function renderRecursos() {
+  const hoje = new Date().toISOString().split('T')[0];
+  const ativos = colaboradores.filter(c => {
+    if (c.situacao !== 'Ativo') return false;
+    if (c.funcao === 'Terceirizado') return false;
+    return true;
+  });
+  const ajudantes = ativos.filter(c => c.funcao === 'Ajudante' || (!c.funcao));
+  const auxiliares = ativos.filter(c => c.funcao === 'Auxiliar');
+
+  document.getElementById('content').innerHTML = `
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:480px">
+      <div class="kpi-card verde"><div class="kpi-label">Total Ativos</div><div class="kpi-value">${ativos.length}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Ajudantes</div><div class="kpi-value">${ajudantes.length}</div></div>
+      <div class="kpi-card azul"><div class="kpi-label">Auxiliares</div><div class="kpi-value">${auxiliares.length}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>Equipe ativa hoje — ${fmtDate(hoje)}</h3></div>
+      <div class="card-body">
+        <table>
+          <thead><tr><th>Nome</th><th>Função</th><th>Estado</th><th>Admissão</th></tr></thead>
+          <tbody>
+            ${ativos.map(c=>`<tr>
+              <td><strong>${c.nome}</strong></td>
+              <td>${c.funcao||'—'}</td>
+              <td>${c.estado||'—'}</td>
+              <td>${c.admissao?fmtDate(c.admissao):'—'}</td>
+            </tr>`).join('') || '<tr><td colspan="4" class="loading-row">Nenhum colaborador ativo.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ── MODAL CONTRATO ────────────────────────────────────────────
+function abrirModalContrato(id=null) {
+  discTemp = [];
+  document.getElementById('modal-contrato-title').textContent = id ? 'Editar Contrato' : 'Novo Contrato';
+  const campos = ['contrato-id','c-nome','c-ano','c-estado','c-obs'];
+  campos.forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('c-status').value = 'Aguardando início';
+  ['c-ini-plan','c-fim-plan','c-ini-real','c-fim-est'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+
+  // Popular select de clientes
+  const sel = document.getElementById('c-cliente');
+  sel.innerHTML = '<option value="">Selecione o cliente...</option>' +
+    clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+
+  if (id) {
+    const c = contratos.find(x=>x.id===id);
+    if (c) {
+      document.getElementById('contrato-id').value = c.id;
+      document.getElementById('c-nome').value = c.nome||'';
+      document.getElementById('c-cliente').value = c.cliente_id||'';
+      document.getElementById('c-ano').value = c.ano||'';
+      document.getElementById('c-estado').value = c.estado||'';
+      document.getElementById('c-status').value = c.status||'Aguardando início';
+      document.getElementById('c-ini-plan').value = c.inicio_planejado||'';
+      document.getElementById('c-fim-plan').value = c.termino_planejado||'';
+      document.getElementById('c-ini-real').value = c.inicio_real||'';
+      document.getElementById('c-fim-est').value = c.termino_estimado||'';
+      document.getElementById('c-obs').value = c.obs||'';
+      discTemp = disciplinas.filter(d=>d.contrato_id===id).map(d=>({...d, _saved:true}));
+    }
+  }
+  renderDiscList();
+  document.getElementById('disc-form').style.display = 'none';
+  openModal('modal-contrato');
+}
+
+function editarContrato(id) { abrirModalContrato(id); }
+
+async function salvarContrato() {
+  const nome = document.getElementById('c-nome').value.trim();
+  if (!nome) { toast('Nome do contrato é obrigatório', 'error'); return; }
+
+  const btn = document.getElementById('btn-salvar-contrato');
+  btn.innerHTML = '<span class="spinner"></span> Salvando...'; btn.disabled = true;
+
+  try {
+    const payload = {
+      nome,
+      cliente_id: document.getElementById('c-cliente').value || null,
+      ano: document.getElementById('c-ano').value || null,
+      estado: document.getElementById('c-estado').value || null,
+      status: document.getElementById('c-status').value,
+      inicio_planejado:  document.getElementById('c-ini-plan').value || null,
+      termino_planejado: document.getElementById('c-fim-plan').value || null,
+      inicio_real:       document.getElementById('c-ini-real').value || null,
+      termino_estimado:  document.getElementById('c-fim-est').value || null,
+      obs: document.getElementById('c-obs').value || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const cid = document.getElementById('contrato-id').value;
+    let contratoId;
+    if (cid) {
+      await db(`contratos?id=eq.${cid}`, 'PATCH', payload);
+      contratoId = cid;
+    } else {
+      const res = await db('contratos', 'POST', payload);
+      contratoId = res[0].id;
+    }
+
+    // Salvar disciplinas novas
+    for (const d of discTemp) {
+      if (d._saved) continue;
+      await db('disciplinas', 'POST', {
+        contrato_id: contratoId,
+        nome: d.nome, unidade: d.unidade,
+        qtd_prevista: d.qtd_prevista||0, qtd_real: d.qtd_real||0,
+        qtd_feita: 0, num_frentes: d.num_frentes||1,
+        produtividade_frente: d.produtividade_frente||null,
+        inicio_planejado: d.inicio_planejado||null,
+        termino_planejado: d.termino_planejado||null,
+        termino_estimado: d.termino_estimado||null,
+      });
+    }
+
+    toast(cid ? 'Contrato atualizado!' : 'Contrato salvo!', 'success');
+    closeModal('modal-contrato');
+    await loadAll();
+  } catch(e) { toast('Erro: ' + e.message, 'error'); }
+  finally { btn.innerHTML = 'Salvar Contrato'; btn.disabled = false; }
+}
+
+async function deletarContrato(id) {
+  if (!confirm('Excluir este contrato? As disciplinas e produção vinculadas também serão removidas.')) return;
+  try {
+    await db(`disciplinas?contrato_id=eq.${id}`, 'DELETE');
+    await db(`contratos?id=eq.${id}`, 'DELETE');
+    toast('Contrato excluído', 'success');
+    await loadAll();
+  } catch(e) { toast('Erro: '+e.message, 'error'); }
+}
+
+// ── DISCIPLINAS TEMP ──────────────────────────────────────────
+function toggleDiscForm() {
+  const f = document.getElementById('disc-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display === 'block') {
+    ['d-qtd-prev','d-qtd-real','d-prod'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('d-nome').value = '';
+    ['d-ini','d-fim','d-est'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('d-frentes').value = 1;
+  }
+}
+
+function addDisc() {
+  const nome = document.getElementById('d-nome').value;
+  if (!nome) { toast('Selecione a disciplina', 'error'); return; }
+  discTemp.push({
+    nome,
+    unidade:    document.getElementById('d-unidade').value,
+    num_frentes: parseInt(document.getElementById('d-frentes').value)||1,
+    qtd_prevista: parseFloat(document.getElementById('d-qtd-prev').value)||0,
+    qtd_real:    parseFloat(document.getElementById('d-qtd-real').value)||0,
+    produtividade_frente: parseFloat(document.getElementById('d-prod').value)||null,
+    inicio_planejado:    document.getElementById('d-ini').value||null,
+    termino_planejado:   document.getElementById('d-fim').value||null,
+    termino_estimado:    document.getElementById('d-est').value||null,
+  });
+  toggleDiscForm();
+  renderDiscList();
+  toast('Disciplina adicionada', 'info');
+}
+
+function renderDiscList() {
+  const el = document.getElementById('disc-added-list');
+  if (!discTemp.length) { el.innerHTML = '<div style="color:var(--text2);font-size:13px;text-align:center;padding:12px">Nenhuma disciplina adicionada ainda</div>'; return; }
+  el.innerHTML = discTemp.map((d,i) => `
+    <div class="disc-added-item">
+      <div>
+        <strong>${d.nome}</strong>
+        <span style="color:var(--text2);font-size:12px;margin-left:8px">${d.qtd_real||0} ${d.unidade||''} · ${d.num_frentes} frente(s)</span>
+        ${d._saved ? '<span class="badge badge-verde" style="margin-left:6px">salvo</span>' : '<span class="badge badge-amarelo" style="margin-left:6px">novo</span>'}
+      </div>
+      ${d._saved ? '' : `<span class="rm" onclick="remDisc(${i})">✕</span>`}
+    </div>`).join('');
+}
+
+function remDisc(i) { discTemp.splice(i,1); renderDiscList(); }
+
+async function deletarDisc(id) {
+  if (!confirm('Remover esta disciplina?')) return;
+  try {
+    await db(`disciplinas?id=eq.${id}`, 'DELETE');
+    toast('Disciplina removida', 'success');
+    await loadAll();
+  } catch(e) { toast('Erro: '+e.message,'error'); }
+}
+
+// ── MODAL COLABORADOR ─────────────────────────────────────────
+function abrirModalColab(id=null) {
+  document.getElementById('modal-colab-title').textContent = id ? 'Editar Colaborador' : 'Novo Colaborador';
+  ['colab-id','col-nome','col-estado','col-obs','col-novo-cargo'].forEach(f => { const el=document.getElementById(f); if(el) el.value=''; });
+  ['col-admissao','col-desligamento','col-promo-data'].forEach(f => { const el=document.getElementById(f); if(el) el.value=''; });
+  document.getElementById('col-funcao').value = 'Ajudante';
+  document.getElementById('col-situacao').value = 'Ativo';
+  document.getElementById('col-taxa').value = '';
+
+  if (id) {
+    const c = colaboradores.find(x=>x.id===id);
+    if (c) {
+      document.getElementById('colab-id').value = c.id;
+      document.getElementById('col-nome').value = c.nome||'';
+      document.getElementById('col-funcao').value = c.funcao||'Ajudante';
+      document.getElementById('col-situacao').value = c.situacao||'Ativo';
+      document.getElementById('col-estado').value = c.estado||'';
+      document.getElementById('col-taxa').value = c.taxa||'';
+      document.getElementById('col-admissao').value = c.admissao||'';
+      document.getElementById('col-desligamento').value = c.desligamento||'';
+      document.getElementById('col-promo-data').value = c.promocao_data||'';
+      document.getElementById('col-novo-cargo').value = c.novo_cargo||'';
+      document.getElementById('col-obs').value = c.obs||'';
+    }
+  }
+  openModal('modal-colab');
+}
+
+function editarColab(id) { abrirModalColab(id); }
+
+async function salvarColab() {
+  const nome = document.getElementById('col-nome').value.trim();
+  if (!nome) { toast('Nome é obrigatório', 'error'); return; }
+  try {
+    const payload = {
+      nome,
+      funcao:     document.getElementById('col-funcao').value,
+      situacao:   document.getElementById('col-situacao').value,
+      estado:     document.getElementById('col-estado').value||null,
+      taxa:       parseFloat(document.getElementById('col-taxa').value)||null,
+      admissao:   document.getElementById('col-admissao').value||null,
+      desligamento: document.getElementById('col-desligamento').value||null,
+      promocao_data: document.getElementById('col-promo-data').value||null,
+      novo_cargo: document.getElementById('col-novo-cargo').value||null,
+      obs:        document.getElementById('col-obs').value||null,
+      updated_at: new Date().toISOString(),
+    };
+    const cid = document.getElementById('colab-id').value;
+    if (cid) {
+      await db(`colaboradores?id=eq.${cid}`, 'PATCH', payload);
+      toast('Colaborador atualizado!', 'success');
+    } else {
+      await db('colaboradores', 'POST', payload);
+      toast('Colaborador salvo!', 'success');
+    }
+    closeModal('modal-colab');
+    await loadAll();
+  } catch(e) { toast('Erro: '+e.message,'error'); }
+}
+
+async function deletarColab(id) {
+  if (!confirm('Excluir este colaborador?')) return;
+  try {
+    await db(`colaboradores?id=eq.${id}`, 'DELETE');
+    toast('Colaborador excluído', 'success');
+    await loadAll();
+  } catch(e) { toast('Erro: '+e.message,'error'); }
+}
+
+// ── PRODUÇÃO ──────────────────────────────────────────────────
+function loadDiscByContrato() {
+  const cid = document.getElementById('p-contrato')?.value;
+  const sel = document.getElementById('p-disc');
+  if (!sel) return;
+  const discs = disciplinas.filter(d => d.contrato_id === cid);
+  sel.innerHTML = discs.length
+    ? '<option value="">Selecione a disciplina...</option>' + discs.map(d=>`<option value="${d.id}">${d.nome}</option>`).join('')
+    : '<option value="">Nenhuma disciplina neste contrato</option>';
+}
+
+async function salvarProducao() {
+  const cid  = document.getElementById('p-contrato')?.value;
+  const did  = document.getElementById('p-disc')?.value;
+  const data = document.getElementById('p-data')?.value;
+  const qtd  = parseFloat(document.getElementById('p-qtd')?.value);
+  if (!cid || !did || !data || !qtd) { toast('Preencha contrato, disciplina, data e quantidade', 'error'); return; }
+  try {
+    await db('producao', 'POST', {
+      contrato_id: cid, disciplina_id: did, data, quantidade: qtd,
+      colaborador: document.getElementById('p-colab')?.value||null,
+      obs: document.getElementById('p-obs')?.value||null,
+    });
+    // Atualizar qtd_feita na disciplina
+    const disc = disciplinas.find(d=>d.id===did);
+    if (disc) {
+      const nova = (disc.qtd_feita||0) + qtd;
+      await db(`disciplinas?id=eq.${did}`, 'PATCH', { qtd_feita: nova, updated_at: new Date().toISOString() });
+    }
+    toast('Produção lançada!', 'success');
+    ['p-qtd','p-obs'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    await loadAll();
+  } catch(e) { toast('Erro: '+e.message,'error'); }
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function calcPct(discs) {
+  const com = discs.filter(d=>d.qtd_real>0);
+  if (!com.length) return 0;
+  return Math.round(com.reduce((s,d)=>s+Math.min(100,(d.qtd_feita||0)/d.qtd_real*100),0)/com.length);
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const [y,m,di] = d.split('T')[0].split('-');
+  return `${di}/${m}/${y}`;
+}
+
+function badgeStatus(s) {
+  const map = {
+    'Concluído':'badge-verde','Em campo':'badge-azul',
+    'Em atraso':'badge-vermelho','Aguardando início':'badge-cinza','Pausado':'badge-amarelo'
+  };
+  return `<span class="badge ${map[s]||'badge-cinza'}">${s||'—'}</span>`;
+}
+
+function badgeSituacao(s) {
+  const map = {'Ativo':'badge-verde','Desligado':'badge-vermelho','INSS':'badge-amarelo','Desistiu':'badge-laranja','Contratação':'badge-azul'};
+  return `<span class="badge ${map[s]||'badge-cinza'}">${s||'—'}</span>`;
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast-item ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+// Fechar modal clicando fora
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if(e.target===bg) bg.classList.remove('open'); });
+});
+
+// ── INIT ──────────────────────────────────────────────────────
+loadAll();
+</script>
+</body>
+</html>
