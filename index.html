@@ -792,7 +792,6 @@ function renderRecursos(){
 }
 
 // ─── FROTAS ──────────────────────────────────────────────────
-let frotas=[];
 async function renderFrotas(){
   try{frotas=await db('frotas?order=data_retirada_ini.desc');}catch(e){toast('Erro: '+e.message,'e');}
   const fSt=document.getElementById('fr-fst')?.value||'';
@@ -931,7 +930,6 @@ function renderParciais(){
 }
 
 // ─── CRUD CONTRATOS ──────────────────────────────────────────
-let discTemp=[];
 function abrirMC(id=null){
   discTemp=[];
   document.getElementById('mc-title').textContent=id?'Editar Contrato':'Novo Contrato';
