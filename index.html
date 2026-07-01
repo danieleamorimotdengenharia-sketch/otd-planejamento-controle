@@ -382,11 +382,11 @@
         </div>
         <div class="form-group">
           <label>Função</label>
-          <select id="col-funcao">
-            <option>Ajudante</option>
-            <option>Auxiliar</option>
-            <option>Terceirizado</option>
-            <option>Outro</option>
+          <select id="col-funcao" onchange="autoTaxa()">
+            <option value="Ajudante de Obras">Ajudante de Obras</option>
+            <option value="Auxiliar de Engenharia">Auxiliar de Engenharia</option>
+            <option value="Assistente de Engenharia">Assistente de Engenharia</option>
+            <option value="Terceirizado Campo">Terceirizado Campo</option>
           </select>
         </div>
         <div class="form-group">
@@ -405,7 +405,7 @@
         </div>
         <div class="form-group">
           <label>Taxa (R$/dia)</label>
-          <input type="number" id="col-taxa" placeholder="0">
+          <input type="number" id="col-taxa" placeholder="Automático por função" readonly style="background:#f7f9fc;color:var(--text2)">
         </div>
         <div class="form-group">
           <label>Admissão</label>
@@ -421,7 +421,13 @@
         </div>
         <div class="form-group">
           <label>Novo Cargo (após promoção)</label>
-          <input id="col-novo-cargo" placeholder="Ex: Auxiliar">
+          <input id="col-novo-cargo" placeholder="Ex: Auxiliar de Engenharia" list="cargos-list">
+          <datalist id="cargos-list">
+            <option value="Ajudante de Obras">
+            <option value="Auxiliar de Engenharia">
+            <option value="Assistente de Engenharia">
+            <option value="Terceirizado Campo">
+          </datalist>
         </div>
         <div class="form-group full">
           <label>Observações</label>
@@ -542,19 +548,31 @@ async function loadAll() {
 
 // ── DASHBOARD ────────────────────────────────────────────────
 function renderDashboard() {
-  const total   = contratos.length;
-  const concl   = contratos.filter(c => c.status === 'Concluído').length;
-  const campo   = contratos.filter(c => c.status === 'Em campo').length;
-  const atraso  = contratos.filter(c => c.status === 'Em atraso').length;
-  const aguard  = contratos.filter(c => c.status === 'Aguardando início').length;
+  const ciclos = [...new Set(contratos.map(c => c.ano).filter(Boolean))].sort().reverse();
+  const sel = document.getElementById('filtro-ciclo')?.value || ciclos[0] || '';
+  const lista = sel ? contratos.filter(c => c.ano === sel) : contratos;
 
-  // % médio de avanço
-  const comQtd = disciplinas.filter(d => d.qtd_real > 0);
-  const avgPct = comQtd.length
-    ? Math.round(comQtd.reduce((s, d) => s + Math.min(100, (d.qtd_feita||0)/d.qtd_real*100), 0) / comQtd.length)
+  const total   = lista.length;
+  const concl   = lista.filter(c => c.status === 'Concluído').length;
+  const campo   = lista.filter(c => c.status === 'Em campo').length;
+  const atraso  = lista.filter(c => c.status === 'Em atraso').length;
+  const aguard  = lista.filter(c => c.status === 'Aguardando início').length;
+
+  const ids = new Set(lista.map(c => c.id));
+  const discs_ciclo = disciplinas.filter(d => ids.has(d.contrato_id) && d.qtd_real > 0);
+  const avgPct = discs_ciclo.length
+    ? Math.round(discs_ciclo.reduce((s,d) => s + Math.min(100,(d.qtd_feita||0)/d.qtd_real*100), 0) / discs_ciclo.length)
     : 0;
 
   document.getElementById('content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+      <label style="font-size:13px;font-weight:600;color:var(--text2)">Ciclo:</label>
+      <select id="filtro-ciclo" onchange="renderDashboard()"
+        style="padding:7px 14px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-weight:600;color:var(--azul)">
+        ${ciclos.map(c => `<option value="${c}" ${c===sel?'selected':''}>${c}</option>`).join('')}
+        <option value="" ${!sel?'selected':''}>Todos os ciclos</option>
+      </select>
+    </div>
     <div class="kpi-grid">
       <div class="kpi-card"><div class="kpi-label">Total Contratos</div><div class="kpi-value">${total}</div></div>
       <div class="kpi-card verde"><div class="kpi-label">Concluídos</div><div class="kpi-value">${concl}</div></div>
@@ -564,21 +582,21 @@ function renderDashboard() {
       <div class="kpi-card"><div class="kpi-label">Avanço Médio</div><div class="kpi-value">${avgPct}%</div></div>
     </div>
     <div class="card">
-      <div class="card-header"><h3>Contratos ativos / em atraso</h3></div>
+      <div class="card-header"><h3>Contratos ativos / em atraso — ${sel||'Todos os ciclos'}</h3></div>
       <div class="card-body">
         <table>
           <thead><tr><th>Contrato</th><th>Cliente</th><th>Disciplinas</th><th>Status</th><th>Prazo Cliente</th></tr></thead>
           <tbody>
-            ${contratos.filter(c=>c.status!=='Concluído'&&c.status!=='Aguardando início').map(c=>{
+            ${lista.filter(c => c.status!=='Concluído'&&c.status!=='Aguardando início').map(c=>{
               const discs = disciplinas.filter(d=>d.contrato_id===c.id).length;
               return `<tr>
                 <td><strong>${c.nome}</strong><br><small style="color:var(--text2)">${c.ano||''}</small></td>
-                <td>${c.clientes?.nome||''}</td>
+                <td>${c.clientes?.nome||'—'}</td>
                 <td><span class="badge badge-azul">${discs} disc.</span></td>
                 <td>${badgeStatus(c.status)}</td>
-                <td>${c.termino_planejado ? fmtDate(c.termino_planejado) : '—'}</td>
+                <td>${c.termino_planejado?fmtDate(c.termino_planejado):'—'}</td>
               </tr>`;
-            }).join('') || '<tr><td colspan="5" class="loading-row">Nenhum contrato ativo. <a href="#" onclick="showPageLink(\'contratos\')">Cadastre um contrato.</a></td></tr>'}
+            }).join('')||'<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text2)">Nenhum contrato ativo neste ciclo.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -747,17 +765,19 @@ function renderRecursos() {
   const hoje = new Date().toISOString().split('T')[0];
   const ativos = colaboradores.filter(c => {
     if (c.situacao !== 'Ativo') return false;
-    if (c.funcao === 'Terceirizado') return false;
+    if (c.funcao === 'Terceirizado Campo') return false;
     return true;
   });
-  const ajudantes = ativos.filter(c => c.funcao === 'Ajudante' || (!c.funcao));
-  const auxiliares = ativos.filter(c => c.funcao === 'Auxiliar');
+  const ajudantes  = ativos.filter(c => c.funcao === 'Ajudante de Obras' || !c.funcao);
+  const auxiliares = ativos.filter(c => c.funcao === 'Auxiliar de Engenharia');
+  const assistentes= ativos.filter(c => c.funcao === 'Assistente de Engenharia');
 
   document.getElementById('content').innerHTML = `
-    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:480px">
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);max-width:640px">
       <div class="kpi-card verde"><div class="kpi-label">Total Ativos</div><div class="kpi-value">${ativos.length}</div></div>
       <div class="kpi-card"><div class="kpi-label">Ajudantes</div><div class="kpi-value">${ajudantes.length}</div></div>
       <div class="kpi-card azul"><div class="kpi-label">Auxiliares</div><div class="kpi-value">${auxiliares.length}</div></div>
+      <div class="kpi-card amarelo"><div class="kpi-label">Assistentes</div><div class="kpi-value">${assistentes.length}</div></div>
     </div>
     <div class="card">
       <div class="card-header"><h3>Equipe ativa hoje — ${fmtDate(hoje)}</h3></div>
@@ -940,7 +960,8 @@ function abrirModalColab(id=null) {
   document.getElementById('modal-colab-title').textContent = id ? 'Editar Colaborador' : 'Novo Colaborador';
   ['colab-id','col-nome','col-estado','col-obs','col-novo-cargo'].forEach(f => { const el=document.getElementById(f); if(el) el.value=''; });
   ['col-admissao','col-desligamento','col-promo-data'].forEach(f => { const el=document.getElementById(f); if(el) el.value=''; });
-  document.getElementById('col-funcao').value = 'Ajudante';
+  document.getElementById('col-funcao').value = 'Ajudante de Obras';
+  autoTaxa();
   document.getElementById('col-situacao').value = 'Ativo';
   document.getElementById('col-taxa').value = '';
 
@@ -1039,7 +1060,18 @@ async function salvarProducao() {
   } catch(e) { toast('Erro: '+e.message,'error'); }
 }
 
-// ── UTILS ─────────────────────────────────────────────────────
+// ── TAXA AUTOMÁTICA POR FUNÇÃO ────────────────────────────────
+const TAXAS = {
+  'Ajudante de Obras':       0.70,
+  'Auxiliar de Engenharia':  0.75,
+  'Assistente de Engenharia':0.90,
+  'Terceirizado Campo':      1.30,
+};
+function autoTaxa() {
+  const f = document.getElementById('col-funcao')?.value;
+  const t = document.getElementById('col-taxa');
+  if (t && TAXAS[f]) t.value = TAXAS[f];
+}
 function calcPct(discs) {
   const com = discs.filter(d=>d.qtd_real>0);
   if (!com.length) return 0;
