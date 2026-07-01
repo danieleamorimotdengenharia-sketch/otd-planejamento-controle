@@ -492,7 +492,7 @@
 
 <!-- MODAL FROTA -->
 <div class="modal-bg" id="modal-frota">
-  <div class="modal" style="max-width:680px">
+  <div class="modal" style="max-width:580px">
     <div class="modal-header">
       <h3 id="modal-frota-title">Nova Frota</h3>
       <button class="close-btn" onclick="closeModal('modal-frota')">×</button>
@@ -506,12 +506,12 @@
             <option>Localiza (Pura Eng.)</option><option>Movida (Pura Eng.)</option><option>Outro</option>
           </select>
         </div>
-        <div class="form-group"><label>Reserva</label><input id="fr-reserva" placeholder="Código da reserva"></div>
-        <div class="form-group"><label>Colaborador *</label><input id="fr-colaborador" list="colab-list-fr" placeholder="Nome do colaborador">
+        <div class="form-group"><label>Código Reserva</label><input id="fr-reserva" placeholder="Ex: PC9342LES29T"></div>
+        <div class="form-group full"><label>Colaborador Atual *</label>
+          <input id="fr-colaborador" list="colab-list-fr" placeholder="Nome do colaborador">
           <datalist id="colab-list-fr"></datalist>
         </div>
-        <div class="form-group"><label>Contrato</label><input id="fr-contrato" placeholder="Número do contrato"></div>
-        <div class="form-group"><label>Placa</label><input id="fr-placa" placeholder="AAA0A00" style="text-transform:uppercase"></div>
+        <div class="form-group"><label>Placa Atual</label><input id="fr-placa" placeholder="AAA0A00" style="text-transform:uppercase"></div>
         <div class="form-group"><label>Veículo</label>
           <select id="fr-veiculo">
             <option>Kwid</option><option>Mobi</option><option>Hyundai HB20</option><option>Onix</option><option>Outro</option>
@@ -519,16 +519,12 @@
         </div>
         <div class="form-group"><label>Status</label>
           <select id="fr-status">
-            <option>Ativo</option><option>Devolvido</option><option>Transferido</option>
+            <option>Ativo</option><option>Devolvido</option>
           </select>
         </div>
         <div class="form-group"><label>Mensalidade (R$)</label><input type="number" id="fr-mensalidade" placeholder="0,00"></div>
-        <div class="form-group"><label>Data Retirada</label><input type="date" id="fr-data-ret"></div>
-        <div class="form-group"><label>Data Devolução</label><input type="date" id="fr-data-dev"></div>
-        <div class="form-group"><label>Local Retirada</label><input id="fr-local" placeholder="Cidade / UF"></div>
-        <div class="form-group"><label>KM Inicial</label><input type="number" id="fr-km-ini" placeholder="0"></div>
-        <div class="form-group"><label>KM Final</label><input type="number" id="fr-km-fin" placeholder="0"></div>
-        <div class="form-group"><label>Gasto (R$)</label><input type="number" id="fr-gasto" placeholder="0,00"></div>
+        <div class="form-group"><label>Data Retirada Inicial</label><input type="date" id="fr-data-ret"></div>
+        <div class="form-group full"><label>Local Retirada</label><input id="fr-local" placeholder="Cidade / UF"></div>
         <div class="form-group full"><label>Observação</label><textarea id="fr-obs" rows="2"></textarea></div>
       </div>
     </div>
@@ -1297,25 +1293,25 @@ async function salvarProducao() {
 }
 
 // ── FROTAS ────────────────────────────────────────────────────
-let frotas = [];
+let frotas = [], frotasHistorico = {};
 
 async function renderFrotas() {
-  try { frotas = await db('frotas?order=data_retirada.desc'); } catch(e) { toast('Erro: '+e.message,'error'); }
+  try { frotas = await db('frotas?order=data_retirada_ini.desc'); } catch(e) { toast('Erro: '+e.message,'error'); }
 
   const fStatus = document.getElementById('fr-fil-status')?.value || '';
   const fBusca  = (document.getElementById('fr-fil-busca')?.value||'').toLowerCase();
 
   const ativos     = frotas.filter(f=>f.status==='Ativo').length;
   const devolvidos = frotas.filter(f=>f.status==='Devolvido').length;
-  const transf     = frotas.filter(f=>f.status==='Transferido').length;
 
   let lista = frotas;
   if (fStatus) lista = lista.filter(f=>f.status===fStatus);
   if (fBusca)  lista = lista.filter(f=>
-    (f.colaborador||'').toLowerCase().includes(fBusca) ||
-    (f.placa||'').toLowerCase().includes(fBusca) ||
-    (f.contrato||'').toLowerCase().includes(fBusca) ||
-    (f.veiculo||'').toLowerCase().includes(fBusca)
+    (f.colaborador_atual||'').toLowerCase().includes(fBusca) ||
+    (f.placa_atual||'').toLowerCase().includes(fBusca) ||
+    (f.reserva||'').toLowerCase().includes(fBusca) ||
+    (f.veiculo||'').toLowerCase().includes(fBusca) ||
+    (f.locadora||'').toLowerCase().includes(fBusca)
   );
 
   function badgeFrota(s) {
@@ -1324,48 +1320,50 @@ async function renderFrotas() {
   }
 
   document.getElementById('content').innerHTML = `
-    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);max-width:640px;margin-bottom:20px">
-      <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value">${frotas.length}</div></div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:480px;margin-bottom:20px">
+      <div class="kpi-card"><div class="kpi-label">Reservas</div><div class="kpi-value">${frotas.length}</div></div>
       <div class="kpi-card verde"><div class="kpi-label">Ativos</div><div class="kpi-value">${ativos}</div></div>
-      <div class="kpi-card cinza" style="border-left-color:#6c757d"><div class="kpi-label">Devolvidos</div><div class="kpi-value">${devolvidos}</div></div>
-      <div class="kpi-card amarelo"><div class="kpi-label">Transferidos</div><div class="kpi-value">${transf}</div></div>
+      <div class="kpi-card" style="border-left-color:#6c757d"><div class="kpi-label">Devolvidos</div><div class="kpi-value">${devolvidos}</div></div>
     </div>
     <div class="search-bar">
-      <input class="search-input" id="fr-fil-busca" placeholder="Buscar colaborador, placa, contrato..." oninput="renderFrotas()" value="${fBusca}">
+      <input class="search-input" id="fr-fil-busca" placeholder="Buscar colaborador, placa, locadora..." oninput="renderFrotas()" value="${fBusca}">
       <select id="fr-fil-status" onchange="renderFrotas()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:13px">
         <option value="">Todos os status</option>
         <option value="Ativo" ${fStatus==='Ativo'?'selected':''}>Ativo</option>
         <option value="Devolvido" ${fStatus==='Devolvido'?'selected':''}>Devolvido</option>
-        <option value="Transferido" ${fStatus==='Transferido'?'selected':''}>Transferido</option>
       </select>
       <button class="btn btn-primary" onclick="abrirModalFrota()">+ Nova Frota</button>
     </div>
     <div class="card">
-      <div class="card-header"><h3>${lista.length} veículo(s)</h3></div>
+      <div class="card-header"><h3>${lista.length} reserva(s)</h3></div>
       <div class="card-body">
         <table>
           <thead><tr>
-            <th>Colaborador</th><th>Placa</th><th>Veículo</th><th>Locadora</th>
-            <th>Contrato</th><th>Retirada</th><th>Devolução</th>
-            <th>KM</th><th>Gasto</th><th>Status</th><th>Ações</th>
+            <th>Colaborador Atual</th><th>Placa</th><th>Veículo</th><th>Locadora</th>
+            <th>Retirada Inicial</th><th>Status</th><th>Ações</th>
           </tr></thead>
           <tbody>
             ${lista.length===0
-              ? `<tr><td colspan="11"><div class="empty-state"><div class="icon">🚗</div><p>Nenhum veículo encontrado.</p></div></td></tr>`
-              : lista.map(f=>`<tr>
-                  <td><strong>${f.colaborador||'—'}</strong></td>
-                  <td><code style="background:#f0f2f5;padding:2px 6px;border-radius:4px;font-size:12px">${f.placa||'—'}</code></td>
+              ? `<tr><td colspan="7"><div class="empty-state"><div class="icon">🚗</div><p>Nenhum veículo encontrado.</p></div></td></tr>`
+              : lista.map(f=>`
+                <tr>
+                  <td><strong>${f.colaborador_atual||'—'}</strong><br>
+                    <small style="color:var(--text2);font-size:11px">${f.locadora||''}</small>
+                  </td>
+                  <td><code style="background:#f0f2f5;padding:2px 6px;border-radius:4px;font-size:12px">${f.placa_atual||'—'}</code></td>
                   <td>${f.veiculo||'—'}</td>
                   <td style="font-size:12px">${f.locadora||'—'}</td>
-                  <td style="font-size:12px">${f.contrato||'—'}</td>
-                  <td style="font-size:12px">${f.data_retirada?fmtDate(f.data_retirada):'—'}</td>
-                  <td style="font-size:12px">${f.data_devolucao?fmtDate(f.data_devolucao):'—'}</td>
-                  <td style="font-size:12px">${f.km_inicial&&f.km_final?((f.km_final-f.km_inicial).toLocaleString('pt-BR')+' km'):'—'}</td>
-                  <td style="font-size:12px">${f.gasto?'R$ '+Number(f.gasto).toLocaleString('pt-BR',{minimumFractionDigits:0}):'—'}</td>
+                  <td style="font-size:12px">${f.data_retirada_ini?fmtDate(f.data_retirada_ini):'—'}</td>
                   <td>${badgeFrota(f.status)}</td>
-                  <td>
+                  <td style="display:flex;gap:4px">
+                    <button class="btn btn-sm btn-outline" onclick="verHistoricoFrota('${f.id}')" title="Ver histórico">📋</button>
                     <button class="btn btn-sm btn-outline" onclick="editarFrota('${f.id}')">✏️</button>
                     <button class="btn btn-sm btn-danger" onclick="deletarFrota('${f.id}')">🗑</button>
+                  </td>
+                </tr>
+                <tr id="hist-${f.id}" style="display:none">
+                  <td colspan="7" style="padding:0;background:#f7f9fc">
+                    <div id="hist-body-${f.id}" style="padding:12px 20px"></div>
                   </td>
                 </tr>`).join('')}
           </tbody>
@@ -1374,34 +1372,67 @@ async function renderFrotas() {
     </div>`;
 }
 
+async function verHistoricoFrota(fid) {
+  const tr = document.getElementById(`hist-${fid}`);
+  const body = document.getElementById(`hist-body-${fid}`);
+  if (!tr || !body) return;
+  if (tr.style.display !== 'none') { tr.style.display='none'; return; }
+  tr.style.display='table-row';
+  body.innerHTML = '<em style="color:var(--text2);font-size:13px">Carregando histórico...</em>';
+  try {
+    const hist = await db(`frotas_historico?frota_id=eq.${fid}&order=data_retirada.asc`);
+    if (!hist.length) { body.innerHTML='<em style="color:var(--text2)">Sem movimentações registradas.</em>'; return; }
+    body.innerHTML = `
+      <strong style="font-size:12px;color:var(--azul);display:block;margin-bottom:8px">Histórico de movimentações</strong>
+      <table style="width:100%;font-size:12px;border-collapse:collapse">
+        <thead><tr style="background:#e8edf5">
+          <th style="padding:6px 10px;text-align:left">Colaborador</th>
+          <th style="padding:6px 10px;text-align:left">Placa</th>
+          <th style="padding:6px 10px;text-align:left">Retirada</th>
+          <th style="padding:6px 10px;text-align:left">Devolução</th>
+          <th style="padding:6px 10px;text-align:left">KM</th>
+          <th style="padding:6px 10px;text-align:left">Gasto</th>
+          <th style="padding:6px 10px;text-align:left">Status</th>
+          <th style="padding:6px 10px;text-align:left">Obs</th>
+        </tr></thead>
+        <tbody>
+          ${hist.map(h=>`<tr style="border-bottom:1px solid #e0e5ef">
+            <td style="padding:6px 10px"><strong>${h.colaborador||'—'}</strong></td>
+            <td style="padding:6px 10px;font-family:monospace">${h.placa||'—'}</td>
+            <td style="padding:6px 10px">${h.data_retirada?fmtDate(h.data_retirada):'—'}</td>
+            <td style="padding:6px 10px">${h.data_devolucao?fmtDate(h.data_devolucao):'—'}</td>
+            <td style="padding:6px 10px">${h.km_inicial&&h.km_final?(h.km_final-h.km_inicial).toLocaleString('pt-BR')+' km':'—'}</td>
+            <td style="padding:6px 10px">${h.gasto?'R$ '+Number(h.gasto).toLocaleString('pt-BR',{minimumFractionDigits:0}):'—'}</td>
+            <td style="padding:6px 10px"><span class="badge ${h.status==='Ativo'?'badge-verde':h.status==='Transferido'?'badge-amarelo':'badge-cinza'}">${h.status||'—'}</span></td>
+            <td style="padding:6px 10px;color:var(--text2);font-size:11px">${h.observacao||'—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) { body.innerHTML=`<em style="color:var(--vermelho)">Erro: ${e.message}</em>`; }
+}
+
 function abrirModalFrota(id=null) {
   document.getElementById('modal-frota-title').textContent = id ? 'Editar Frota' : 'Nova Frota';
-  ['frota-id','fr-reserva','fr-colaborador','fr-contrato','fr-placa','fr-local','fr-obs'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
-  ['fr-data-ret','fr-data-dev','fr-mensalidade','fr-km-ini','fr-km-fin','fr-gasto'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  ['frota-id','fr-reserva','fr-colaborador','fr-placa','fr-local','fr-obs'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  ['fr-data-ret','fr-mensalidade'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
   document.getElementById('fr-locadora').value='Localiza';
   document.getElementById('fr-veiculo').value='Kwid';
   document.getElementById('fr-status').value='Ativo';
-  // Preencher datalist de colaboradores
   const dl = document.getElementById('colab-list-fr');
-  if (dl) dl.innerHTML = colaboradores.filter(c=>c.situacao==='Ativo').map(c=>`<option value="${c.nome}">`).join('');
+  if (dl) dl.innerHTML = colaboradores.map(c=>`<option value="${c.nome}">`).join('');
   if (id) {
     const f = frotas.find(x=>x.id===id);
     if (f) {
       document.getElementById('frota-id').value=f.id;
       document.getElementById('fr-locadora').value=f.locadora||'Localiza';
       document.getElementById('fr-reserva').value=f.reserva||'';
-      document.getElementById('fr-colaborador').value=f.colaborador||'';
-      document.getElementById('fr-contrato').value=f.contrato||'';
-      document.getElementById('fr-placa').value=f.placa||'';
+      document.getElementById('fr-colaborador').value=f.colaborador_atual||'';
+      document.getElementById('fr-placa').value=f.placa_atual||'';
       document.getElementById('fr-veiculo').value=f.veiculo||'Kwid';
       document.getElementById('fr-status').value=f.status||'Ativo';
       document.getElementById('fr-mensalidade').value=f.mensalidade||'';
-      document.getElementById('fr-data-ret').value=f.data_retirada||'';
-      document.getElementById('fr-data-dev').value=f.data_devolucao||'';
+      document.getElementById('fr-data-ret').value=f.data_retirada_ini||'';
       document.getElementById('fr-local').value=f.local_retirada||'';
-      document.getElementById('fr-km-ini').value=f.km_inicial||'';
-      document.getElementById('fr-km-fin').value=f.km_final||'';
-      document.getElementById('fr-gasto').value=f.gasto||'';
       document.getElementById('fr-obs').value=f.observacao||'';
     }
   }
@@ -1414,28 +1445,18 @@ async function salvarFrota() {
   if (!colab) { toast('Colaborador é obrigatório','error'); return; }
   try {
     const payload = {
-      locadora:     document.getElementById('fr-locadora').value,
-      reserva:      document.getElementById('fr-reserva').value||null,
-      colaborador:  colab,
-      contrato:     document.getElementById('fr-contrato').value||null,
-      placa:        document.getElementById('fr-placa').value.toUpperCase()||null,
-      local_retirada: document.getElementById('fr-local').value||null,
-      veiculo:      document.getElementById('fr-veiculo').value,
-      mensalidade:  parseFloat(document.getElementById('fr-mensalidade').value)||null,
-      data_retirada:  document.getElementById('fr-data-ret').value||null,
-      data_devolucao: document.getElementById('fr-data-dev').value||null,
-      status:       document.getElementById('fr-status').value,
-      observacao:   document.getElementById('fr-obs').value||null,
-      km_inicial:   parseFloat(document.getElementById('fr-km-ini').value)||null,
-      km_final:     parseFloat(document.getElementById('fr-km-fin').value)||null,
-      gasto:        parseFloat(document.getElementById('fr-gasto').value)||null,
-      updated_at:   new Date().toISOString(),
+      locadora:        document.getElementById('fr-locadora').value,
+      reserva:         document.getElementById('fr-reserva').value||null,
+      colaborador_atual: colab,
+      placa_atual:     document.getElementById('fr-placa').value.toUpperCase()||null,
+      local_retirada:  document.getElementById('fr-local').value||null,
+      veiculo:         document.getElementById('fr-veiculo').value,
+      mensalidade:     parseFloat(document.getElementById('fr-mensalidade').value)||null,
+      data_retirada_ini: document.getElementById('fr-data-ret').value||null,
+      status:          document.getElementById('fr-status').value,
+      observacao:      document.getElementById('fr-obs').value||null,
+      updated_at:      new Date().toISOString(),
     };
-    // calcular consumo se tiver KM e gasto
-    if (payload.km_inicial && payload.km_final && payload.gasto) {
-      const km = payload.km_final - payload.km_inicial;
-      payload.consumo = km > 0 ? parseFloat((payload.gasto / km).toFixed(5)) : null;
-    }
     const fid = document.getElementById('frota-id').value;
     if (fid) {
       await db(`frotas?id=eq.${fid}`,'PATCH',payload);
@@ -1450,8 +1471,9 @@ async function salvarFrota() {
 }
 
 async function deletarFrota(id) {
-  if (!confirm('Excluir este registro de frota?')) return;
+  if (!confirm('Excluir esta reserva e todo o seu histórico?')) return;
   try {
+    await db(`frotas_historico?frota_id=eq.${id}`,'DELETE');
     await db(`frotas?id=eq.${id}`,'DELETE');
     toast('Excluído','success');
     await renderFrotas();
