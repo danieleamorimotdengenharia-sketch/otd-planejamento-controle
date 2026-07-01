@@ -214,6 +214,9 @@
     <div class="nav-item" onclick="showPage('recursos')">
       <span class="icon">📅</span> Recursos
     </div>
+    <div class="nav-item" onclick="showPage('frotas')">
+      <span class="icon">🚗</span> Frotas
+    </div>
   </div>
   <div class="sidebar-footer">OTD Engenharia © 2026</div>
 </nav>
@@ -487,6 +490,55 @@
   </div>
 </div>
 
+<!-- MODAL FROTA -->
+<div class="modal-bg" id="modal-frota">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <h3 id="modal-frota-title">Nova Frota</h3>
+      <button class="close-btn" onclick="closeModal('modal-frota')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="frota-id">
+      <div class="form-grid">
+        <div class="form-group"><label>Locadora</label>
+          <select id="fr-locadora">
+            <option>Localiza</option><option>Movida</option>
+            <option>Localiza (Pura Eng.)</option><option>Movida (Pura Eng.)</option><option>Outro</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Reserva</label><input id="fr-reserva" placeholder="Código da reserva"></div>
+        <div class="form-group"><label>Colaborador *</label><input id="fr-colaborador" list="colab-list-fr" placeholder="Nome do colaborador">
+          <datalist id="colab-list-fr"></datalist>
+        </div>
+        <div class="form-group"><label>Contrato</label><input id="fr-contrato" placeholder="Número do contrato"></div>
+        <div class="form-group"><label>Placa</label><input id="fr-placa" placeholder="AAA0A00" style="text-transform:uppercase"></div>
+        <div class="form-group"><label>Veículo</label>
+          <select id="fr-veiculo">
+            <option>Kwid</option><option>Mobi</option><option>Hyundai HB20</option><option>Onix</option><option>Outro</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Status</label>
+          <select id="fr-status">
+            <option>Ativo</option><option>Devolvido</option><option>Transferido</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Mensalidade (R$)</label><input type="number" id="fr-mensalidade" placeholder="0,00"></div>
+        <div class="form-group"><label>Data Retirada</label><input type="date" id="fr-data-ret"></div>
+        <div class="form-group"><label>Data Devolução</label><input type="date" id="fr-data-dev"></div>
+        <div class="form-group"><label>Local Retirada</label><input id="fr-local" placeholder="Cidade / UF"></div>
+        <div class="form-group"><label>KM Inicial</label><input type="number" id="fr-km-ini" placeholder="0"></div>
+        <div class="form-group"><label>KM Final</label><input type="number" id="fr-km-fin" placeholder="0"></div>
+        <div class="form-group"><label>Gasto (R$)</label><input type="number" id="fr-gasto" placeholder="0,00"></div>
+        <div class="form-group full"><label>Observação</label><textarea id="fr-obs" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-frota')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarFrota()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── CONFIG ──────────────────────────────────────────────────
 const SUPA_URL = 'https://uouyhhekfxfgaxhbnnjw.supabase.co';
@@ -524,6 +576,7 @@ function showPage(page) {
     producao:      ['Lançar Produção', 'Registro diário de produção'],
     produtividade: ['Produtividade', 'Visão semanal de performance'],
     recursos:      ['Recursos', 'Pessoas e carros por período'],
+    frotas:        ['Frotas', 'Controle de veículos e locações'],
   };
   const [t, s] = titles[page] || ['', ''];
   document.getElementById('page-title').textContent = t;
@@ -532,7 +585,7 @@ function showPage(page) {
 }
 
 function renderPage(page) {
-  const pages = { dashboard: renderDashboard, contratos: renderContratos, colaboradores: renderColaboradores, producao: renderProducao, produtividade: renderProdutividade, recursos: renderRecursos };
+  const pages = { dashboard: renderDashboard, contratos: renderContratos, colaboradores: renderColaboradores, producao: renderProducao, produtividade: renderProdutividade, recursos: renderRecursos, frotas: renderFrotas };
   if (pages[page]) pages[page]();
 }
 
@@ -1240,6 +1293,168 @@ async function salvarProducao() {
     toast('Produção lançada!', 'success');
     ['p-qtd','p-obs'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
     await loadAll();
+  } catch(e) { toast('Erro: '+e.message,'error'); }
+}
+
+// ── FROTAS ────────────────────────────────────────────────────
+let frotas = [];
+
+async function renderFrotas() {
+  try { frotas = await db('frotas?order=data_retirada.desc'); } catch(e) { toast('Erro: '+e.message,'error'); }
+
+  const fStatus = document.getElementById('fr-fil-status')?.value || '';
+  const fBusca  = (document.getElementById('fr-fil-busca')?.value||'').toLowerCase();
+
+  const ativos     = frotas.filter(f=>f.status==='Ativo').length;
+  const devolvidos = frotas.filter(f=>f.status==='Devolvido').length;
+  const transf     = frotas.filter(f=>f.status==='Transferido').length;
+
+  let lista = frotas;
+  if (fStatus) lista = lista.filter(f=>f.status===fStatus);
+  if (fBusca)  lista = lista.filter(f=>
+    (f.colaborador||'').toLowerCase().includes(fBusca) ||
+    (f.placa||'').toLowerCase().includes(fBusca) ||
+    (f.contrato||'').toLowerCase().includes(fBusca) ||
+    (f.veiculo||'').toLowerCase().includes(fBusca)
+  );
+
+  function badgeFrota(s) {
+    const m={'Ativo':'badge-verde','Devolvido':'badge-cinza','Transferido':'badge-amarelo'};
+    return `<span class="badge ${m[s]||'badge-cinza'}">${s||'—'}</span>`;
+  }
+
+  document.getElementById('content').innerHTML = `
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);max-width:640px;margin-bottom:20px">
+      <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value">${frotas.length}</div></div>
+      <div class="kpi-card verde"><div class="kpi-label">Ativos</div><div class="kpi-value">${ativos}</div></div>
+      <div class="kpi-card cinza" style="border-left-color:#6c757d"><div class="kpi-label">Devolvidos</div><div class="kpi-value">${devolvidos}</div></div>
+      <div class="kpi-card amarelo"><div class="kpi-label">Transferidos</div><div class="kpi-value">${transf}</div></div>
+    </div>
+    <div class="search-bar">
+      <input class="search-input" id="fr-fil-busca" placeholder="Buscar colaborador, placa, contrato..." oninput="renderFrotas()" value="${fBusca}">
+      <select id="fr-fil-status" onchange="renderFrotas()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:13px">
+        <option value="">Todos os status</option>
+        <option value="Ativo" ${fStatus==='Ativo'?'selected':''}>Ativo</option>
+        <option value="Devolvido" ${fStatus==='Devolvido'?'selected':''}>Devolvido</option>
+        <option value="Transferido" ${fStatus==='Transferido'?'selected':''}>Transferido</option>
+      </select>
+      <button class="btn btn-primary" onclick="abrirModalFrota()">+ Nova Frota</button>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>${lista.length} veículo(s)</h3></div>
+      <div class="card-body">
+        <table>
+          <thead><tr>
+            <th>Colaborador</th><th>Placa</th><th>Veículo</th><th>Locadora</th>
+            <th>Contrato</th><th>Retirada</th><th>Devolução</th>
+            <th>KM</th><th>Gasto</th><th>Status</th><th>Ações</th>
+          </tr></thead>
+          <tbody>
+            ${lista.length===0
+              ? `<tr><td colspan="11"><div class="empty-state"><div class="icon">🚗</div><p>Nenhum veículo encontrado.</p></div></td></tr>`
+              : lista.map(f=>`<tr>
+                  <td><strong>${f.colaborador||'—'}</strong></td>
+                  <td><code style="background:#f0f2f5;padding:2px 6px;border-radius:4px;font-size:12px">${f.placa||'—'}</code></td>
+                  <td>${f.veiculo||'—'}</td>
+                  <td style="font-size:12px">${f.locadora||'—'}</td>
+                  <td style="font-size:12px">${f.contrato||'—'}</td>
+                  <td style="font-size:12px">${f.data_retirada?fmtDate(f.data_retirada):'—'}</td>
+                  <td style="font-size:12px">${f.data_devolucao?fmtDate(f.data_devolucao):'—'}</td>
+                  <td style="font-size:12px">${f.km_inicial&&f.km_final?((f.km_final-f.km_inicial).toLocaleString('pt-BR')+' km'):'—'}</td>
+                  <td style="font-size:12px">${f.gasto?'R$ '+Number(f.gasto).toLocaleString('pt-BR',{minimumFractionDigits:0}):'—'}</td>
+                  <td>${badgeFrota(f.status)}</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline" onclick="editarFrota('${f.id}')">✏️</button>
+                    <button class="btn btn-sm btn-danger" onclick="deletarFrota('${f.id}')">🗑</button>
+                  </td>
+                </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function abrirModalFrota(id=null) {
+  document.getElementById('modal-frota-title').textContent = id ? 'Editar Frota' : 'Nova Frota';
+  ['frota-id','fr-reserva','fr-colaborador','fr-contrato','fr-placa','fr-local','fr-obs'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  ['fr-data-ret','fr-data-dev','fr-mensalidade','fr-km-ini','fr-km-fin','fr-gasto'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  document.getElementById('fr-locadora').value='Localiza';
+  document.getElementById('fr-veiculo').value='Kwid';
+  document.getElementById('fr-status').value='Ativo';
+  // Preencher datalist de colaboradores
+  const dl = document.getElementById('colab-list-fr');
+  if (dl) dl.innerHTML = colaboradores.filter(c=>c.situacao==='Ativo').map(c=>`<option value="${c.nome}">`).join('');
+  if (id) {
+    const f = frotas.find(x=>x.id===id);
+    if (f) {
+      document.getElementById('frota-id').value=f.id;
+      document.getElementById('fr-locadora').value=f.locadora||'Localiza';
+      document.getElementById('fr-reserva').value=f.reserva||'';
+      document.getElementById('fr-colaborador').value=f.colaborador||'';
+      document.getElementById('fr-contrato').value=f.contrato||'';
+      document.getElementById('fr-placa').value=f.placa||'';
+      document.getElementById('fr-veiculo').value=f.veiculo||'Kwid';
+      document.getElementById('fr-status').value=f.status||'Ativo';
+      document.getElementById('fr-mensalidade').value=f.mensalidade||'';
+      document.getElementById('fr-data-ret').value=f.data_retirada||'';
+      document.getElementById('fr-data-dev').value=f.data_devolucao||'';
+      document.getElementById('fr-local').value=f.local_retirada||'';
+      document.getElementById('fr-km-ini').value=f.km_inicial||'';
+      document.getElementById('fr-km-fin').value=f.km_final||'';
+      document.getElementById('fr-gasto').value=f.gasto||'';
+      document.getElementById('fr-obs').value=f.observacao||'';
+    }
+  }
+  openModal('modal-frota');
+}
+function editarFrota(id){ abrirModalFrota(id); }
+
+async function salvarFrota() {
+  const colab = document.getElementById('fr-colaborador').value.trim();
+  if (!colab) { toast('Colaborador é obrigatório','error'); return; }
+  try {
+    const payload = {
+      locadora:     document.getElementById('fr-locadora').value,
+      reserva:      document.getElementById('fr-reserva').value||null,
+      colaborador:  colab,
+      contrato:     document.getElementById('fr-contrato').value||null,
+      placa:        document.getElementById('fr-placa').value.toUpperCase()||null,
+      local_retirada: document.getElementById('fr-local').value||null,
+      veiculo:      document.getElementById('fr-veiculo').value,
+      mensalidade:  parseFloat(document.getElementById('fr-mensalidade').value)||null,
+      data_retirada:  document.getElementById('fr-data-ret').value||null,
+      data_devolucao: document.getElementById('fr-data-dev').value||null,
+      status:       document.getElementById('fr-status').value,
+      observacao:   document.getElementById('fr-obs').value||null,
+      km_inicial:   parseFloat(document.getElementById('fr-km-ini').value)||null,
+      km_final:     parseFloat(document.getElementById('fr-km-fin').value)||null,
+      gasto:        parseFloat(document.getElementById('fr-gasto').value)||null,
+      updated_at:   new Date().toISOString(),
+    };
+    // calcular consumo se tiver KM e gasto
+    if (payload.km_inicial && payload.km_final && payload.gasto) {
+      const km = payload.km_final - payload.km_inicial;
+      payload.consumo = km > 0 ? parseFloat((payload.gasto / km).toFixed(5)) : null;
+    }
+    const fid = document.getElementById('frota-id').value;
+    if (fid) {
+      await db(`frotas?id=eq.${fid}`,'PATCH',payload);
+      toast('Frota atualizada!','success');
+    } else {
+      await db('frotas','POST',payload);
+      toast('Frota cadastrada!','success');
+    }
+    closeModal('modal-frota');
+    await renderFrotas();
+  } catch(e) { toast('Erro: '+e.message,'error'); }
+}
+
+async function deletarFrota(id) {
+  if (!confirm('Excluir este registro de frota?')) return;
+  try {
+    await db(`frotas?id=eq.${id}`,'DELETE');
+    toast('Excluído','success');
+    await renderFrotas();
   } catch(e) { toast('Erro: '+e.message,'error'); }
 }
 
