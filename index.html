@@ -208,6 +208,9 @@
     <div class="nav-item" onclick="showPage('producao')">
       <span class="icon">⚡</span> Lançar Produção
     </div>
+    <div class="nav-item" onclick="showPage('produtividade')">
+      <span class="icon">📈</span> Produtividade
+    </div>
     <div class="nav-item" onclick="showPage('recursos')">
       <span class="icon">📅</span> Recursos
     </div>
@@ -515,11 +518,12 @@ function showPage(page) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   event.currentTarget.classList.add('active');
   const titles = {
-    dashboard: ['Dashboard', 'Visão geral do planejamento'],
-    contratos: ['Contratos', 'Gerencie contratos e disciplinas'],
+    dashboard:     ['Dashboard', 'Visão geral do planejamento'],
+    contratos:     ['Contratos', 'Gerencie contratos e disciplinas'],
     colaboradores: ['Colaboradores', 'Equipe de campo'],
-    producao: ['Lançar Produção', 'Registro diário de produção'],
-    recursos: ['Recursos', 'Pessoas e carros por período'],
+    producao:      ['Lançar Produção', 'Registro diário de produção'],
+    produtividade: ['Produtividade', 'Visão semanal de performance'],
+    recursos:      ['Recursos', 'Pessoas e carros por período'],
   };
   const [t, s] = titles[page] || ['', ''];
   document.getElementById('page-title').textContent = t;
@@ -528,7 +532,7 @@ function showPage(page) {
 }
 
 function renderPage(page) {
-  const pages = { dashboard: renderDashboard, contratos: renderContratos, colaboradores: renderColaboradores, producao: renderProducao, recursos: renderRecursos };
+  const pages = { dashboard: renderDashboard, contratos: renderContratos, colaboradores: renderColaboradores, producao: renderProducao, produtividade: renderProdutividade, recursos: renderRecursos };
   if (pages[page]) pages[page]();
 }
 
@@ -758,6 +762,186 @@ function renderProducao() {
         </div>
       </div>
     </div>`;
+}
+
+}
+
+// ── PRODUTIVIDADE ─────────────────────────────────────────────
+function getSemanas() {
+  const semanas = [];
+  const hoje = new Date();
+  const diaSem = hoje.getDay() || 7;
+  const seg = new Date(hoje); seg.setDate(hoje.getDate() - diaSem + 1);
+  for (let i = 0; i < 52; i++) {
+    const s = new Date(seg); s.setDate(seg.getDate() - i*7);
+    const f = new Date(s); f.setDate(s.getDate() + 4);
+    semanas.push({ seg:s, sex:f, label: fmtDateObj(s)+' → '+fmtDateObj(f), key: isoDate(s) });
+  }
+  return semanas;
+}
+function fmtDateObj(d) { return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}); }
+function isoDate(d) { return d.toISOString().split('T')[0]; }
+function addDays(d,n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+
+async function renderProdutividade() {
+  const semanas = getSemanas();
+  const semSel = document.getElementById('prod-semana')?.value || semanas[0].key;
+  const sem = semanas.find(s=>s.key===semSel) || semanas[0];
+  const diasSem = [0,1,2,3,4].map(i=>isoDate(addDays(sem.seg,i)));
+  const dtIni = isoDate(sem.seg), dtFim = isoDate(sem.sex);
+
+  let prod = [];
+  try {
+    prod = await db(`producao?data=gte.${dtIni}&data=lte.${dtFim}&select=*,disciplinas(nome,unidade),contratos(nome,clientes(nome,sigla))`);
+  } catch(e) { toast('Erro: '+e.message,'error'); }
+
+  const fConc  = document.getElementById('prod-conc')?.value  || '';
+  const fDisc  = document.getElementById('prod-disc')?.value  || '';
+  const fColab = (document.getElementById('prod-colab')?.value||'').toLowerCase();
+
+  const concs = [...new Set(prod.map(r=>r.contratos?.nome).filter(Boolean))].sort();
+  const discs = [...new Set(prod.map(r=>r.disciplinas?.nome).filter(Boolean))].sort();
+
+  let rows = prod;
+  if (fConc)  rows = rows.filter(r=>r.contratos?.nome===fConc);
+  if (fDisc)  rows = rows.filter(r=>r.disciplinas?.nome===fDisc);
+  if (fColab) rows = rows.filter(r=>(r.colaborador||'').toLowerCase().includes(fColab));
+
+  // Agrupar por (contrato, colaborador, disciplina)
+  const grupos = {};
+  for (const r of rows) {
+    const key = `${r.contratos?.nome}|||${r.colaborador||'(sem colab)'}|||${r.disciplinas?.nome}`;
+    if (!grupos[key]) grupos[key] = { cNome:r.contratos?.nome||'—', colab:r.colaborador||'(sem colab)', disc:r.disciplinas?.nome||'—', unidade:r.disciplinas?.unidade||'Und', dias:{}, total:0 };
+    grupos[key].dias[r.data] = (grupos[key].dias[r.data]||0) + Number(r.quantidade||0);
+    grupos[key].total += Number(r.quantidade||0);
+  }
+
+  const linhas = Object.values(grupos);
+  const totalProd = linhas.reduce((s,l)=>s+l.total,0);
+  const colabsAtivos = [...new Set(rows.map(r=>r.colaborador).filter(Boolean))].length;
+  const diasComProd = [...new Set(rows.map(r=>r.data))].length || 1;
+
+  const porContrato = {};
+  for (const l of linhas) {
+    if (!porContrato[l.cNome]) porContrato[l.cNome] = [];
+    porContrato[l.cNome].push(l);
+  }
+
+  document.getElementById('content').innerHTML = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end">
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Semana</label>
+        <select id="prod-semana" onchange="renderProdutividade()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;min-width:185px">
+          ${semanas.map(s=>`<option value="${s.key}" ${s.key===semSel?'selected':''}>${s.label}</option>`).join('')}
+        </select></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Contrato</label>
+        <select id="prod-conc" onchange="renderProdutividade()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;min-width:180px">
+          <option value="">Todos</option>${concs.map(c=>`<option value="${c}" ${c===fConc?'selected':''}>${c}</option>`).join('')}
+        </select></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Disciplina</label>
+        <select id="prod-disc" onchange="renderProdutividade()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;min-width:160px">
+          <option value="">Todas</option>${discs.map(d=>`<option value="${d}" ${d===fDisc?'selected':''}>${d}</option>`).join('')}
+        </select></div>
+      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Colaborador</label>
+        <input id="prod-colab" placeholder="nome..." value="${fColab}" oninput="renderProdutividade()"
+          style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;width:130px"></div>
+      <button class="btn btn-success btn-sm" style="margin-top:18px" onclick="exportarProdutividade('${semSel}')">⬇ Exportar .xlsx</button>
+    </div>
+
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+      <div class="kpi-card azul"><div class="kpi-label">Produção Total</div><div class="kpi-value" style="font-size:22px">${totalProd.toLocaleString('pt-BR')}</div><div style="font-size:11px;color:var(--text2)">unidades na semana</div></div>
+      <div class="kpi-card verde"><div class="kpi-label">Colabs Ativos</div><div class="kpi-value" style="font-size:22px">${colabsAtivos}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Média/Dia</div><div class="kpi-value" style="font-size:22px">${diasComProd>0?(totalProd/diasComProd).toFixed(0):0}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Dias com Prod.</div><div class="kpi-value" style="font-size:22px">${diasComProd}</div></div>
+    </div>
+
+    ${Object.keys(porContrato).length===0
+      ? `<div class="empty-state"><div class="icon">📈</div><p>Nenhuma produção lançada nesta semana.<br>Use "Lançar Produção" para registrar dados.</p></div>`
+      : Object.entries(porContrato).sort(([a],[b])=>a.localeCompare(b)).map(([cNome,ls])=>{
+          const tot = ls.reduce((s,l)=>s+l.total,0);
+          return `<div class="card" style="margin-bottom:14px">
+            <div class="card-header" style="background:#f7f9fc">
+              <h3>📋 ${cNome}</h3>
+              <span style="font-size:12px;color:var(--text2)">${ls.length} linha(s) · Total: <strong>${tot.toLocaleString('pt-BR')}</strong> und</span>
+            </div>
+            <div class="card-body"><table>
+              <thead><tr><th>Colaborador</th><th>Disciplina</th>
+                <th style="text-align:center">SEG</th><th style="text-align:center">TER</th>
+                <th style="text-align:center">QUA</th><th style="text-align:center">QUI</th>
+                <th style="text-align:center">SEX</th><th style="text-align:center">TOTAL</th>
+                <th style="text-align:center">MÉDIA/DIA</th>
+              </tr></thead>
+              <tbody>${ls.sort((a,b)=>a.colab.localeCompare(b.colab)).map(l=>{
+                const dc = Object.values(l.dias).filter(v=>v>0).length||1;
+                return `<tr>
+                  <td><strong>${l.colab}</strong></td>
+                  <td style="font-size:12px;color:var(--text2)">${l.disc}</td>
+                  ${diasSem.map(d=>`<td style="text-align:center;font-size:13px">${l.dias[d]>0?l.dias[d].toLocaleString('pt-BR'):'<span style="color:#ccc">—</span>'}</td>`).join('')}
+                  <td style="text-align:center;font-weight:700;color:var(--azul)">${l.total.toLocaleString('pt-BR')} <span style="font-size:10px;color:var(--text2)">${l.unidade}</span></td>
+                  <td style="text-align:center;color:var(--verde);font-weight:600">${(l.total/dc).toFixed(1)}</td>
+                </tr>`;
+              }).join('')}</tbody>
+            </table></div>
+          </div>`;
+        }).join('')
+    }`;
+}
+
+async function exportarProdutividade(semKey) {
+  const semanas = getSemanas();
+  const sem = semanas.find(s=>s.key===semKey)||semanas[0];
+  const dtIni = isoDate(sem.seg), dtFim = isoDate(sem.sex);
+  const diasSem = [0,1,2,3,4].map(i=>isoDate(addDays(sem.seg,i)));
+  const DIAS_HDR = ['Seg','Ter','Qua','Qui','Sex'];
+
+  try {
+    const prod = await db(`producao?data=gte.${dtIni}&data=lte.${dtFim}&select=*,disciplinas(nome,unidade),contratos(nome,clientes(nome))`);
+
+    const grupos = {};
+    for (const r of prod) {
+      const key = `${r.contratos?.nome}|||${r.colaborador||''}|||${r.disciplinas?.nome}`;
+      if (!grupos[key]) grupos[key] = { conc:r.contratos?.nome||'', colab:r.colaborador||'', disc:r.disciplinas?.nome||'', unidade:r.disciplinas?.unidade||'Und', dias:{}, total:0 };
+      grupos[key].dias[r.data] = (grupos[key].dias[r.data]||0)+Number(r.quantidade||0);
+      grupos[key].total += Number(r.quantidade||0);
+    }
+    const linhas = Object.values(grupos).sort((a,b)=>a.conc.localeCompare(b.conc)||a.colab.localeCompare(b.colab));
+    const totalGeral = linhas.reduce((s,l)=>s+l.total,0);
+
+    // Por contrato
+    const porConc = {};
+    for (const l of linhas) {
+      if (!porConc[l.conc]) porConc[l.conc]={colabs:new Set(),total:0};
+      porConc[l.conc].colabs.add(l.colab); porConc[l.conc].total+=l.total;
+    }
+    // Por disciplina
+    const porDisc = {};
+    for (const l of linhas) {
+      if (!porDisc[l.disc]) porDisc[l.disc]={colabs:new Set(),total:0,un:l.unidade};
+      porDisc[l.disc].colabs.add(l.colab); porDisc[l.disc].total+=l.total;
+    }
+
+    // CSV com separador ; e BOM UTF-8
+    let csv = '\uFEFF';
+    csv += `PRODUTIVIDADE — Semana ${fmtDateObj(sem.seg)} a ${fmtDateObj(sem.sex)}\n`;
+    csv += `${linhas.length} linha(s) | Total geral: ${totalGeral} unidades\n\n`;
+    csv += ['Contrato','Colaborador','Disciplina','Unidade',...DIAS_HDR,'Total','Média/dia'].join(';')+'\n';
+    for (const l of linhas) {
+      const dc=Object.values(l.dias).filter(v=>v>0).length||1;
+      csv += [l.conc,l.colab,l.disc,l.unidade,...diasSem.map(d=>l.dias[d]||0),l.total,(l.total/dc).toFixed(1)].join(';')+'\n';
+    }
+    csv += '\n\nRANKING POR CONTRATO\nContrato;Colabs;Total;Média/dia\n';
+    for (const [c,v] of Object.entries(porConc).sort(([,a],[,b])=>b.total-a.total))
+      csv += `${c};${v.colabs.size};${v.total};${(v.total/5).toFixed(1)}\n`;
+    csv += '\n\nRANKING POR DISCIPLINA\nDisciplina;Unidade;Colabs;Total;Média/dia\n';
+    for (const [d,v] of Object.entries(porDisc).sort(([,a],[,b])=>b.total-a.total))
+      csv += `${d};${v.un};${v.colabs.size};${v.total};${(v.total/5).toFixed(1)}\n`;
+
+    const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Produtividade_${dtIni}.csv`;
+    a.click();
+    toast('Exportado!','success');
+  } catch(e) { toast('Erro: '+e.message,'error'); }
 }
 
 // ── RECURSOS ──────────────────────────────────────────────────
