@@ -4,1536 +4,1108 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OTD Engenharia — Planejamento e Controle</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root {
-    --azul:    #1F3864;
-    --azul2:   #2d4f8e;
-    --verde:   #28a745;
-    --laranja: #FF8C00;
-    --vermelho:#dc3545;
-    --amarelo: #ffc107;
-    --cinza:   #6c757d;
-    --bg:      #f0f2f5;
-    --card:    #ffffff;
-    --border:  #dde3ec;
-    --text:    #212529;
-    --text2:   #5a6478;
-    --sidebar: 220px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
-
-  /* SIDEBAR */
-  #sidebar {
-    width: var(--sidebar); background: var(--azul); color: #fff;
-    display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100;
-  }
-  .sidebar-logo {
-    padding: 20px 16px 16px; border-bottom: 1px solid rgba(255,255,255,0.15);
-  }
-  .sidebar-logo .logo-text { font-size: 11px; opacity: .7; letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
-  .sidebar-logo .logo-title { font-size: 15px; font-weight: 700; line-height: 1.3; }
-  .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
-  .nav-section { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; opacity: .5; padding: 16px 16px 4px; }
-  .nav-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 16px; cursor: pointer; font-size: 13.5px;
-    color: rgba(255,255,255,.8); border-left: 3px solid transparent;
-    transition: all .15s;
-  }
-  .nav-item:hover { background: rgba(255,255,255,.08); color: #fff; }
-  .nav-item.active { background: rgba(255,255,255,.12); color: #fff; border-left-color: #fff; font-weight: 600; }
-  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
-  .sidebar-footer { padding: 14px 16px; border-top: 1px solid rgba(255,255,255,.1); font-size: 11px; opacity: .5; }
-
-  /* MAIN */
-  #main { margin-left: var(--sidebar); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-  #topbar {
-    background: var(--card); border-bottom: 1px solid var(--border);
-    padding: 0 28px; height: 56px; display: flex; align-items: center;
-    justify-content: space-between; position: sticky; top: 0; z-index: 50;
-  }
-  .topbar-title { font-size: 16px; font-weight: 700; color: var(--azul); }
-  .topbar-sub   { font-size: 12px; color: var(--text2); }
-  .topbar-right { display: flex; gap: 10px; align-items: center; }
-  #content { padding: 24px 28px; flex: 1; }
-
-  /* CARDS KPI */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
-  .kpi-card {
-    background: var(--card); border-radius: 10px; padding: 18px 20px;
-    border: 1px solid var(--border); border-left: 4px solid var(--azul);
-  }
-  .kpi-card.verde  { border-left-color: var(--verde); }
-  .kpi-card.laranja{ border-left-color: var(--laranja); }
-  .kpi-card.vermelho{ border-left-color: var(--vermelho); }
-  .kpi-card.amarelo{ border-left-color: var(--amarelo); }
-  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--text2); margin-bottom: 6px; }
-  .kpi-value { font-size: 28px; font-weight: 700; color: var(--azul); line-height: 1; }
-  .kpi-card.verde   .kpi-value { color: var(--verde); }
-  .kpi-card.laranja .kpi-value { color: var(--laranja); }
-  .kpi-card.vermelho.kpi-value { color: var(--vermelho); }
-
-  /* BOTÕES */
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
-  .btn-primary { background: var(--azul); color: #fff; }
-  .btn-primary:hover { background: var(--azul2); }
-  .btn-success { background: var(--verde); color: #fff; }
-  .btn-success:hover { filter: brightness(1.1); }
-  .btn-danger  { background: var(--vermelho); color: #fff; }
-  .btn-danger:hover  { filter: brightness(1.1); }
-  .btn-outline { background: transparent; color: var(--azul); border: 1.5px solid var(--azul); }
-  .btn-outline:hover { background: var(--azul); color: #fff; }
-  .btn-sm { padding: 5px 10px; font-size: 12px; }
-
-  /* TABELA */
-  .card { background: var(--card); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; overflow: hidden; }
-  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .card-header h3 { font-size: 14px; font-weight: 700; color: var(--azul); }
-  .card-body { padding: 0; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: #f7f9fc; padding: 10px 14px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--text2); border-bottom: 1px solid var(--border); white-space: nowrap; }
-  td { padding: 10px 14px; border-bottom: 1px solid #f0f2f5; vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #f7f9fc; }
-
-  /* BADGES */
-  .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge-verde   { background: #d4edda; color: #155724; }
-  .badge-azul    { background: #d0e8ff; color: #1a4a8a; }
-  .badge-laranja { background: #ffe8cc; color: #7a4000; }
-  .badge-vermelho{ background: #f8d7da; color: #721c24; }
-  .badge-cinza   { background: #e2e3e5; color: #383d41; }
-  .badge-amarelo { background: #fff3cd; color: #856404; }
-
-  /* PROGRESS */
-  .progress { height: 6px; background: #e9ecef; border-radius: 4px; overflow: hidden; min-width: 80px; }
-  .progress-bar { height: 100%; border-radius: 4px; transition: width .3s; }
-
-  /* MODAL */
-  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1000; align-items: center; justify-content: center; }
-  .modal-bg.open { display: flex; }
-  .modal { background: #fff; border-radius: 12px; width: 90%; max-width: 620px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
-  .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  .modal-header h3 { font-size: 16px; font-weight: 700; color: var(--azul); }
-  .modal-body { padding: 20px 24px; }
-  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
-  .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text2); line-height: 1; }
-  .close-btn:hover { color: var(--vermelho); }
-
-  /* FORM */
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .form-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
-  .form-group { display: flex; flex-direction: column; gap: 5px; }
-  .form-group.full { grid-column: 1 / -1; }
-  label { font-size: 12px; font-weight: 600; color: var(--text2); }
-  input, select, textarea {
-    padding: 8px 11px; border: 1.5px solid var(--border); border-radius: 7px;
-    font-size: 13px; color: var(--text); background: #fff; width: 100%;
-    transition: border-color .15s;
-  }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--azul); }
-  textarea { resize: vertical; min-height: 60px; }
-
-  /* DISC LIST dentro do contrato */
-  .disc-list { padding: 0 20px 16px; }
-  .disc-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 14px; background: #f7f9fc; border-radius: 8px;
-    border: 1px solid var(--border); margin-bottom: 8px;
-  }
-  .disc-nome { font-weight: 600; font-size: 13px; flex: 1; }
-  .disc-info { font-size: 12px; color: var(--text2); }
-
-  /* TABS internas */
-  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
-  .tab-btn { padding: 10px 18px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; }
-  .tab-btn.active { color: var(--azul); border-bottom-color: var(--azul); }
-  .tab-btn:hover:not(.active) { color: var(--azul); }
-
-  /* SEARCH */
-  .search-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
-  .search-input { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 13px; min-width: 240px; }
-  .search-input:focus { outline: none; border-color: var(--azul); }
-
-  /* LOADING */
-  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-row td { text-align: center; color: var(--text2); padding: 30px; }
-  .empty-state { text-align: center; padding: 48px 20px; color: var(--text2); }
-  .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
-  .empty-state p { font-size: 14px; }
-
-  /* TOAST */
-  #toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-  .toast-item { padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.2); animation: slideIn .2s ease; }
-  .toast-item.success { background: var(--verde); }
-  .toast-item.error   { background: var(--vermelho); }
-  .toast-item.info    { background: var(--azul); }
-  @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-  /* DISCIPLINA MODAL — lista acumulada */
-  #disc-added-list { margin-top: 14px; }
-  .disc-added-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f0f6ff; border-radius: 6px; margin-bottom: 6px; font-size: 13px; }
-  .disc-added-item .rm { cursor: pointer; color: var(--vermelho); font-weight: 700; }
+:root{--azul:#1F3864;--azul2:#2d4f8e;--verde:#28a745;--laranja:#FF8C00;--vermelho:#dc3545;--amarelo:#ffc107;--cinza:#6c757d;--bg:#f0f2f5;--card:#fff;--border:#dde3ec;--text:#212529;--text2:#5a6478;--sb:220px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+#sidebar{width:var(--sb);background:var(--azul);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.15)}
+.sb-logo .lt{font-size:15px;font-weight:700}.sb-logo .ls{font-size:10px;opacity:.6;letter-spacing:1px;text-transform:uppercase}
+.sb-sec{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;opacity:.45;padding:14px 16px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.8);border-left:3px solid transparent;transition:all .15s}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.13);color:#fff;border-left-color:#fff;font-weight:600}
+.nav-item .ic{font-size:15px;width:20px;text-align:center}
+.sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;opacity:.45}
+#main{margin-left:var(--sb);flex:1;display:flex;flex-direction:column;min-height:100vh}
+#topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tb-title{font-size:15px;font-weight:700;color:var(--azul)}.tb-sub{font-size:11px;color:var(--text2)}
+#content{padding:20px 24px;flex:1}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:20px}
+.kpi-card{background:var(--card);border-radius:9px;padding:16px 18px;border:1px solid var(--border);border-left:4px solid var(--azul)}
+.kpi-card.g{border-left-color:var(--verde)}.kpi-card.r{border-left-color:var(--vermelho)}.kpi-card.y{border-left-color:var(--amarelo)}.kpi-card.o{border-left-color:var(--laranja)}
+.kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text2);margin-bottom:5px}
+.kpi-val{font-size:26px;font-weight:700;color:var(--azul)}
+.kpi-card.g .kpi-val{color:var(--verde)}.kpi-card.r .kpi-val{color:var(--vermelho)}.kpi-card.y .kpi-val{color:#856404}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-p{background:var(--azul);color:#fff}.btn-p:hover{background:var(--azul2)}
+.btn-g{background:var(--verde);color:#fff}.btn-g:hover{filter:brightness(1.1)}
+.btn-d{background:var(--vermelho);color:#fff}.btn-d:hover{filter:brightness(1.1)}
+.btn-o{background:transparent;color:var(--azul);border:1.5px solid var(--azul)}.btn-o:hover{background:var(--azul);color:#fff}
+.btn-sm{padding:4px 9px;font-size:12px}
+.card{background:var(--card);border-radius:9px;border:1px solid var(--border);margin-bottom:18px;overflow:hidden}
+.card-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-hdr h3{font-size:13px;font-weight:700;color:var(--azul)}
+.card-body{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f7f9fc;padding:9px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{background:#eef1f7}
+th .sort-ico{opacity:.4;margin-left:4px;font-size:10px}
+th.sorted .sort-ico{opacity:1}
+td{padding:9px 13px;border-bottom:1px solid #f0f2f5;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f7f9fc}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.bg{background:#d4edda;color:#155724}.bb{background:#d0e8ff;color:#1a4a8a}.br{background:#f8d7da;color:#721c24}
+.by{background:#fff3cd;color:#856404}.bc{background:#e2e3e5;color:#383d41}.bo{background:#ffe8cc;color:#7a4000}
+.progress{height:5px;background:#e9ecef;border-radius:3px;min-width:70px}
+.progress-bar{height:100%;border-radius:3px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:11px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-hdr{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-hdr h3{font-size:15px;font-weight:700;color:var(--azul)}
+.modal-body{padding:18px 22px}
+.modal-ftr{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+.cls-btn{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2)}.cls-btn:hover{color:var(--vermelho)}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg.c3{grid-template-columns:1fr 1fr 1fr}
+.fgrp{display:flex;flex-direction:column;gap:4px}
+.fgrp.full{grid-column:1/-1}
+label{font-size:11px;font-weight:600;color:var(--text2)}
+input,select,textarea{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;color:var(--text);background:#fff;width:100%;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--azul)}
+textarea{resize:vertical;min-height:55px}
+.sbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.sinput{padding:7px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;min-width:220px}
+.sinput:focus{outline:none;border-color:var(--azul)}
+.sselect{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;color:var(--text);background:#fff}
+#toast{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:7px}
+.toast-item{padding:11px 16px;border-radius:8px;font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:slideIn .2s ease}
+.ts{background:var(--verde)}.te{background:var(--vermelho)}.ti{background:var(--azul)}
+@keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+.empty-st{text-align:center;padding:44px 20px;color:var(--text2)}
+.empty-st .ico{font-size:34px;margin-bottom:11px}
+.disc-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#f7f9fc;border-radius:7px;border:1px solid var(--border);margin-bottom:7px}
+#disc-added-list .dai{display:flex;justify-content:space-between;align-items:center;padding:7px 11px;background:#f0f6ff;border-radius:6px;margin-bottom:5px;font-size:13px}
 </style>
 </head>
 <body>
-
-<!-- SIDEBAR -->
 <nav id="sidebar">
-  <div class="sidebar-logo">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="background:#fff;color:var(--azul);font-weight:900;font-size:14px;padding:4px 7px;border-radius:5px">OTD</div>
-      <div>
-        <div class="logo-title">Planejamento</div>
-        <div class="logo-text">e Controle</div>
-      </div>
+  <div class="sb-logo">
+    <div style="display:flex;align-items:center;gap:9px">
+      <div style="background:#fff;color:var(--azul);font-weight:900;font-size:13px;padding:4px 7px;border-radius:5px">OTD</div>
+      <div><div class="lt">Planejamento</div><div class="ls">e Controle</div></div>
     </div>
   </div>
-  <div class="sidebar-nav">
-    <div class="nav-section">Visão Geral</div>
-    <div class="nav-item active" onclick="showPage('dashboard')">
-      <span class="icon">📊</span> Dashboard
-    </div>
-    <div class="nav-section">Cadastros</div>
-    <div class="nav-item" onclick="showPage('contratos')">
-      <span class="icon">📋</span> Contratos
-    </div>
-    <div class="nav-item" onclick="showPage('colaboradores')">
-      <span class="icon">👷</span> Colaboradores
-    </div>
-    <div class="nav-section">Operação</div>
-    <div class="nav-item" onclick="showPage('producao')">
-      <span class="icon">⚡</span> Lançar Produção
-    </div>
-    <div class="nav-item" onclick="showPage('produtividade')">
-      <span class="icon">📈</span> Produtividade
-    </div>
-    <div class="nav-item" onclick="showPage('recursos')">
-      <span class="icon">📅</span> Recursos
-    </div>
-    <div class="nav-item" onclick="showPage('frotas')">
-      <span class="icon">🚗</span> Frotas
-    </div>
-  </div>
-  <div class="sidebar-footer">OTD Engenharia © 2026</div>
+  <div class="sb-sec">Visão Geral</div>
+  <div class="nav-item active" onclick="nav('dashboard',this)"><span class="ic">📊</span>Dashboard</div>
+  <div class="sb-sec">Cadastros</div>
+  <div class="nav-item" onclick="nav('contratos',this)"><span class="ic">📋</span>Contratos</div>
+  <div class="nav-item" onclick="nav('colaboradores',this)"><span class="ic">👷</span>Colaboradores</div>
+  <div class="sb-sec">Operação</div>
+  <div class="nav-item" onclick="nav('maodeobra',this)"><span class="ic">🏗️</span>Mão de Obra</div>
+  <div class="nav-item" onclick="nav('producao',this)"><span class="ic">⚡</span>Lançar Produção</div>
+  <div class="nav-item" onclick="nav('producaootd',this)"><span class="ic">📦</span>Produção OTD</div>
+  <div class="nav-item" onclick="nav('produtividade',this)"><span class="ic">📈</span>Produtividade</div>
+  <div class="nav-item" onclick="nav('recursos',this)"><span class="ic">📅</span>Recursos</div>
+  <div class="nav-item" onclick="nav('frotas',this)"><span class="ic">🚗</span>Frotas</div>
+  <div class="nav-item" onclick="nav('folga',this)"><span class="ic">🏖️</span>Folga</div>
+  <div class="nav-item" onclick="nav('parciais',this)"><span class="ic">📬</span>Parciais</div>
+  <div class="sb-footer">OTD Engenharia © 2026</div>
 </nav>
 
-<!-- MAIN -->
 <div id="main">
   <div id="topbar">
-    <div>
-      <div class="topbar-title" id="page-title">Dashboard</div>
-      <div class="topbar-sub" id="page-sub">Visão geral do planejamento</div>
-    </div>
-    <div class="topbar-right">
-      <span id="last-update" style="font-size:11px;color:var(--text2)"></span>
-      <button class="btn btn-primary btn-sm" onclick="loadAll()">↻ Atualizar</button>
+    <div><div class="tb-title" id="ptitle">Dashboard</div><div class="tb-sub" id="psub">Visão geral</div></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="lupd" style="font-size:11px;color:var(--text2)"></span>
+      <button class="btn btn-p btn-sm" onclick="loadAll()">↻ Atualizar</button>
     </div>
   </div>
   <div id="content"></div>
 </div>
-
-<!-- TOAST -->
 <div id="toast"></div>
 
 <!-- MODAL CONTRATO -->
-<div class="modal-bg" id="modal-contrato">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 id="modal-contrato-title">Novo Contrato</h3>
-      <button class="close-btn" onclick="closeModal('modal-contrato')">×</button>
-    </div>
+<div class="modal-bg" id="mc">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-hdr"><h3 id="mc-title">Novo Contrato</h3><button class="cls-btn" onclick="closeM('mc')">×</button></div>
     <div class="modal-body">
-      <input type="hidden" id="contrato-id">
-      <div class="form-grid">
-        <div class="form-group full">
-          <label>Nome do Contrato *</label>
-          <input id="c-nome" placeholder="Ex: EPR - Vias do Café">
-        </div>
-        <div class="form-group">
-          <label>Cliente *</label>
-          <select id="c-cliente"></select>
-        </div>
-        <div class="form-group">
-          <label>Ciclo / Ano</label>
-          <input id="c-ano" placeholder="Ex: 2026.1">
-        </div>
-        <div class="form-group">
-          <label>Estado</label>
-          <input id="c-estado" placeholder="Ex: MG">
-        </div>
-        <div class="form-group">
-          <label>Status</label>
-          <select id="c-status">
-            <option>Aguardando início</option>
-            <option>Em campo</option>
-            <option>Em atraso</option>
-            <option>Concluído</option>
-            <option>Pausado</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Início Planejado</label>
-          <input type="date" id="c-ini-plan">
-        </div>
-        <div class="form-group">
-          <label>Término Planejado (prazo cliente)</label>
-          <input type="date" id="c-fim-plan">
-        </div>
-        <div class="form-group">
-          <label>Início Real</label>
-          <input type="date" id="c-ini-real">
-        </div>
-        <div class="form-group">
-          <label>Término Estimado (nossa previsão)</label>
-          <input type="date" id="c-fim-est">
-        </div>
-        <div class="form-group full">
-          <label>Observações</label>
-          <textarea id="c-obs" rows="2"></textarea>
-        </div>
+      <input type="hidden" id="mc-id">
+      <div class="fg">
+        <div class="fgrp full"><label>Nome do Contrato *</label><input id="mc-nome"></div>
+        <div class="fgrp"><label>Cliente</label><select id="mc-cli"></select></div>
+        <div class="fgrp"><label>Ciclo/Ano</label><input id="mc-ano" placeholder="2026.1"></div>
+        <div class="fgrp"><label>Estado</label><input id="mc-est"></div>
+        <div class="fgrp"><label>Status</label>
+          <select id="mc-status"><option>Aguardando início</option><option>Em campo</option><option>Em atraso</option><option>Concluído</option><option>Pausado</option></select></div>
+        <div class="fgrp"><label>Início Planejado</label><input type="date" id="mc-ini-p"></div>
+        <div class="fgrp"><label>Término Planejado (prazo cliente)</label><input type="date" id="mc-fim-p"></div>
+        <div class="fgrp"><label>Início Real</label><input type="date" id="mc-ini-r"></div>
+        <div class="fgrp"><label>Término Estimado (nossa previsão)</label><input type="date" id="mc-fim-e"></div>
+        <div class="fgrp full"><label>Observações</label><textarea id="mc-obs"></textarea></div>
       </div>
-
-      <!-- DISCIPLINAS -->
-      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <strong style="font-size:13px;color:var(--azul)">Disciplinas / Frentes</strong>
-          <button class="btn btn-outline btn-sm" onclick="toggleDiscForm()">+ Adicionar</button>
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <strong style="font-size:13px;color:var(--azul)">Disciplinas</strong>
+          <button class="btn btn-o btn-sm" onclick="toggleDF()">+ Adicionar</button>
         </div>
-        <div id="disc-form" style="display:none;background:#f7f9fc;padding:14px;border-radius:8px;margin-bottom:12px">
-          <div class="form-grid col3">
-            <div class="form-group">
-              <label>Disciplina *</label>
-              <select id="d-nome">
-                <option value="">Selecione...</option>
-                <option>Terrapleno</option>
-                <option>Drenagem</option>
-                <option>Sinalização Horizontal</option>
-                <option>Sinalização Vertical</option>
-                <option>Edificações (EDF)</option>
-                <option>Faixa de Domínio (AC e OC)</option>
-                <option>Faixa de Domínio (Cercas)</option>
-                <option>EPS</option>
-                <option>Pontos de Iluminação e EDE</option>
-                <option>Outro</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Unidade</label>
-              <select id="d-unidade">
-                <option>Und</option><option>m²</option><option>m³</option>
-                <option>m</option><option>km</option><option>KM</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Nº Frentes</label>
-              <input type="number" id="d-frentes" value="1" min="1">
-            </div>
-            <div class="form-group">
-              <label>Qtd. Prevista</label>
-              <input type="number" id="d-qtd-prev" placeholder="0">
-            </div>
-            <div class="form-group">
-              <label>Qtd. Real (contratada)</label>
-              <input type="number" id="d-qtd-real" placeholder="0">
-            </div>
-            <div class="form-group">
-              <label>Prod./frente/dia</label>
-              <input type="number" id="d-prod" placeholder="0">
-            </div>
-            <div class="form-group">
-              <label>Início Planejado</label>
-              <input type="date" id="d-ini">
-            </div>
-            <div class="form-group">
-              <label>Término Planejado</label>
-              <input type="date" id="d-fim">
-            </div>
-            <div class="form-group">
-              <label>Término Estimado</label>
-              <input type="date" id="d-est">
-            </div>
+        <div id="dform" style="display:none;background:#f7f9fc;padding:12px;border-radius:8px;margin-bottom:10px">
+          <div class="fg c3">
+            <div class="fgrp"><label>Disciplina *</label>
+              <select id="d-nome"><option value="">Selecione...</option>
+                <option>Terrapleno</option><option>Drenagem</option><option>Sinalização Horizontal</option>
+                <option>Sinalização Vertical</option><option>Edificações (EDF)</option>
+                <option>Faixa de Domínio (AC e OC)</option><option>Faixa de Domínio (Cercas)</option>
+                <option>EPS</option><option>Pontos de Iluminação e EDE</option><option>Outro</option>
+              </select></div>
+            <div class="fgrp"><label>Unidade</label>
+              <select id="d-un"><option>Und</option><option>m²</option><option>m³</option><option>m</option><option>km</option></select></div>
+            <div class="fgrp"><label>Nº Frentes</label><input type="number" id="d-fr" value="1" min="1"></div>
+            <div class="fgrp"><label>Qtd. Prevista</label><input type="number" id="d-qp"></div>
+            <div class="fgrp"><label>Qtd. Real</label><input type="number" id="d-qr"></div>
+            <div class="fgrp"><label>Prod./frente/dia</label><input type="number" id="d-pr"></div>
+            <div class="fgrp"><label>Início Plan.</label><input type="date" id="d-ini"></div>
+            <div class="fgrp"><label>Término Plan.</label><input type="date" id="d-fim"></div>
+            <div class="fgrp"><label>Término Est.</label><input type="date" id="d-est"></div>
           </div>
-          <div style="margin-top:10px;display:flex;gap:8px">
-            <button class="btn btn-success btn-sm" onclick="addDisc()">✓ Confirmar disciplina</button>
-            <button class="btn btn-sm btn-outline" onclick="toggleDiscForm()">Cancelar</button>
+          <div style="margin-top:9px;display:flex;gap:7px">
+            <button class="btn btn-g btn-sm" onclick="addD()">✓ Confirmar</button>
+            <button class="btn btn-sm btn-o" onclick="toggleDF()">Cancelar</button>
           </div>
         </div>
         <div id="disc-added-list"></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-contrato')">Cancelar</button>
-      <button class="btn btn-primary" id="btn-salvar-contrato" onclick="salvarContrato()">Salvar Contrato</button>
+    <div class="modal-ftr">
+      <button class="btn btn-o" onclick="closeM('mc')">Cancelar</button>
+      <button class="btn btn-p" onclick="salvarC()">Salvar Contrato</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL COLABORADOR -->
-<div class="modal-bg" id="modal-colab">
+<div class="modal-bg" id="mco">
   <div class="modal">
-    <div class="modal-header">
-      <h3 id="modal-colab-title">Novo Colaborador</h3>
-      <button class="close-btn" onclick="closeModal('modal-colab')">×</button>
-    </div>
+    <div class="modal-hdr"><h3 id="mco-title">Novo Colaborador</h3><button class="cls-btn" onclick="closeM('mco')">×</button></div>
     <div class="modal-body">
-      <input type="hidden" id="colab-id">
-      <div class="form-grid">
-        <div class="form-group full">
-          <label>Nome *</label>
-          <input id="col-nome" placeholder="Nome completo">
-        </div>
-        <div class="form-group">
-          <label>Função</label>
-          <select id="col-funcao" onchange="autoTaxa()">
-            <option value="Ajudante de Obras">Ajudante de Obras</option>
-            <option value="Auxiliar de Engenharia">Auxiliar de Engenharia</option>
-            <option value="Assistente de Engenharia">Assistente de Engenharia</option>
-            <option value="Terceirizado Campo">Terceirizado Campo</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Situação</label>
-          <select id="col-situacao">
-            <option>Ativo</option>
-            <option>Desligado</option>
-            <option>INSS</option>
-            <option>Desistiu</option>
-            <option>Contratação</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Estado</label>
-          <input id="col-estado" placeholder="Ex: MG">
-        </div>
-        <div class="form-group">
-          <label>Taxa (R$/dia)</label>
-          <input type="number" id="col-taxa" placeholder="Automático por função" readonly style="background:#f7f9fc;color:var(--text2)">
-        </div>
-        <div class="form-group">
-          <label>Admissão</label>
-          <input type="date" id="col-admissao">
-        </div>
-        <div class="form-group">
-          <label>Desligamento</label>
-          <input type="date" id="col-desligamento">
-        </div>
-        <div class="form-group">
-          <label>Promoção (data)</label>
-          <input type="date" id="col-promo-data">
-        </div>
-        <div class="form-group">
-          <label>Novo Cargo (após promoção)</label>
-          <input id="col-novo-cargo" placeholder="Ex: Auxiliar de Engenharia" list="cargos-list">
+      <input type="hidden" id="mco-id">
+      <div class="fg">
+        <div class="fgrp full"><label>Nome *</label><input id="col-nome"></div>
+        <div class="fgrp"><label>Função</label>
+          <select id="col-fn" onchange="autoTaxa()">
+            <option>Ajudante de Obras</option><option>Auxiliar de Engenharia</option>
+            <option>Assistente de Engenharia</option><option>Terceirizado Campo</option>
+          </select></div>
+        <div class="fgrp"><label>Situação</label>
+          <select id="col-sit"><option>Ativo</option><option>Desligado</option><option>INSS</option><option>Desistiu</option><option>Contratação</option></select></div>
+        <div class="fgrp"><label>Estado</label><input id="col-est"></div>
+        <div class="fgrp"><label>Taxa (HH)</label><input type="number" id="col-taxa" step="0.01"></div>
+        <div class="fgrp"><label>Admissão</label><input type="date" id="col-adm"></div>
+        <div class="fgrp"><label>Desligamento</label><input type="date" id="col-des"></div>
+        <div class="fgrp"><label>Promoção (data)</label><input type="date" id="col-pd"></div>
+        <div class="fgrp"><label>Novo Cargo</label><input id="col-nc" list="cargos-list" placeholder="Ex: Auxiliar de Engenharia">
           <datalist id="cargos-list">
-            <option value="Ajudante de Obras">
-            <option value="Auxiliar de Engenharia">
-            <option value="Assistente de Engenharia">
-            <option value="Terceirizado Campo">
-          </datalist>
-        </div>
-        <div class="form-group full">
-          <label>Observações</label>
-          <textarea id="col-obs" rows="2"></textarea>
-        </div>
+            <option>Ajudante de Obras</option><option>Auxiliar de Engenharia</option>
+            <option>Assistente de Engenharia</option><option>Terceirizado Campo</option>
+          </datalist></div>
+        <div class="fgrp full"><label>Obs</label><textarea id="col-obs"></textarea></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-colab')">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarColab()">Salvar</button>
+    <div class="modal-ftr">
+      <button class="btn btn-o" onclick="closeM('mco')">Cancelar</button>
+      <button class="btn btn-p" onclick="salvarColab()">Salvar</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL PRODUÇÃO -->
-<div class="modal-bg" id="modal-prod">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-header">
-      <h3>Lançar Produção</h3>
-      <button class="close-btn" onclick="closeModal('modal-prod')">×</button>
-    </div>
+<div class="modal-bg" id="mprod">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-hdr"><h3>Lançar Produção</h3><button class="cls-btn" onclick="closeM('mprod')">×</button></div>
     <div class="modal-body">
-      <div class="form-grid">
-        <div class="form-group full">
-          <label>Contrato *</label>
-          <select id="p-contrato" onchange="loadDiscByContrato()"></select>
-        </div>
-        <div class="form-group full">
-          <label>Disciplina *</label>
-          <select id="p-disc"></select>
-        </div>
-        <div class="form-group">
-          <label>Data *</label>
-          <input type="date" id="p-data">
-        </div>
-        <div class="form-group">
-          <label>Quantidade *</label>
-          <input type="number" id="p-qtd" placeholder="0">
-        </div>
-        <div class="form-group full">
-          <label>Colaborador responsável</label>
-          <input id="p-colab" placeholder="Nome do colaborador">
-        </div>
-        <div class="form-group full">
-          <label>Observação</label>
-          <textarea id="p-obs" rows="2"></textarea>
-        </div>
+      <div class="fg">
+        <div class="fgrp full"><label>Contrato *</label><select id="p-cont" onchange="loadDiscs()"></select></div>
+        <div class="fgrp full"><label>Disciplina *</label><select id="p-disc"></select></div>
+        <div class="fgrp"><label>Data *</label><input type="date" id="p-data"></div>
+        <div class="fgrp"><label>Quantidade *</label><input type="number" id="p-qtd"></div>
+        <div class="fgrp full"><label>Colaborador</label><input id="p-colab" list="clist"><datalist id="clist"></datalist></div>
+        <div class="fgrp full"><label>Obs</label><textarea id="p-obs"></textarea></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-prod')">Cancelar</button>
-      <button class="btn btn-success" onclick="salvarProducao()">Lançar</button>
+    <div class="modal-ftr">
+      <button class="btn btn-o" onclick="closeM('mprod')">Cancelar</button>
+      <button class="btn btn-g" onclick="salvarProd()">Lançar</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL FROTA -->
-<div class="modal-bg" id="modal-frota">
-  <div class="modal" style="max-width:580px">
-    <div class="modal-header">
-      <h3 id="modal-frota-title">Nova Frota</h3>
-      <button class="close-btn" onclick="closeModal('modal-frota')">×</button>
-    </div>
+<div class="modal-bg" id="mfr">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-hdr"><h3 id="mfr-title">Nova Frota</h3><button class="cls-btn" onclick="closeM('mfr')">×</button></div>
     <div class="modal-body">
-      <input type="hidden" id="frota-id">
-      <div class="form-grid">
-        <div class="form-group"><label>Locadora</label>
-          <select id="fr-locadora">
-            <option>Localiza</option><option>Movida</option>
-            <option>Localiza (Pura Eng.)</option><option>Movida (Pura Eng.)</option><option>Outro</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Código Reserva</label><input id="fr-reserva" placeholder="Ex: PC9342LES29T"></div>
-        <div class="form-group full"><label>Colaborador Atual *</label>
-          <input id="fr-colaborador" list="colab-list-fr" placeholder="Nome do colaborador">
-          <datalist id="colab-list-fr"></datalist>
-        </div>
-        <div class="form-group"><label>Placa Atual</label><input id="fr-placa" placeholder="AAA0A00" style="text-transform:uppercase"></div>
-        <div class="form-group"><label>Veículo</label>
-          <select id="fr-veiculo">
-            <option>Kwid</option><option>Mobi</option><option>Hyundai HB20</option><option>Onix</option><option>Outro</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Status</label>
-          <select id="fr-status">
-            <option>Ativo</option><option>Devolvido</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Mensalidade (R$)</label><input type="number" id="fr-mensalidade" placeholder="0,00"></div>
-        <div class="form-group"><label>Data Retirada Inicial</label><input type="date" id="fr-data-ret"></div>
-        <div class="form-group full"><label>Local Retirada</label><input id="fr-local" placeholder="Cidade / UF"></div>
-        <div class="form-group full"><label>Observação</label><textarea id="fr-obs" rows="2"></textarea></div>
+      <input type="hidden" id="mfr-id">
+      <div class="fg">
+        <div class="fgrp"><label>Locadora</label>
+          <select id="fr-loc"><option>Localiza</option><option>Movida</option><option>Localiza (Pura Eng.)</option><option>Movida (Pura Eng.)</option><option>Outro</option></select></div>
+        <div class="fgrp"><label>Código Reserva</label><input id="fr-res"></div>
+        <div class="fgrp full"><label>Colaborador Atual *</label><input id="fr-col" list="fr-clist"><datalist id="fr-clist"></datalist></div>
+        <div class="fgrp"><label>Placa</label><input id="fr-placa" style="text-transform:uppercase"></div>
+        <div class="fgrp"><label>Veículo</label>
+          <select id="fr-vei"><option>Kwid</option><option>Mobi</option><option>Hyundai HB20</option><option>Onix</option><option>Outro</option></select></div>
+        <div class="fgrp"><label>Status</label><select id="fr-st"><option>Ativo</option><option>Devolvido</option></select></div>
+        <div class="fgrp"><label>Mensalidade (R$)</label><input type="number" id="fr-men"></div>
+        <div class="fgrp"><label>Data Retirada Inicial</label><input type="date" id="fr-dt"></div>
+        <div class="fgrp full"><label>Local Retirada</label><input id="fr-loc2"></div>
+        <div class="fgrp full"><label>Obs</label><textarea id="fr-obs"></textarea></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-frota')">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarFrota()">Salvar</button>
+    <div class="modal-ftr">
+      <button class="btn btn-o" onclick="closeM('mfr')">Cancelar</button>
+      <button class="btn btn-p" onclick="salvarFrota()">Salvar</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── CONFIG ──────────────────────────────────────────────────
-const SUPA_URL = 'https://uouyhhekfxfgaxhbnnjw.supabase.co';
-const SUPA_KEY = 'sb_publishable_zXDofvqd-soKxH6hR7qp6w_eHS5X9Ja';
-
-const H = {
-  'Content-Type': 'application/json',
-  'apikey': SUPA_KEY,
-  'Authorization': 'Bearer ' + SUPA_KEY,
-  'Prefer': 'return=representation'
-};
-
-async function db(path, method='GET', body=null) {
-  const r = await fetch(SUPA_URL + '/rest/v1/' + path, {
-    method, headers: H, body: body ? JSON.stringify(body) : null
-  });
-  if (!r.ok) { const e = await r.json(); throw new Error(e.message || 'Erro'); }
-  return r.status === 204 ? null : r.json();
+const SU='https://uouyhhekfxfgaxhbnnjw.supabase.co',SK='sb_publishable_zXDofvqd-soKxH6hR7qp6w_eHS5X9Ja';
+const SH={'Content-Type':'application/json','apikey':SK,'Authorization':'Bearer '+SK,'Prefer':'return=representation'};
+async function db(p,m='GET',b=null){
+  const r=await fetch(SU+'/rest/v1/'+p,{method:m,headers:SH,body:b?JSON.stringify(b):null});
+  if(!r.ok){const e=await r.json();throw new Error(e.message||'Erro '+r.status);}
+  return r.status===204?null:r.json();
 }
 
-// ── ESTADO ──────────────────────────────────────────────────
-let clientes = [], contratos = [], disciplinas = [], colaboradores = [], producao = [];
-let discTemp  = [];    // disciplinas pendentes no modal
-let currentPage = 'dashboard';
+// STATE
+let clientes=[],contratos=[],disciplinas=[],colaboradores=[],producao=[],frotas=[],discTemp=[];
+let sortState={col:null,asc:true};
 
-// ── NAVEGAÇÃO ───────────────────────────────────────────────
-function showPage(page) {
-  currentPage = page;
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-  const titles = {
-    dashboard:     ['Dashboard', 'Visão geral do planejamento'],
-    contratos:     ['Contratos', 'Gerencie contratos e disciplinas'],
-    colaboradores: ['Colaboradores', 'Equipe de campo'],
-    producao:      ['Lançar Produção', 'Registro diário de produção'],
-    produtividade: ['Produtividade', 'Visão semanal de performance'],
-    recursos:      ['Recursos', 'Pessoas e carros por período'],
-    frotas:        ['Frotas', 'Controle de veículos e locações'],
-  };
-  const [t, s] = titles[page] || ['', ''];
-  document.getElementById('page-title').textContent = t;
-  document.getElementById('page-sub').textContent   = s;
-  renderPage(page);
-}
-
-function renderPage(page) {
-  const pages = { dashboard: renderDashboard, contratos: renderContratos, colaboradores: renderColaboradores, producao: renderProducao, produtividade: renderProdutividade, recursos: renderRecursos, frotas: renderFrotas };
-  if (pages[page]) pages[page]();
-}
-
-// ── LOAD ALL ─────────────────────────────────────────────────
-async function loadAll() {
-  try {
-    [clientes, contratos, disciplinas, colaboradores] = await Promise.all([
+// INIT
+async function loadAll(){
+  try{
+    [clientes,contratos,disciplinas,colaboradores]=await Promise.all([
       db('clientes?order=nome'),
       db('contratos?order=nome&select=*,clientes(nome,sigla)'),
       db('disciplinas?order=nome&select=*,contratos(nome)'),
       db('colaboradores?order=nome'),
     ]);
-    document.getElementById('last-update').textContent = 'Atualizado ' + new Date().toLocaleTimeString('pt-BR');
-    renderPage(currentPage);
-  } catch(e) { toast('Erro ao carregar: ' + e.message, 'error'); }
+    document.getElementById('lupd').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR');
+    renderPage(curPage);
+  }catch(e){toast('Erro ao carregar: '+e.message,'e');}
 }
 
-// ── DASHBOARD ────────────────────────────────────────────────
-function renderDashboard() {
-  const ciclos = [...new Set(contratos.map(c => c.ano).filter(Boolean))].sort().reverse();
-  const selEl = document.getElementById('filtro-ciclo');
-  const sel = selEl ? selEl.value : (ciclos[0] || '');
-  const lista = sel ? contratos.filter(c => c.ano === sel) : contratos;
+// NAV
+let curPage='dashboard';
+const PAGES={
+  dashboard:['Dashboard','Visão geral'],
+  contratos:['Contratos','Gerencie contratos e disciplinas'],
+  colaboradores:['Colaboradores','Equipe de campo'],
+  maodeobra:['Mão de Obra','Equipe por contrato'],
+  producao:['Lançar Produção','Registro diário'],
+  producaootd:['Produção OTD','Histórico de lançamentos'],
+  produtividade:['Produtividade','Visão semanal'],
+  recursos:['Recursos','Pessoas e carros por período'],
+  frotas:['Frotas','Controle de veículos'],
+  folga:['Folga','Controle de folgas'],
+  parciais:['Parciais','Entregas parciais'],
+};
+function nav(p,el){
+  curPage=p;
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  const[t,s]=PAGES[p]||['',''];
+  document.getElementById('ptitle').textContent=t;
+  document.getElementById('psub').textContent=s;
+  renderPage(p);
+}
+function renderPage(p){
+  const m={dashboard:renderDashboard,contratos:renderContratos,colaboradores:renderColaboradores,
+    maodeobra:renderMO,producao:renderProd,producaootd:renderProdOTD,
+    produtividade:renderProdutividade,recursos:renderRecursos,frotas:renderFrotas,
+    folga:renderFolga,parciais:renderParciais};
+  if(m[p])m[p]();
+}
 
-  const total   = lista.length;
-  const concl   = lista.filter(c => c.status === 'Concluído').length;
-  const campo   = lista.filter(c => c.status === 'Em campo').length;
-  const atraso  = lista.filter(c => c.status === 'Em atraso').length;
-  const aguard  = lista.filter(c => c.status === 'Aguardando início').length;
+// UTILS
+function fmtD(d){if(!d)return'—';const[y,m,di]=(d+'').split('T')[0].split('-');return`${di}/${m}/${y}`}
+function isoD(d){return d instanceof Date?d.toISOString().split('T')[0]:d}
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
+function pct(f,r){return r>0?Math.round(Math.min(100,f/r*100)):0}
+function fmtN(n){return n!=null?Number(n).toLocaleString('pt-BR'):'—'}
+function badge(txt,cls){return`<span class="badge ${cls}">${txt}</span>`}
+function badgeSt(s){const m={'Concluído':'bg','Em campo':'bb','Em atraso':'br','Aguardando início':'bc','Pausado':'by'};return badge(s||'—',m[s]||'bc')}
+function badgeSit(s){const m={'Ativo':'bg','Desligado':'br','INSS':'by','Desistiu':'bo','Contratação':'bb'};return badge(s||'—',m[s]||'bc')}
+function toast(msg,t='i'){const el=document.createElement('div');el.className='toast-item t'+(t==='s'?'s':t==='e'?'e':'i');el.textContent=msg;document.getElementById('toast').appendChild(el);setTimeout(()=>el.remove(),3200)}
+function openM(id){document.getElementById(id).classList.add('open')}
+function closeM(id){document.getElementById(id).classList.remove('open')}
+function calcPct(discs){const c=discs.filter(d=>d.qtd_real>0);return c.length?Math.round(c.reduce((s,d)=>s+pct(d.qtd_feita||0,d.qtd_real),0)/c.length):0}
 
-  const ids = new Set(lista.map(c => c.id));
-  const discs_ciclo = disciplinas.filter(d => ids.has(d.contrato_id) && d.qtd_real > 0);
-  const avgPct = discs_ciclo.length
-    ? Math.round(discs_ciclo.reduce((s,d) => s + Math.min(100,(d.qtd_feita||0)/d.qtd_real*100), 0) / discs_ciclo.length)
-    : 0;
+// SORT TABLE
+function sortTable(data,col,asc){
+  return [...data].sort((a,b)=>{
+    let va=a[col]??'',vb=b[col]??'';
+    if(typeof va==='number'||!isNaN(va))return asc?(+va)-(+vb):(+vb)-(+va);
+    return asc?String(va).localeCompare(String(vb)):String(vb).localeCompare(String(va));
+  });
+}
+function thSort(col,label,cur,asc){
+  const ico=cur===col?(asc?'↑':'↓'):'↕';
+  return`<th onclick="sortCol('${col}')" class="${cur===col?'sorted':''}">${label}<span class="sort-ico">${ico}</span></th>`;
+}
 
-  document.getElementById('content').innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+// ─── DASHBOARD ───────────────────────────────────────────────
+function renderDashboard(){
+  const ciclos=[...new Set(contratos.map(c=>c.ano).filter(Boolean))].sort().reverse();
+  const selEl=document.getElementById('f-ciclo');
+  const sel=selEl?selEl.value:'';
+  const lista=sel?contratos.filter(c=>c.ano===sel):contratos;
+  const total=lista.length,concl=lista.filter(c=>c.status==='Concluído').length,
+    campo=lista.filter(c=>c.status==='Em campo').length,
+    atraso=lista.filter(c=>c.status==='Em atraso').length,
+    aguard=lista.filter(c=>c.status==='Aguardando início').length;
+  const ids=new Set(lista.map(c=>c.id));
+  const dc=disciplinas.filter(d=>ids.has(d.contrato_id)&&d.qtd_real>0);
+  const avg=dc.length?Math.round(dc.reduce((s,d)=>s+pct(d.qtd_feita||0,d.qtd_real),0)/dc.length):0;
+  document.getElementById('content').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <label style="font-size:13px;font-weight:600;color:var(--text2)">Ciclo:</label>
-      <select id="filtro-ciclo" onchange="renderDashboard()"
-        style="padding:7px 14px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-weight:600;color:var(--azul)">
-        ${ciclos.map(c => `<option value="${c}" ${c===sel?'selected':''}>${c}</option>`).join('')}
+      <select id="f-ciclo" onchange="renderDashboard()" class="sselect">
         <option value="" ${!sel?'selected':''}>Todos os ciclos</option>
+        ${ciclos.map(c=>`<option value="${c}" ${c===sel?'selected':''}>${c}</option>`).join('')}
       </select>
     </div>
     <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-label">Total Contratos</div><div class="kpi-value">${total}</div></div>
-      <div class="kpi-card verde"><div class="kpi-label">Concluídos</div><div class="kpi-value">${concl}</div></div>
-      <div class="kpi-card azul"><div class="kpi-label">Em Campo</div><div class="kpi-value">${campo}</div></div>
-      <div class="kpi-card vermelho"><div class="kpi-label">Em Atraso</div><div class="kpi-value">${atraso}</div></div>
-      <div class="kpi-card amarelo"><div class="kpi-label">Aguardando</div><div class="kpi-value">${aguard}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Avanço Médio</div><div class="kpi-value">${avgPct}%</div></div>
+      <div class="kpi-card"><div class="kpi-lbl">Total</div><div class="kpi-val">${total}</div></div>
+      <div class="kpi-card g"><div class="kpi-lbl">Concluídos</div><div class="kpi-val">${concl}</div></div>
+      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Em Campo</div><div class="kpi-val" style="color:var(--azul2)">${campo}</div></div>
+      <div class="kpi-card r"><div class="kpi-lbl">Em Atraso</div><div class="kpi-val">${atraso}</div></div>
+      <div class="kpi-card y"><div class="kpi-lbl">Aguardando</div><div class="kpi-val">${aguard}</div></div>
+      <div class="kpi-card"><div class="kpi-lbl">Avanço Médio</div><div class="kpi-val">${avg}%</div></div>
     </div>
     <div class="card">
-      <div class="card-header"><h3>Contratos ativos / em atraso — ${sel||'Todos os ciclos'}</h3></div>
-      <div class="card-body">
-        <table>
-          <thead><tr><th>Contrato</th><th>Cliente</th><th>Disciplinas</th><th>Status</th><th>Prazo Cliente</th></tr></thead>
-          <tbody>
-            ${lista.filter(c => c.status!=='Concluído'&&c.status!=='Aguardando início').map(c=>{
-              const discs = disciplinas.filter(d=>d.contrato_id===c.id).length;
-              return `<tr>
-                <td><strong>${c.nome}</strong><br><small style="color:var(--text2)">${c.ano||''}</small></td>
-                <td>${c.clientes?.nome||'—'}</td>
-                <td><span class="badge badge-azul">${discs} disc.</span></td>
-                <td>${badgeStatus(c.status)}</td>
-                <td>${c.termino_planejado?fmtDate(c.termino_planejado):'—'}</td>
-              </tr>`;
-            }).join('')||'<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text2)">Nenhum contrato ativo neste ciclo.</td></tr>'}
-          </tbody>
-        </table>
-      </div>
+      <div class="card-hdr"><h3>Contratos ativos / em atraso — ${sel||'Todos os ciclos'}</h3></div>
+      <div class="card-body"><table>
+        <thead><tr><th>Contrato</th><th>Cliente</th><th>Ciclo</th><th>Disciplinas</th><th>Status</th><th>Prazo Cliente</th></tr></thead>
+        <tbody>${lista.filter(c=>c.status!=='Concluído'&&c.status!=='Aguardando início').map(c=>{
+          const ds=disciplinas.filter(d=>d.contrato_id===c.id),p=calcPct(ds);
+          return`<tr><td><strong>${c.nome}</strong></td><td>${c.clientes?.nome||'—'}</td><td>${c.ano||'—'}</td>
+          <td><div style="display:flex;align-items:center;gap:7px">
+            <div class="progress"><div class="progress-bar" style="width:${p}%;background:${p>=100?'var(--verde)':p>=50?'var(--azul)':'var(--laranja)'}"></div></div>
+            <span style="font-size:12px;font-weight:600">${p}%</span><span class="badge bb">${ds.length}</span></div></td>
+          <td>${badgeSt(c.status)}</td><td>${fmtD(c.termino_planejado)}</td></tr>`;
+        }).join('')||'<tr><td colspan="6" class="empty-st">Nenhum contrato ativo.</td></tr>'}
+        </tbody>
+      </table></div>
     </div>`;
 }
 
-// ── CONTRATOS ────────────────────────────────────────────────
-function renderContratos() {
-  const q = (document.getElementById('busca-contrato')?.value || '').toLowerCase();
-  const filtered = contratos.filter(c =>
-    c.nome.toLowerCase().includes(q) || (c.clientes?.nome||'').toLowerCase().includes(q)
-  );
-
-  document.getElementById('content').innerHTML = `
-    <div class="search-bar">
-      <input class="search-input" id="busca-contrato" placeholder="Buscar contrato ou cliente..." oninput="renderContratos()" value="${q}">
-      <button class="btn btn-primary" onclick="abrirModalContrato()">+ Novo Contrato</button>
+// ─── CONTRATOS ───────────────────────────────────────────────
+let cSort={col:'nome',asc:true};
+function sortCol(col){
+  if(cSort.col===col)cSort.asc=!cSort.asc;else{cSort.col=col;cSort.asc=true;}
+  renderContratos();
+}
+function renderContratos(){
+  const q=(document.getElementById('c-busca')?.value||'').toLowerCase();
+  const fs=document.getElementById('c-fst')?.value||'';
+  const fa=document.getElementById('c-fano')?.value||'';
+  let lista=contratos;
+  if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q)||(c.clientes?.nome||'').toLowerCase().includes(q));
+  if(fs)lista=lista.filter(c=>c.status===fs);
+  if(fa)lista=lista.filter(c=>c.ano===fa);
+  lista=sortTable(lista,cSort.col,cSort.asc);
+  const ciclos=[...new Set(contratos.map(c=>c.ano).filter(Boolean))].sort().reverse();
+  document.getElementById('content').innerHTML=`
+    <div class="sbar">
+      <input class="sinput" id="c-busca" placeholder="Buscar contrato ou cliente..." oninput="renderContratos()" value="${q}">
+      <select class="sselect" id="c-fst" onchange="renderContratos()">
+        <option value="">Todos os status</option>
+        ${['Aguardando início','Em campo','Em atraso','Concluído','Pausado'].map(s=>`<option ${s===fs?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <select class="sselect" id="c-fano" onchange="renderContratos()">
+        <option value="">Todos os ciclos</option>
+        ${ciclos.map(c=>`<option ${c===fa?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <button class="btn btn-p" onclick="abrirMC()">+ Novo Contrato</button>
     </div>
     <div class="card">
-      <div class="card-header"><h3>${filtered.length} contrato(s)</h3></div>
-      <div class="card-body">
-        <table>
-          <thead><tr>
-            <th>Contrato</th><th>Cliente</th><th>Ano</th><th>Status</th>
-            <th>Disciplinas</th><th>Prazo Cliente</th><th>Previsão OTD</th><th>Ações</th>
-          </tr></thead>
-          <tbody>
-            ${filtered.length === 0 ? `<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>Nenhum contrato cadastrado ainda.<br>Clique em "+ Novo Contrato" para começar.</p></div></td></tr>` :
-            filtered.map(c => {
-              const discs = disciplinas.filter(d => d.contrato_id === c.id);
-              const pct   = calcPct(discs);
-              return `<tr>
-                <td>
-                  <strong>${c.nome}</strong>
-                  ${c.estado ? `<span style="font-size:11px;color:var(--text2);margin-left:6px">${c.estado}</span>` : ''}
-                </td>
-                <td>${c.clientes?.sigla || c.clientes?.nome || '—'}</td>
-                <td>${c.ano || '—'}</td>
-                <td>${badgeStatus(c.status)}</td>
-                <td>
-                  <div style="display:flex;align-items:center;gap:8px">
-                    <div class="progress"><div class="progress-bar" style="width:${pct}%;background:${pct>=100?'#28a745':pct>=50?'#1F3864':'#FF8C00'}"></div></div>
-                    <span style="font-size:12px;font-weight:600">${pct}%</span>
-                    <span class="badge badge-azul">${discs.length}</span>
-                  </div>
-                </td>
-                <td>${c.termino_planejado ? fmtDate(c.termino_planejado) : '—'}</td>
-                <td>${c.termino_estimado ? fmtDate(c.termino_estimado) : '—'}</td>
-                <td>
-                  <button class="btn btn-sm btn-outline" onclick="editarContrato('${c.id}')">✏️</button>
-                  <button class="btn btn-sm btn-danger" onclick="deletarContrato('${c.id}')">🗑</button>
-                </td>
-              </tr>
-              ${discs.length ? `<tr style="background:#f9fafb">
-                <td colspan="8" style="padding:0">
-                  <div class="disc-list">
-                    ${discs.map(d => {
-                      const p = d.qtd_real > 0 ? Math.min(100, Math.round((d.qtd_feita||0)/d.qtd_real*100)) : 0;
-                      return `<div class="disc-item">
-                        <div class="disc-nome">${d.nome}</div>
-                        <div class="disc-info">${d.qtd_feita||0} / ${d.qtd_real||0} ${d.unidade||''}</div>
-                        <div class="progress" style="width:120px"><div class="progress-bar" style="width:${p}%;background:${p>=100?'#28a745':p>=50?'#1F3864':'#FF8C00'}"></div></div>
-                        <span style="font-size:12px;font-weight:600;min-width:32px">${p}%</span>
-                        <span class="disc-info">${d.inicio_planejado?fmtDate(d.inicio_planejado):''} → ${d.termino_planejado?fmtDate(d.termino_planejado):''}</span>
-                        <button class="btn btn-sm btn-danger" onclick="deletarDisc('${d.id}')">🗑</button>
-                      </div>`;
-                    }).join('')}
-                  </div>
-                </td>
-              </tr>` : ''}`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
+      <div class="card-hdr"><h3>${lista.length} contrato(s)</h3></div>
+      <div class="card-body"><table>
+        <thead><tr>
+          ${thSort('nome','Contrato',cSort.col,cSort.asc)}
+          ${thSort('clientes','Cliente',cSort.col,cSort.asc)}
+          ${thSort('ano','Ciclo',cSort.col,cSort.asc)}
+          ${thSort('status','Status',cSort.col,cSort.asc)}
+          <th>Disciplinas / Avanço</th>
+          ${thSort('termino_planejado','Prazo Cliente',cSort.col,cSort.asc)}
+          ${thSort('termino_estimado','Previsão OTD',cSort.col,cSort.asc)}
+          <th>Ações</th>
+        </tr></thead>
+        <tbody>${lista.length?lista.map(c=>{
+          const ds=disciplinas.filter(d=>d.contrato_id===c.id),p=calcPct(ds);
+          return`<tr>
+            <td><strong>${c.nome}</strong>${c.estado?`<span style="font-size:11px;color:var(--text2);margin-left:6px">${c.estado}</span>`:''}
+            </td>
+            <td>${c.clientes?.sigla||c.clientes?.nome||'—'}</td>
+            <td>${c.ano||'—'}</td>
+            <td>${badgeSt(c.status)}</td>
+            <td><div style="display:flex;align-items:center;gap:7px">
+              <div class="progress"><div class="progress-bar" style="width:${p}%;background:${p>=100?'var(--verde)':p>=50?'var(--azul)':'var(--laranja)'}"></div></div>
+              <span style="font-size:12px;font-weight:600">${p}%</span><span class="badge bb">${ds.length}</span></div></td>
+            <td>${fmtD(c.termino_planejado)}</td><td>${fmtD(c.termino_estimado)}</td>
+            <td style="display:flex;gap:4px">
+              <button class="btn btn-sm btn-o" onclick="abrirMC('${c.id}')">✏️</button>
+              <button class="btn btn-sm btn-d" onclick="delC('${c.id}')">🗑</button>
+            </td></tr>
+          ${ds.length?`<tr style="background:#f9fafb"><td colspan="8" style="padding:0">
+            <div style="padding:8px 16px">${ds.map(d=>{
+              const p2=pct(d.qtd_feita||0,d.qtd_real||0);
+              return`<div class="disc-item">
+                <span style="font-weight:600;font-size:13px;flex:1">${d.nome}</span>
+                <span style="font-size:12px;color:var(--text2)">${fmtN(d.qtd_feita)}/${fmtN(d.qtd_real)} ${d.unidade||''}</span>
+                <div class="progress" style="width:100px"><div class="progress-bar" style="width:${p2}%;background:${p2>=100?'var(--verde)':p2>=50?'var(--azul)':'var(--laranja)'}"></div></div>
+                <span style="font-size:12px;font-weight:600;min-width:30px">${p2}%</span>
+                <button class="btn btn-sm btn-d" onclick="delD('${d.id}')">🗑</button>
+              </div>`;
+            }).join('')}</div>
+          </td></tr>`:''}`;
+        }).join(''):`<tr><td colspan="8"><div class="empty-st"><div class="ico">📋</div><p>Nenhum contrato encontrado.</p></div></td></tr>`}
+        </tbody>
+      </table></div>
     </div>`;
 }
 
-// ── COLABORADORES ─────────────────────────────────────────────
-function renderColaboradores() {
-  const ativos   = colaboradores.filter(c => c.situacao === 'Ativo');
-  const inativos = colaboradores.filter(c => c.situacao !== 'Ativo');
-  const q = (document.getElementById('busca-colab')?.value || '').toLowerCase();
-  const filtered = colaboradores.filter(c => c.nome.toLowerCase().includes(q));
-
-  document.getElementById('content').innerHTML = `
-    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:480px">
-      <div class="kpi-card verde"><div class="kpi-label">Ativos</div><div class="kpi-value">${ativos.length}</div></div>
-      <div class="kpi-card vermelho"><div class="kpi-label">Inativos</div><div class="kpi-value">${inativos.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value">${colaboradores.length}</div></div>
+// ─── COLABORADORES ───────────────────────────────────────────
+let coSort={col:'nome',asc:true};
+function sortColColab(col){if(coSort.col===col)coSort.asc=!coSort.asc;else{coSort.col=col;coSort.asc=true;}renderColaboradores();}
+function renderColaboradores(){
+  const q=(document.getElementById('co-b')?.value||'').toLowerCase();
+  const fs=document.getElementById('co-fst')?.value||'';
+  const ff=document.getElementById('co-ffn')?.value||'';
+  let lista=colaboradores;
+  if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q));
+  if(fs)lista=lista.filter(c=>c.situacao===fs);
+  if(ff)lista=lista.filter(c=>c.funcao===ff);
+  lista=sortTable(lista,coSort.col,coSort.asc);
+  const ativos=colaboradores.filter(c=>c.situacao==='Ativo').length;
+  document.getElementById('content').innerHTML=`
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+      <div class="kpi-card g"><div class="kpi-lbl">Ativos</div><div class="kpi-val">${ativos}</div></div>
+      <div class="kpi-card r"><div class="kpi-lbl">Inativos</div><div class="kpi-val">${colaboradores.length-ativos}</div></div>
+      <div class="kpi-card"><div class="kpi-lbl">Total</div><div class="kpi-val">${colaboradores.length}</div></div>
     </div>
-    <div class="search-bar">
-      <input class="search-input" id="busca-colab" placeholder="Buscar colaborador..." oninput="renderColaboradores()" value="${q}">
-      <button class="btn btn-primary" onclick="abrirModalColab()">+ Novo Colaborador</button>
+    <div class="sbar">
+      <input class="sinput" id="co-b" placeholder="Buscar colaborador..." oninput="renderColaboradores()" value="${q}">
+      <select class="sselect" id="co-fst" onchange="renderColaboradores()">
+        <option value="">Todas situações</option>
+        ${['Ativo','Desligado','INSS','Desistiu','Contratação'].map(s=>`<option ${s===fs?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <select class="sselect" id="co-ffn" onchange="renderColaboradores()">
+        <option value="">Todas funções</option>
+        ${['Ajudante de Obras','Auxiliar de Engenharia','Assistente de Engenharia','Terceirizado Campo'].map(s=>`<option ${s===ff?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <button class="btn btn-p" onclick="abrirMCo()">+ Novo Colaborador</button>
     </div>
-    <div class="card">
-      <div class="card-body">
-        <table>
-          <thead><tr><th>Nome</th><th>Função</th><th>Situação</th><th>Estado</th><th>Admissão</th><th>Desligamento</th><th>Ações</th></tr></thead>
-          <tbody>
-            ${filtered.length === 0 ? `<tr><td colspan="7"><div class="empty-state"><div class="icon">👷</div><p>Nenhum colaborador cadastrado.</p></div></td></tr>` :
-            filtered.map(c => `<tr>
-              <td><strong>${c.nome}</strong></td>
-              <td>${c.funcao||'—'}</td>
-              <td>${badgeSituacao(c.situacao)}</td>
-              <td>${c.estado||'—'}</td>
-              <td>${c.admissao ? fmtDate(c.admissao) : '—'}</td>
-              <td>${c.desligamento ? fmtDate(c.desligamento) : '—'}</td>
-              <td>
-                <button class="btn btn-sm btn-outline" onclick="editarColab('${c.id}')">✏️</button>
-                <button class="btn btn-sm btn-danger" onclick="deletarColab('${c.id}')">🗑</button>
-              </td>
-            </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>`;
+    <div class="card"><div class="card-body"><table>
+      <thead><tr>
+        ${thSort('nome','Nome',coSort.col,coSort.asc)}
+        ${thSort('funcao','Função',coSort.col,coSort.asc)}
+        ${thSort('situacao','Situação',coSort.col,coSort.asc)}
+        ${thSort('estado','Estado',coSort.col,coSort.asc)}
+        ${thSort('admissao','Admissão',coSort.col,coSort.asc)}
+        ${thSort('desligamento','Desligamento',coSort.col,coSort.asc)}
+        <th>Ações</th>
+      </tr></thead>
+      <tbody>${lista.length?lista.map(c=>`<tr>
+        <td><strong>${c.nome}</strong></td><td>${c.funcao||'—'}</td>
+        <td>${badgeSit(c.situacao)}</td><td>${c.estado||'—'}</td>
+        <td>${fmtD(c.admissao)}</td><td>${fmtD(c.desligamento)}</td>
+        <td style="display:flex;gap:4px">
+          <button class="btn btn-sm btn-o" onclick="abrirMCo('${c.id}')">✏️</button>
+          <button class="btn btn-sm btn-d" onclick="delColab('${c.id}')">🗑</button>
+        </td></tr>`).join(''):`<tr><td colspan="7"><div class="empty-st"><div class="ico">👷</div><p>Nenhum colaborador.</p></div></td></tr>`}
+      </tbody>
+    </table></div></div>`;
 }
 
-// ── PRODUÇÃO ──────────────────────────────────────────────────
-function renderProducao() {
-  document.getElementById('content').innerHTML = `
-    <div class="card" style="max-width:600px">
-      <div class="card-header"><h3>Lançamento de Produção Diária</h3></div>
-      <div class="card-body" style="padding:20px">
-        <div class="form-grid">
-          <div class="form-group full">
-            <label>Contrato *</label>
-            <select id="p-contrato" onchange="loadDiscByContrato()">
-              <option value="">Selecione o contrato...</option>
+// ─── MÃO DE OBRA ─────────────────────────────────────────────
+function renderMO(){
+  const q=(document.getElementById('mo-b')?.value||'').toLowerCase();
+  const fc=document.getElementById('mo-fc')?.value||'';
+  const ativos=colaboradores.filter(c=>c.situacao==='Ativo'&&c.funcao!=='Terceirizado Campo');
+  let lista=ativos;
+  if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q)||(c.funcao||'').toLowerCase().includes(q));
+  if(fc)lista=lista.filter(c=>c.funcao===fc);
+  const aj=ativos.filter(c=>c.funcao==='Ajudante de Obras'||!c.funcao).length;
+  const aux=ativos.filter(c=>c.funcao==='Auxiliar de Engenharia').length;
+  const ass=ativos.filter(c=>c.funcao==='Assistente de Engenharia').length;
+  document.getElementById('content').innerHTML=`
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);max-width:560px">
+      <div class="kpi-card g"><div class="kpi-lbl">Total Ativos</div><div class="kpi-val">${ativos.length}</div></div>
+      <div class="kpi-card"><div class="kpi-lbl">Ajudantes</div><div class="kpi-val">${aj}</div></div>
+      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Auxiliares</div><div class="kpi-val" style="color:var(--azul2)">${aux}</div></div>
+      <div class="kpi-card y"><div class="kpi-lbl">Assistentes</div><div class="kpi-val">${ass}</div></div>
+    </div>
+    <div class="sbar">
+      <input class="sinput" id="mo-b" placeholder="Buscar nome ou função..." oninput="renderMO()" value="${q}">
+      <select class="sselect" id="mo-fc" onchange="renderMO()">
+        <option value="">Todas funções</option>
+        ${['Ajudante de Obras','Auxiliar de Engenharia','Assistente de Engenharia'].map(s=>`<option ${s===fc?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+    <div class="card"><div class="card-body"><table>
+      <thead><tr><th>Nome</th><th>Função</th><th>Estado</th><th>Admissão</th></tr></thead>
+      <tbody>${lista.length?lista.map(c=>`<tr>
+        <td><strong>${c.nome}</strong></td><td>${c.funcao||'—'}</td>
+        <td>${c.estado||'—'}</td><td>${fmtD(c.admissao)}</td>
+      </tr>`).join(''):`<tr><td colspan="4"><div class="empty-st"><div class="ico">🏗️</div><p>Nenhum colaborador ativo.</p></div></td></tr>`}
+      </tbody>
+    </table></div></div>`;
+}
+
+// ─── LANÇAR PRODUÇÃO ─────────────────────────────────────────
+function renderProd(){
+  document.getElementById('content').innerHTML=`
+    <div class="card" style="max-width:580px">
+      <div class="card-hdr"><h3>Lançamento de Produção Diária</h3></div>
+      <div class="card-body" style="padding:18px">
+        <div class="fg">
+          <div class="fgrp full"><label>Contrato *</label>
+            <select id="p-cont" onchange="loadDiscs()">
+              <option value="">Selecione...</option>
               ${contratos.map(c=>`<option value="${c.id}">${c.nome} ${c.ano?'('+c.ano+')':''}</option>`).join('')}
-            </select>
+            </select></div>
+          <div class="fgrp full"><label>Disciplina *</label><select id="p-disc"><option>Selecione o contrato primeiro...</option></select></div>
+          <div class="fgrp"><label>Data *</label><input type="date" id="p-data" value="${new Date().toISOString().split('T')[0]}"></div>
+          <div class="fgrp"><label>Quantidade *</label><input type="number" id="p-qtd" min="0"></div>
+          <div class="fgrp full"><label>Colaborador</label>
+            <input id="p-colab" list="clist">
+            <datalist id="clist">${colaboradores.filter(c=>c.situacao==='Ativo').map(c=>`<option value="${c.nome}">`).join('')}</datalist>
           </div>
-          <div class="form-group full">
-            <label>Disciplina *</label>
-            <select id="p-disc"><option value="">Selecione o contrato primeiro...</option></select>
-          </div>
-          <div class="form-group">
-            <label>Data *</label>
-            <input type="date" id="p-data" value="${new Date().toISOString().split('T')[0]}">
-          </div>
-          <div class="form-group">
-            <label>Quantidade *</label>
-            <input type="number" id="p-qtd" placeholder="0" min="0">
-          </div>
-          <div class="form-group full">
-            <label>Colaborador responsável</label>
-            <input id="p-colab" list="colab-list" placeholder="Nome do colaborador">
-            <datalist id="colab-list">
-              ${colaboradores.filter(c=>c.situacao==='Ativo').map(c=>`<option value="${c.nome}">`).join('')}
-            </datalist>
-          </div>
-          <div class="form-group full">
-            <label>Observação</label>
-            <textarea id="p-obs" rows="2"></textarea>
-          </div>
+          <div class="fgrp full"><label>Obs</label><textarea id="p-obs"></textarea></div>
         </div>
-        <div style="margin-top:16px">
-          <button class="btn btn-success" style="width:100%" onclick="salvarProducao()">⚡ Lançar Produção</button>
-        </div>
+        <button class="btn btn-g" style="width:100%;margin-top:14px" onclick="salvarProd()">⚡ Lançar Produção</button>
       </div>
     </div>`;
 }
 
-// ── PRODUTIVIDADE ─────────────────────────────────────────────
-function getSemanas() {
-  const semanas = [];
-  const hoje = new Date();
-  const diaSem = hoje.getDay() || 7;
-  const seg = new Date(hoje); seg.setDate(hoje.getDate() - diaSem + 1);
-  for (let i = 0; i < 52; i++) {
-    const s = new Date(seg); s.setDate(seg.getDate() - i*7);
-    const f = new Date(s); f.setDate(s.getDate() + 4);
-    semanas.push({ seg:s, sex:f, label: fmtDateObj(s)+' → '+fmtDateObj(f), key: isoDate(s) });
+// ─── PRODUÇÃO OTD (HISTÓRICO) ────────────────────────────────
+let prodData=[],prodSort={col:'data',asc:false};
+async function renderProdOTD(){
+  if(!prodData.length){
+    try{prodData=await db('producao?order=data.desc&limit=500&select=*,disciplinas(nome,unidade),contratos(nome)');}
+    catch(e){toast('Erro: '+e.message,'e');}
   }
-  return semanas;
-}
-function fmtDateObj(d) { return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}); }
-function isoDate(d) { return d.toISOString().split('T')[0]; }
-function addDays(d,n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
-
-async function renderProdutividade() {
-  const semanas = getSemanas();
-  const semSel = document.getElementById('prod-semana')?.value || semanas[0].key;
-  const sem = semanas.find(s=>s.key===semSel) || semanas[0];
-  const diasSem = [0,1,2,3,4].map(i=>isoDate(addDays(sem.seg,i)));
-  const dtIni = isoDate(sem.seg), dtFim = isoDate(sem.sex);
-
-  let prod = [];
-  try {
-    prod = await db(`producao?data=gte.${dtIni}&data=lte.${dtFim}&select=*,disciplinas(nome,unidade),contratos(nome,clientes(nome,sigla))`);
-  } catch(e) { toast('Erro: '+e.message,'error'); }
-
-  const fConc  = document.getElementById('prod-conc')?.value  || '';
-  const fDisc  = document.getElementById('prod-disc')?.value  || '';
-  const fColab = (document.getElementById('prod-colab')?.value||'').toLowerCase();
-
-  const concs = [...new Set(prod.map(r=>r.contratos?.nome).filter(Boolean))].sort();
-  const discs = [...new Set(prod.map(r=>r.disciplinas?.nome).filter(Boolean))].sort();
-
-  let rows = prod;
-  if (fConc)  rows = rows.filter(r=>r.contratos?.nome===fConc);
-  if (fDisc)  rows = rows.filter(r=>r.disciplinas?.nome===fDisc);
-  if (fColab) rows = rows.filter(r=>(r.colaborador||'').toLowerCase().includes(fColab));
-
-  // Agrupar por (contrato, colaborador, disciplina)
-  const grupos = {};
-  for (const r of rows) {
-    const key = `${r.contratos?.nome}|||${r.colaborador||'(sem colab)'}|||${r.disciplinas?.nome}`;
-    if (!grupos[key]) grupos[key] = { cNome:r.contratos?.nome||'—', colab:r.colaborador||'(sem colab)', disc:r.disciplinas?.nome||'—', unidade:r.disciplinas?.unidade||'Und', dias:{}, total:0 };
-    grupos[key].dias[r.data] = (grupos[key].dias[r.data]||0) + Number(r.quantidade||0);
-    grupos[key].total += Number(r.quantidade||0);
-  }
-
-  const linhas = Object.values(grupos);
-  const totalProd = linhas.reduce((s,l)=>s+l.total,0);
-  const colabsAtivos = [...new Set(rows.map(r=>r.colaborador).filter(Boolean))].length;
-  const diasComProd = [...new Set(rows.map(r=>r.data))].length || 1;
-
-  const porContrato = {};
-  for (const l of linhas) {
-    if (!porContrato[l.cNome]) porContrato[l.cNome] = [];
-    porContrato[l.cNome].push(l);
-  }
-
-  document.getElementById('content').innerHTML = `
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end">
-      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Semana</label>
-        <select id="prod-semana" onchange="renderProdutividade()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;min-width:185px">
-          ${semanas.map(s=>`<option value="${s.key}" ${s.key===semSel?'selected':''}>${s.label}</option>`).join('')}
-        </select></div>
-      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Contrato</label>
-        <select id="prod-conc" onchange="renderProdutividade()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;min-width:180px">
-          <option value="">Todos</option>${concs.map(c=>`<option value="${c}" ${c===fConc?'selected':''}>${c}</option>`).join('')}
-        </select></div>
-      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Disciplina</label>
-        <select id="prod-disc" onchange="renderProdutividade()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;min-width:160px">
-          <option value="">Todas</option>${discs.map(d=>`<option value="${d}" ${d===fDisc?'selected':''}>${d}</option>`).join('')}
-        </select></div>
-      <div><label style="display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Colaborador</label>
-        <input id="prod-colab" placeholder="nome..." value="${fColab}" oninput="renderProdutividade()"
-          style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;width:130px"></div>
-      <button class="btn btn-success btn-sm" style="margin-top:18px" onclick="exportarProdutividade('${semSel}')">⬇ Exportar .xlsx</button>
+  const q=(document.getElementById('po-b')?.value||'').toLowerCase();
+  const fc=document.getElementById('po-fc')?.value||'';
+  const fd=document.getElementById('po-fd')?.value||'';
+  let lista=prodData;
+  if(q)lista=lista.filter(r=>(r.contratos?.nome||'').toLowerCase().includes(q)||(r.colaborador||'').toLowerCase().includes(q));
+  if(fc)lista=lista.filter(r=>r.contratos?.nome===fc);
+  if(fd)lista=lista.filter(r=>r.disciplinas?.nome===fd);
+  const conts=[...new Set(prodData.map(r=>r.contratos?.nome).filter(Boolean))].sort();
+  const discs=[...new Set(prodData.map(r=>r.disciplinas?.nome).filter(Boolean))].sort();
+  const total=lista.reduce((s,r)=>s+(r.quantidade||0),0);
+  document.getElementById('content').innerHTML=`
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+      <div class="kpi-card"><div class="kpi-lbl">Lançamentos</div><div class="kpi-val">${lista.length}</div></div>
+      <div class="kpi-card g"><div class="kpi-lbl">Total Produzido</div><div class="kpi-val">${fmtN(total)}</div></div>
+      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Colabs</div><div class="kpi-val" style="color:var(--azul2)">${new Set(lista.map(r=>r.colaborador).filter(Boolean)).size}</div></div>
     </div>
-
-    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
-      <div class="kpi-card azul"><div class="kpi-label">Produção Total</div><div class="kpi-value" style="font-size:22px">${totalProd.toLocaleString('pt-BR')}</div><div style="font-size:11px;color:var(--text2)">unidades na semana</div></div>
-      <div class="kpi-card verde"><div class="kpi-label">Colabs Ativos</div><div class="kpi-value" style="font-size:22px">${colabsAtivos}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Média/Dia</div><div class="kpi-value" style="font-size:22px">${diasComProd>0?(totalProd/diasComProd).toFixed(0):0}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Dias com Prod.</div><div class="kpi-value" style="font-size:22px">${diasComProd}</div></div>
+    <div class="sbar">
+      <input class="sinput" id="po-b" placeholder="Buscar contrato ou colaborador..." oninput="renderProdOTD()" value="${q}">
+      <select class="sselect" id="po-fc" onchange="renderProdOTD()">
+        <option value="">Todos os contratos</option>${conts.map(c=>`<option ${c===fc?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <select class="sselect" id="po-fd" onchange="renderProdOTD()">
+        <option value="">Todas disciplinas</option>${discs.map(d=>`<option ${d===fd?'selected':''}>${d}</option>`).join('')}
+      </select>
+      <button class="btn btn-o btn-sm" onclick="prodData=[];renderProdOTD()">↻ Recarregar</button>
     </div>
-
-    ${Object.keys(porContrato).length===0
-      ? `<div class="empty-state"><div class="icon">📈</div><p>Nenhuma produção lançada nesta semana.<br>Use "Lançar Produção" para registrar dados.</p></div>`
-      : Object.entries(porContrato).sort(([a],[b])=>a.localeCompare(b)).map(([cNome,ls])=>{
-          const tot = ls.reduce((s,l)=>s+l.total,0);
-          return `<div class="card" style="margin-bottom:14px">
-            <div class="card-header" style="background:#f7f9fc">
-              <h3>📋 ${cNome}</h3>
-              <span style="font-size:12px;color:var(--text2)">${ls.length} linha(s) · Total: <strong>${tot.toLocaleString('pt-BR')}</strong> und</span>
-            </div>
-            <div class="card-body"><table>
-              <thead><tr><th>Colaborador</th><th>Disciplina</th>
-                <th style="text-align:center">SEG</th><th style="text-align:center">TER</th>
-                <th style="text-align:center">QUA</th><th style="text-align:center">QUI</th>
-                <th style="text-align:center">SEX</th><th style="text-align:center">TOTAL</th>
-                <th style="text-align:center">MÉDIA/DIA</th>
-              </tr></thead>
-              <tbody>${ls.sort((a,b)=>a.colab.localeCompare(b.colab)).map(l=>{
-                const dc = Object.values(l.dias).filter(v=>v>0).length||1;
-                return `<tr>
-                  <td><strong>${l.colab}</strong></td>
-                  <td style="font-size:12px;color:var(--text2)">${l.disc}</td>
-                  ${diasSem.map(d=>`<td style="text-align:center;font-size:13px">${l.dias[d]>0?l.dias[d].toLocaleString('pt-BR'):'<span style="color:#ccc">—</span>'}</td>`).join('')}
-                  <td style="text-align:center;font-weight:700;color:var(--azul)">${l.total.toLocaleString('pt-BR')} <span style="font-size:10px;color:var(--text2)">${l.unidade}</span></td>
-                  <td style="text-align:center;color:var(--verde);font-weight:600">${(l.total/dc).toFixed(1)}</td>
-                </tr>`;
-              }).join('')}</tbody>
-            </table></div>
-          </div>`;
-        }).join('')
-    }`;
+    <div class="card"><div class="card-body"><table>
+      <thead><tr><th>Data</th><th>Contrato</th><th>Disciplina</th><th>Colaborador</th><th>Quantidade</th><th>Unidade</th></tr></thead>
+      <tbody>${lista.length?lista.slice(0,200).map(r=>`<tr>
+        <td>${fmtD(r.data)}</td>
+        <td>${r.contratos?.nome||'—'}</td>
+        <td>${r.disciplinas?.nome||'—'}</td>
+        <td>${r.colaborador||'—'}</td>
+        <td style="font-weight:600">${fmtN(r.quantidade)}</td>
+        <td>${r.disciplinas?.unidade||'—'}</td>
+      </tr>`).join(''):`<tr><td colspan="6"><div class="empty-st"><div class="ico">📦</div><p>Nenhum lançamento encontrado.</p></div></td></tr>`}
+      </tbody>
+    </table>${lista.length>200?`<div style="padding:10px 14px;font-size:12px;color:var(--text2)">Mostrando 200 de ${lista.length} registros. Use os filtros para refinar.</div>`:''}
+    </div></div>`;
 }
 
-async function exportarProdutividade(semKey) {
-  const semanas = getSemanas();
-  const sem = semanas.find(s=>s.key===semKey)||semanas[0];
-  const dtIni = isoDate(sem.seg), dtFim = isoDate(sem.sex);
-  const diasSem = [0,1,2,3,4].map(i=>isoDate(addDays(sem.seg,i)));
-  const DIAS_HDR = ['Seg','Ter','Qua','Qui','Sex'];
-
-  try {
-    const prod = await db(`producao?data=gte.${dtIni}&data=lte.${dtFim}&select=*,disciplinas(nome,unidade),contratos(nome,clientes(nome))`);
-
-    const grupos = {};
-    for (const r of prod) {
-      const key = `${r.contratos?.nome}|||${r.colaborador||''}|||${r.disciplinas?.nome}`;
-      if (!grupos[key]) grupos[key] = { conc:r.contratos?.nome||'', colab:r.colaborador||'', disc:r.disciplinas?.nome||'', unidade:r.disciplinas?.unidade||'Und', dias:{}, total:0 };
-      grupos[key].dias[r.data] = (grupos[key].dias[r.data]||0)+Number(r.quantidade||0);
-      grupos[key].total += Number(r.quantidade||0);
-    }
-    const linhas = Object.values(grupos).sort((a,b)=>a.conc.localeCompare(b.conc)||a.colab.localeCompare(b.colab));
-    const totalGeral = linhas.reduce((s,l)=>s+l.total,0);
-
-    // Por contrato
-    const porConc = {};
-    for (const l of linhas) {
-      if (!porConc[l.conc]) porConc[l.conc]={colabs:new Set(),total:0};
-      porConc[l.conc].colabs.add(l.colab); porConc[l.conc].total+=l.total;
-    }
-    // Por disciplina
-    const porDisc = {};
-    for (const l of linhas) {
-      if (!porDisc[l.disc]) porDisc[l.disc]={colabs:new Set(),total:0,un:l.unidade};
-      porDisc[l.disc].colabs.add(l.colab); porDisc[l.disc].total+=l.total;
-    }
-
-    // CSV com separador ; e BOM UTF-8
-    let csv = '\uFEFF';
-    csv += `PRODUTIVIDADE — Semana ${fmtDateObj(sem.seg)} a ${fmtDateObj(sem.sex)}\n`;
-    csv += `${linhas.length} linha(s) | Total geral: ${totalGeral} unidades\n\n`;
-    csv += ['Contrato','Colaborador','Disciplina','Unidade',...DIAS_HDR,'Total','Média/dia'].join(';')+'\n';
-    for (const l of linhas) {
-      const dc=Object.values(l.dias).filter(v=>v>0).length||1;
-      csv += [l.conc,l.colab,l.disc,l.unidade,...diasSem.map(d=>l.dias[d]||0),l.total,(l.total/dc).toFixed(1)].join(';')+'\n';
-    }
-    csv += '\n\nRANKING POR CONTRATO\nContrato;Colabs;Total;Média/dia\n';
-    for (const [c,v] of Object.entries(porConc).sort(([,a],[,b])=>b.total-a.total))
-      csv += `${c};${v.colabs.size};${v.total};${(v.total/5).toFixed(1)}\n`;
-    csv += '\n\nRANKING POR DISCIPLINA\nDisciplina;Unidade;Colabs;Total;Média/dia\n';
-    for (const [d,v] of Object.entries(porDisc).sort(([,a],[,b])=>b.total-a.total))
-      csv += `${d};${v.un};${v.colabs.size};${v.total};${(v.total/5).toFixed(1)}\n`;
-
-    const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `Produtividade_${dtIni}.csv`;
-    a.click();
-    toast('Exportado!','success');
-  } catch(e) { toast('Erro: '+e.message,'error'); }
+// ─── PRODUTIVIDADE ───────────────────────────────────────────
+function getSemanas(){
+  const sem=[];const hoje=new Date();const dow=hoje.getDay()||7;
+  const seg=new Date(hoje);seg.setDate(hoje.getDate()-dow+1);
+  for(let i=0;i<52;i++){
+    const s=new Date(seg);s.setDate(seg.getDate()-i*7);
+    const f=new Date(s);f.setDate(s.getDate()+4);
+    const lbl=s.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' → '+f.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});
+    sem.push({seg:s,sex:f,lbl,key:isoD(s)});
+  }
+  return sem;
+}
+async function renderProdutividade(){
+  const sems=getSemanas();
+  const semSel=document.getElementById('ps-sem')?.value||sems[0].key;
+  const sem=sems.find(s=>s.key===semSel)||sems[0];
+  const dtI=isoD(sem.seg),dtF=isoD(sem.sex);
+  const diasSem=[0,1,2,3,4].map(i=>isoD(addDays(sem.seg,i)));
+  let prod=[];
+  try{prod=await db(`producao?data=gte.${dtI}&data=lte.${dtF}&select=*,disciplinas(nome,unidade),contratos(nome,clientes(nome))`);}
+  catch(e){toast('Erro: '+e.message,'e');}
+  const fC=document.getElementById('ps-fc')?.value||'';
+  const fD=document.getElementById('ps-fd')?.value||'';
+  const fB=(document.getElementById('ps-fb')?.value||'').toLowerCase();
+  const conts=[...new Set(prod.map(r=>r.contratos?.nome).filter(Boolean))].sort();
+  const discs=[...new Set(prod.map(r=>r.disciplinas?.nome).filter(Boolean))].sort();
+  let rows=prod;
+  if(fC)rows=rows.filter(r=>r.contratos?.nome===fC);
+  if(fD)rows=rows.filter(r=>r.disciplinas?.nome===fD);
+  if(fB)rows=rows.filter(r=>(r.colaborador||'').toLowerCase().includes(fB));
+  const grupos={};
+  for(const r of rows){
+    const k=`${r.contratos?.nome}|||${r.colaborador||'?'}|||${r.disciplinas?.nome}`;
+    if(!grupos[k])grupos[k]={cNome:r.contratos?.nome||'—',colab:r.colaborador||'?',disc:r.disciplinas?.nome||'—',un:r.disciplinas?.unidade||'',dias:{},total:0};
+    grupos[k].dias[r.data]=(grupos[k].dias[r.data]||0)+Number(r.quantidade||0);
+    grupos[k].total+=Number(r.quantidade||0);
+  }
+  const linhas=Object.values(grupos);
+  const totProd=linhas.reduce((s,l)=>s+l.total,0);
+  const colabs=new Set(rows.map(r=>r.colaborador).filter(Boolean)).size;
+  const diasC=new Set(rows.map(r=>r.data)).size||1;
+  const porC={};for(const l of linhas){if(!porC[l.cNome])porC[l.cNome]=[];porC[l.cNome].push(l);}
+  document.getElementById('content').innerHTML=`
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end">
+      <div><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Semana</div>
+        <select id="ps-sem" onchange="renderProdutividade()" class="sselect" style="min-width:185px">
+          ${sems.map(s=>`<option value="${s.key}" ${s.key===semSel?'selected':''}>${s.lbl}</option>`).join('')}
+        </select></div>
+      <div><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Contrato</div>
+        <select id="ps-fc" onchange="renderProdutividade()" class="sselect" style="min-width:170px">
+          <option value="">Todos</option>${conts.map(c=>`<option ${c===fC?'selected':''}>${c}</option>`).join('')}
+        </select></div>
+      <div><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Disciplina</div>
+        <select id="ps-fd" onchange="renderProdutividade()" class="sselect" style="min-width:150px">
+          <option value="">Todas</option>${discs.map(d=>`<option ${d===fD?'selected':''}>${d}</option>`).join('')}
+        </select></div>
+      <div><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Colaborador</div>
+        <input id="ps-fb" value="${fB}" oninput="renderProdutividade()" class="sinput" style="width:130px" placeholder="nome..."></div>
+      <button class="btn btn-g btn-sm" style="margin-top:18px" onclick="exportProd('${semSel}')">⬇ Exportar</button>
+    </div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Produção Total</div><div class="kpi-val" style="color:var(--azul2);font-size:22px">${fmtN(totProd)}</div></div>
+      <div class="kpi-card g"><div class="kpi-lbl">Colabs</div><div class="kpi-val" style="font-size:22px">${colabs}</div></div>
+      <div class="kpi-card"><div class="kpi-lbl">Média/Dia</div><div class="kpi-val" style="font-size:22px">${Math.round(totProd/diasC)}</div></div>
+      <div class="kpi-card"><div class="kpi-lbl">Dias com Prod.</div><div class="kpi-val" style="font-size:22px">${diasC}</div></div>
+    </div>
+    ${Object.keys(porC).length===0?`<div class="empty-st"><div class="ico">📈</div><p>Nenhuma produção nesta semana.</p></div>`:
+    Object.entries(porC).sort(([a],[b])=>a.localeCompare(b)).map(([cNome,ls])=>{
+      const tot=ls.reduce((s,l)=>s+l.total,0);
+      return`<div class="card" style="margin-bottom:12px">
+        <div class="card-hdr" style="background:#f7f9fc">
+          <h3>📋 ${cNome}</h3>
+          <span style="font-size:12px;color:var(--text2)">${ls.length} linha(s) · <strong>${fmtN(tot)}</strong> und</span>
+        </div>
+        <div class="card-body"><table>
+          <thead><tr><th>Colaborador</th><th>Disciplina</th><th style="text-align:center">SEG</th><th style="text-align:center">TER</th><th style="text-align:center">QUA</th><th style="text-align:center">QUI</th><th style="text-align:center">SEX</th><th style="text-align:center">TOTAL</th><th style="text-align:center">MÉD/DIA</th></tr></thead>
+          <tbody>${ls.sort((a,b)=>a.colab.localeCompare(b.colab)).map(l=>{
+            const dc=Object.values(l.dias).filter(v=>v>0).length||1;
+            return`<tr>
+              <td><strong>${l.colab}</strong></td>
+              <td style="color:var(--text2);font-size:12px">${l.disc}</td>
+              ${diasSem.map(d=>`<td style="text-align:center">${l.dias[d]>0?l.dias[d].toLocaleString('pt-BR'):'<span style="color:#ccc">—</span>'}</td>`).join('')}
+              <td style="text-align:center;font-weight:700;color:var(--azul)">${fmtN(l.total)} <span style="font-size:10px;color:var(--text2)">${l.un}</span></td>
+              <td style="text-align:center;color:var(--verde);font-weight:600">${(l.total/dc).toFixed(1)}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>
+      </div>`;
+    }).join('')}`;
 }
 
-// ── RECURSOS ──────────────────────────────────────────────────
-function renderRecursos() {
-  const hoje = new Date().toISOString().split('T')[0];
-  const ativos = colaboradores.filter(c => {
-    if (c.situacao !== 'Ativo') return false;
-    if (c.funcao === 'Terceirizado Campo') return false;
+async function exportProd(semKey){
+  const sems=getSemanas();const sem=sems.find(s=>s.key===semKey)||sems[0];
+  const dtI=isoD(sem.seg),dtF=isoD(sem.sex);
+  const diasSem=[0,1,2,3,4].map(i=>isoD(addDays(sem.seg,i)));
+  try{
+    const prod=await db(`producao?data=gte.${dtI}&data=lte.${dtF}&select=*,disciplinas(nome,unidade),contratos(nome)`);
+    const grupos={};
+    for(const r of prod){
+      const k=`${r.contratos?.nome}|||${r.colaborador||''}|||${r.disciplinas?.nome}`;
+      if(!grupos[k])grupos[k]={conc:r.contratos?.nome||'',colab:r.colaborador||'',disc:r.disciplinas?.nome||'',un:r.disciplinas?.unidade||'',dias:{},total:0};
+      grupos[k].dias[r.data]=(grupos[k].dias[r.data]||0)+Number(r.quantidade||0);
+      grupos[k].total+=Number(r.quantidade||0);
+    }
+    const linhas=Object.values(grupos).sort((a,b)=>a.conc.localeCompare(b.conc)||a.colab.localeCompare(b.colab));
+    const totGeral=linhas.reduce((s,l)=>s+l.total,0);
+    const porC={},porD={};
+    for(const l of linhas){
+      if(!porC[l.conc])porC[l.conc]={colabs:new Set(),total:0};porC[l.conc].colabs.add(l.colab);porC[l.conc].total+=l.total;
+      if(!porD[l.disc])porD[l.disc]={colabs:new Set(),total:0,un:l.un};porD[l.disc].colabs.add(l.colab);porD[l.disc].total+=l.total;
+    }
+    const fmtObj=d=>d instanceof Date?d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}):'';
+    let csv='\uFEFF';
+    csv+=`PRODUTIVIDADE — Semana ${fmtObj(sem.seg)} a ${fmtObj(sem.sex)}\n`;
+    csv+=`${linhas.length} linha(s) | Total: ${totGeral}\n\n`;
+    csv+='Contrato;Colaborador;Disciplina;Unidade;Seg;Ter;Qua;Qui;Sex;Total;Média/dia\n';
+    for(const l of linhas){const dc=Object.values(l.dias).filter(v=>v>0).length||1;csv+=`${l.conc};${l.colab};${l.disc};${l.un};${diasSem.map(d=>l.dias[d]||0).join(';')};${l.total};${(l.total/dc).toFixed(1)}\n`;}
+    csv+='\n\nRANKING POR CONTRATO\nContrato;Colabs;Total;Média/dia\n';
+    for(const[c,v]of Object.entries(porC).sort(([,a],[,b])=>b.total-a.total))csv+=`${c};${v.colabs.size};${v.total};${(v.total/5).toFixed(1)}\n`;
+    csv+='\n\nRANKING POR DISCIPLINA\nDisciplina;Unidade;Colabs;Total;Média/dia\n';
+    for(const[d,v]of Object.entries(porD).sort(([,a],[,b])=>b.total-a.total))csv+=`${d};${v.un};${v.colabs.size};${v.total};${(v.total/5).toFixed(1)}\n`;
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+    a.download=`Produtividade_${dtI}.csv`;a.click();toast('Exportado!','s');
+  }catch(e){toast('Erro: '+e.message,'e');}
+}
+
+// ─── RECURSOS ────────────────────────────────────────────────
+function renderRecursos(){
+  const hoje=new Date().toISOString().split('T')[0];
+  const ativos=colaboradores.filter(c=>{
+    if(c.situacao!=='Ativo')return false;
+    if(c.funcao==='Terceirizado Campo')return false;
     return true;
   });
-  const ajudantes  = ativos.filter(c => c.funcao === 'Ajudante de Obras' || !c.funcao);
-  const auxiliares = ativos.filter(c => c.funcao === 'Auxiliar de Engenharia');
-  const assistentes= ativos.filter(c => c.funcao === 'Assistente de Engenharia');
-
-  document.getElementById('content').innerHTML = `
-    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);max-width:640px">
-      <div class="kpi-card verde"><div class="kpi-label">Total Ativos</div><div class="kpi-value">${ativos.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Ajudantes</div><div class="kpi-value">${ajudantes.length}</div></div>
-      <div class="kpi-card azul"><div class="kpi-label">Auxiliares</div><div class="kpi-value">${auxiliares.length}</div></div>
-      <div class="kpi-card amarelo"><div class="kpi-label">Assistentes</div><div class="kpi-value">${assistentes.length}</div></div>
+  const aj=ativos.filter(c=>c.funcao==='Ajudante de Obras'||!c.funcao).length;
+  const aux=ativos.filter(c=>c.funcao==='Auxiliar de Engenharia').length;
+  const ass=ativos.filter(c=>c.funcao==='Assistente de Engenharia').length;
+  const q=(document.getElementById('re-b')?.value||'').toLowerCase();
+  let lista=ativos;if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q));
+  document.getElementById('content').innerHTML=`
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);max-width:560px">
+      <div class="kpi-card g"><div class="kpi-lbl">Total Ativos</div><div class="kpi-val">${ativos.length}</div></div>
+      <div class="kpi-card"><div class="kpi-lbl">Ajudantes</div><div class="kpi-val">${aj}</div></div>
+      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Auxiliares</div><div class="kpi-val" style="color:var(--azul2)">${aux}</div></div>
+      <div class="kpi-card y"><div class="kpi-lbl">Assistentes</div><div class="kpi-val">${ass}</div></div>
+    </div>
+    <div class="sbar">
+      <input class="sinput" id="re-b" placeholder="Buscar colaborador..." oninput="renderRecursos()" value="${q}">
     </div>
     <div class="card">
-      <div class="card-header"><h3>Equipe ativa hoje — ${fmtDate(hoje)}</h3></div>
-      <div class="card-body">
-        <table>
-          <thead><tr><th>Nome</th><th>Função</th><th>Estado</th><th>Admissão</th></tr></thead>
-          <tbody>
-            ${ativos.map(c=>`<tr>
-              <td><strong>${c.nome}</strong></td>
-              <td>${c.funcao||'—'}</td>
-              <td>${c.estado||'—'}</td>
-              <td>${c.admissao?fmtDate(c.admissao):'—'}</td>
-            </tr>`).join('') || '<tr><td colspan="4" class="loading-row">Nenhum colaborador ativo.</td></tr>'}
-          </tbody>
-        </table>
-      </div>
-    </div>`;
-}
-
-// ── MODAL CONTRATO ────────────────────────────────────────────
-function abrirModalContrato(id=null) {
-  discTemp = [];
-  document.getElementById('modal-contrato-title').textContent = id ? 'Editar Contrato' : 'Novo Contrato';
-  const campos = ['contrato-id','c-nome','c-ano','c-estado','c-obs'];
-  campos.forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-  document.getElementById('c-status').value = 'Aguardando início';
-  ['c-ini-plan','c-fim-plan','c-ini-real','c-fim-est'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-
-  // Popular select de clientes
-  const sel = document.getElementById('c-cliente');
-  sel.innerHTML = '<option value="">Selecione o cliente...</option>' +
-    clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
-
-  if (id) {
-    const c = contratos.find(x=>x.id===id);
-    if (c) {
-      document.getElementById('contrato-id').value = c.id;
-      document.getElementById('c-nome').value = c.nome||'';
-      document.getElementById('c-cliente').value = c.cliente_id||'';
-      document.getElementById('c-ano').value = c.ano||'';
-      document.getElementById('c-estado').value = c.estado||'';
-      document.getElementById('c-status').value = c.status||'Aguardando início';
-      document.getElementById('c-ini-plan').value = c.inicio_planejado||'';
-      document.getElementById('c-fim-plan').value = c.termino_planejado||'';
-      document.getElementById('c-ini-real').value = c.inicio_real||'';
-      document.getElementById('c-fim-est').value = c.termino_estimado||'';
-      document.getElementById('c-obs').value = c.obs||'';
-      discTemp = disciplinas.filter(d=>d.contrato_id===id).map(d=>({...d, _saved:true}));
-    }
-  }
-  renderDiscList();
-  document.getElementById('disc-form').style.display = 'none';
-  openModal('modal-contrato');
-}
-
-function editarContrato(id) { abrirModalContrato(id); }
-
-async function salvarContrato() {
-  const nome = document.getElementById('c-nome').value.trim();
-  if (!nome) { toast('Nome do contrato é obrigatório', 'error'); return; }
-
-  const btn = document.getElementById('btn-salvar-contrato');
-  btn.innerHTML = '<span class="spinner"></span> Salvando...'; btn.disabled = true;
-
-  try {
-    const payload = {
-      nome,
-      cliente_id: document.getElementById('c-cliente').value || null,
-      ano: document.getElementById('c-ano').value || null,
-      estado: document.getElementById('c-estado').value || null,
-      status: document.getElementById('c-status').value,
-      inicio_planejado:  document.getElementById('c-ini-plan').value || null,
-      termino_planejado: document.getElementById('c-fim-plan').value || null,
-      inicio_real:       document.getElementById('c-ini-real').value || null,
-      termino_estimado:  document.getElementById('c-fim-est').value || null,
-      obs: document.getElementById('c-obs').value || null,
-      updated_at: new Date().toISOString(),
-    };
-
-    const cid = document.getElementById('contrato-id').value;
-    let contratoId;
-    if (cid) {
-      await db(`contratos?id=eq.${cid}`, 'PATCH', payload);
-      contratoId = cid;
-    } else {
-      const res = await db('contratos', 'POST', payload);
-      contratoId = res[0].id;
-    }
-
-    // Salvar disciplinas novas
-    for (const d of discTemp) {
-      if (d._saved) continue;
-      await db('disciplinas', 'POST', {
-        contrato_id: contratoId,
-        nome: d.nome, unidade: d.unidade,
-        qtd_prevista: d.qtd_prevista||0, qtd_real: d.qtd_real||0,
-        qtd_feita: 0, num_frentes: d.num_frentes||1,
-        produtividade_frente: d.produtividade_frente||null,
-        inicio_planejado: d.inicio_planejado||null,
-        termino_planejado: d.termino_planejado||null,
-        termino_estimado: d.termino_estimado||null,
-      });
-    }
-
-    toast(cid ? 'Contrato atualizado!' : 'Contrato salvo!', 'success');
-    closeModal('modal-contrato');
-    await loadAll();
-  } catch(e) { toast('Erro: ' + e.message, 'error'); }
-  finally { btn.innerHTML = 'Salvar Contrato'; btn.disabled = false; }
-}
-
-async function deletarContrato(id) {
-  if (!confirm('Excluir este contrato? As disciplinas e produção vinculadas também serão removidas.')) return;
-  try {
-    await db(`disciplinas?contrato_id=eq.${id}`, 'DELETE');
-    await db(`contratos?id=eq.${id}`, 'DELETE');
-    toast('Contrato excluído', 'success');
-    await loadAll();
-  } catch(e) { toast('Erro: '+e.message, 'error'); }
-}
-
-// ── DISCIPLINAS TEMP ──────────────────────────────────────────
-function toggleDiscForm() {
-  const f = document.getElementById('disc-form');
-  f.style.display = f.style.display === 'none' ? 'block' : 'none';
-  if (f.style.display === 'block') {
-    ['d-qtd-prev','d-qtd-real','d-prod'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('d-nome').value = '';
-    ['d-ini','d-fim','d-est'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('d-frentes').value = 1;
-  }
-}
-
-function addDisc() {
-  const nome = document.getElementById('d-nome').value;
-  if (!nome) { toast('Selecione a disciplina', 'error'); return; }
-  discTemp.push({
-    nome,
-    unidade:    document.getElementById('d-unidade').value,
-    num_frentes: parseInt(document.getElementById('d-frentes').value)||1,
-    qtd_prevista: parseFloat(document.getElementById('d-qtd-prev').value)||0,
-    qtd_real:    parseFloat(document.getElementById('d-qtd-real').value)||0,
-    produtividade_frente: parseFloat(document.getElementById('d-prod').value)||null,
-    inicio_planejado:    document.getElementById('d-ini').value||null,
-    termino_planejado:   document.getElementById('d-fim').value||null,
-    termino_estimado:    document.getElementById('d-est').value||null,
-  });
-  toggleDiscForm();
-  renderDiscList();
-  toast('Disciplina adicionada', 'info');
-}
-
-function renderDiscList() {
-  const el = document.getElementById('disc-added-list');
-  if (!discTemp.length) { el.innerHTML = '<div style="color:var(--text2);font-size:13px;text-align:center;padding:12px">Nenhuma disciplina adicionada ainda</div>'; return; }
-  el.innerHTML = discTemp.map((d,i) => `
-    <div class="disc-added-item">
-      <div>
-        <strong>${d.nome}</strong>
-        <span style="color:var(--text2);font-size:12px;margin-left:8px">${d.qtd_real||0} ${d.unidade||''} · ${d.num_frentes} frente(s)</span>
-        ${d._saved ? '<span class="badge badge-verde" style="margin-left:6px">salvo</span>' : '<span class="badge badge-amarelo" style="margin-left:6px">novo</span>'}
-      </div>
-      ${d._saved ? '' : `<span class="rm" onclick="remDisc(${i})">✕</span>`}
-    </div>`).join('');
-}
-
-function remDisc(i) { discTemp.splice(i,1); renderDiscList(); }
-
-async function deletarDisc(id) {
-  if (!confirm('Remover esta disciplina?')) return;
-  try {
-    await db(`disciplinas?id=eq.${id}`, 'DELETE');
-    toast('Disciplina removida', 'success');
-    await loadAll();
-  } catch(e) { toast('Erro: '+e.message,'error'); }
-}
-
-// ── MODAL COLABORADOR ─────────────────────────────────────────
-function abrirModalColab(id=null) {
-  document.getElementById('modal-colab-title').textContent = id ? 'Editar Colaborador' : 'Novo Colaborador';
-  ['colab-id','col-nome','col-estado','col-obs','col-novo-cargo'].forEach(f => { const el=document.getElementById(f); if(el) el.value=''; });
-  ['col-admissao','col-desligamento','col-promo-data'].forEach(f => { const el=document.getElementById(f); if(el) el.value=''; });
-  document.getElementById('col-funcao').value = 'Ajudante de Obras';
-  autoTaxa();
-  document.getElementById('col-situacao').value = 'Ativo';
-  document.getElementById('col-taxa').value = '';
-
-  if (id) {
-    const c = colaboradores.find(x=>x.id===id);
-    if (c) {
-      document.getElementById('colab-id').value = c.id;
-      document.getElementById('col-nome').value = c.nome||'';
-      document.getElementById('col-funcao').value = c.funcao||'Ajudante';
-      document.getElementById('col-situacao').value = c.situacao||'Ativo';
-      document.getElementById('col-estado').value = c.estado||'';
-      document.getElementById('col-taxa').value = c.taxa||'';
-      document.getElementById('col-admissao').value = c.admissao||'';
-      document.getElementById('col-desligamento').value = c.desligamento||'';
-      document.getElementById('col-promo-data').value = c.promocao_data||'';
-      document.getElementById('col-novo-cargo').value = c.novo_cargo||'';
-      document.getElementById('col-obs').value = c.obs||'';
-    }
-  }
-  openModal('modal-colab');
-}
-
-function editarColab(id) { abrirModalColab(id); }
-
-async function salvarColab() {
-  const nome = document.getElementById('col-nome').value.trim();
-  if (!nome) { toast('Nome é obrigatório', 'error'); return; }
-  try {
-    const payload = {
-      nome,
-      funcao:     document.getElementById('col-funcao').value,
-      situacao:   document.getElementById('col-situacao').value,
-      estado:     document.getElementById('col-estado').value||null,
-      taxa:       parseFloat(document.getElementById('col-taxa').value)||null,
-      admissao:   document.getElementById('col-admissao').value||null,
-      desligamento: document.getElementById('col-desligamento').value||null,
-      promocao_data: document.getElementById('col-promo-data').value||null,
-      novo_cargo: document.getElementById('col-novo-cargo').value||null,
-      obs:        document.getElementById('col-obs').value||null,
-      updated_at: new Date().toISOString(),
-    };
-    const cid = document.getElementById('colab-id').value;
-    if (cid) {
-      await db(`colaboradores?id=eq.${cid}`, 'PATCH', payload);
-      toast('Colaborador atualizado!', 'success');
-    } else {
-      await db('colaboradores', 'POST', payload);
-      toast('Colaborador salvo!', 'success');
-    }
-    closeModal('modal-colab');
-    await loadAll();
-  } catch(e) { toast('Erro: '+e.message,'error'); }
-}
-
-async function deletarColab(id) {
-  if (!confirm('Excluir este colaborador?')) return;
-  try {
-    await db(`colaboradores?id=eq.${id}`, 'DELETE');
-    toast('Colaborador excluído', 'success');
-    await loadAll();
-  } catch(e) { toast('Erro: '+e.message,'error'); }
-}
-
-// ── PRODUÇÃO ──────────────────────────────────────────────────
-function loadDiscByContrato() {
-  const cid = document.getElementById('p-contrato')?.value;
-  const sel = document.getElementById('p-disc');
-  if (!sel) return;
-  const discs = disciplinas.filter(d => d.contrato_id === cid);
-  sel.innerHTML = discs.length
-    ? '<option value="">Selecione a disciplina...</option>' + discs.map(d=>`<option value="${d.id}">${d.nome}</option>`).join('')
-    : '<option value="">Nenhuma disciplina neste contrato</option>';
-}
-
-async function salvarProducao() {
-  const cid  = document.getElementById('p-contrato')?.value;
-  const did  = document.getElementById('p-disc')?.value;
-  const data = document.getElementById('p-data')?.value;
-  const qtd  = parseFloat(document.getElementById('p-qtd')?.value);
-  if (!cid || !did || !data || !qtd) { toast('Preencha contrato, disciplina, data e quantidade', 'error'); return; }
-  try {
-    await db('producao', 'POST', {
-      contrato_id: cid, disciplina_id: did, data, quantidade: qtd,
-      colaborador: document.getElementById('p-colab')?.value||null,
-      obs: document.getElementById('p-obs')?.value||null,
-    });
-    // Atualizar qtd_feita na disciplina
-    const disc = disciplinas.find(d=>d.id===did);
-    if (disc) {
-      const nova = (disc.qtd_feita||0) + qtd;
-      await db(`disciplinas?id=eq.${did}`, 'PATCH', { qtd_feita: nova, updated_at: new Date().toISOString() });
-    }
-    toast('Produção lançada!', 'success');
-    ['p-qtd','p-obs'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-    await loadAll();
-  } catch(e) { toast('Erro: '+e.message,'error'); }
-}
-
-// ── FROTAS ────────────────────────────────────────────────────
-let frotas = [], frotasHistorico = {};
-
-async function renderFrotas() {
-  try { frotas = await db('frotas?order=data_retirada_ini.desc'); } catch(e) { toast('Erro: '+e.message,'error'); }
-
-  const fStatus = document.getElementById('fr-fil-status')?.value || '';
-  const fBusca  = (document.getElementById('fr-fil-busca')?.value||'').toLowerCase();
-
-  const ativos     = frotas.filter(f=>f.status==='Ativo').length;
-  const devolvidos = frotas.filter(f=>f.status==='Devolvido').length;
-
-  let lista = frotas;
-  if (fStatus) lista = lista.filter(f=>f.status===fStatus);
-  if (fBusca)  lista = lista.filter(f=>
-    (f.colaborador_atual||'').toLowerCase().includes(fBusca) ||
-    (f.placa_atual||'').toLowerCase().includes(fBusca) ||
-    (f.reserva||'').toLowerCase().includes(fBusca) ||
-    (f.veiculo||'').toLowerCase().includes(fBusca) ||
-    (f.locadora||'').toLowerCase().includes(fBusca)
-  );
-
-  function badgeFrota(s) {
-    const m={'Ativo':'badge-verde','Devolvido':'badge-cinza','Transferido':'badge-amarelo'};
-    return `<span class="badge ${m[s]||'badge-cinza'}">${s||'—'}</span>`;
-  }
-
-  document.getElementById('content').innerHTML = `
-    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:480px;margin-bottom:20px">
-      <div class="kpi-card"><div class="kpi-label">Reservas</div><div class="kpi-value">${frotas.length}</div></div>
-      <div class="kpi-card verde"><div class="kpi-label">Ativos</div><div class="kpi-value">${ativos}</div></div>
-      <div class="kpi-card" style="border-left-color:#6c757d"><div class="kpi-label">Devolvidos</div><div class="kpi-value">${devolvidos}</div></div>
-    </div>
-    <div class="search-bar">
-      <input class="search-input" id="fr-fil-busca" placeholder="Buscar colaborador, placa, locadora..." oninput="renderFrotas()" value="${fBusca}">
-      <select id="fr-fil-status" onchange="renderFrotas()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:13px">
-        <option value="">Todos os status</option>
-        <option value="Ativo" ${fStatus==='Ativo'?'selected':''}>Ativo</option>
-        <option value="Devolvido" ${fStatus==='Devolvido'?'selected':''}>Devolvido</option>
-      </select>
-      <button class="btn btn-primary" onclick="abrirModalFrota()">+ Nova Frota</button>
-    </div>
-    <div class="card">
-      <div class="card-header"><h3>${lista.length} reserva(s)</h3></div>
-      <div class="card-body">
-        <table>
-          <thead><tr>
-            <th>Colaborador Atual</th><th>Placa</th><th>Veículo</th><th>Locadora</th>
-            <th>Retirada Inicial</th><th>Status</th><th>Ações</th>
-          </tr></thead>
-          <tbody>
-            ${lista.length===0
-              ? `<tr><td colspan="7"><div class="empty-state"><div class="icon">🚗</div><p>Nenhum veículo encontrado.</p></div></td></tr>`
-              : lista.map(f=>`
-                <tr>
-                  <td><strong>${f.colaborador_atual||'—'}</strong><br>
-                    <small style="color:var(--text2);font-size:11px">${f.locadora||''}</small>
-                  </td>
-                  <td><code style="background:#f0f2f5;padding:2px 6px;border-radius:4px;font-size:12px">${f.placa_atual||'—'}</code></td>
-                  <td>${f.veiculo||'—'}</td>
-                  <td style="font-size:12px">${f.locadora||'—'}</td>
-                  <td style="font-size:12px">${f.data_retirada_ini?fmtDate(f.data_retirada_ini):'—'}</td>
-                  <td>${badgeFrota(f.status)}</td>
-                  <td style="display:flex;gap:4px">
-                    <button class="btn btn-sm btn-outline" onclick="verHistoricoFrota('${f.id}')" title="Ver histórico">📋</button>
-                    <button class="btn btn-sm btn-outline" onclick="editarFrota('${f.id}')">✏️</button>
-                    <button class="btn btn-sm btn-danger" onclick="deletarFrota('${f.id}')">🗑</button>
-                  </td>
-                </tr>
-                <tr id="hist-${f.id}" style="display:none">
-                  <td colspan="7" style="padding:0;background:#f7f9fc">
-                    <div id="hist-body-${f.id}" style="padding:12px 20px"></div>
-                  </td>
-                </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>`;
-}
-
-async function verHistoricoFrota(fid) {
-  const tr = document.getElementById(`hist-${fid}`);
-  const body = document.getElementById(`hist-body-${fid}`);
-  if (!tr || !body) return;
-  if (tr.style.display !== 'none') { tr.style.display='none'; return; }
-  tr.style.display='table-row';
-  body.innerHTML = '<em style="color:var(--text2);font-size:13px">Carregando histórico...</em>';
-  try {
-    const hist = await db(`frotas_historico?frota_id=eq.${fid}&order=data_retirada.asc`);
-    if (!hist.length) { body.innerHTML='<em style="color:var(--text2)">Sem movimentações registradas.</em>'; return; }
-    body.innerHTML = `
-      <strong style="font-size:12px;color:var(--azul);display:block;margin-bottom:8px">Histórico de movimentações</strong>
-      <table style="width:100%;font-size:12px;border-collapse:collapse">
-        <thead><tr style="background:#e8edf5">
-          <th style="padding:6px 10px;text-align:left">Colaborador</th>
-          <th style="padding:6px 10px;text-align:left">Placa</th>
-          <th style="padding:6px 10px;text-align:left">Retirada</th>
-          <th style="padding:6px 10px;text-align:left">Devolução</th>
-          <th style="padding:6px 10px;text-align:left">KM</th>
-          <th style="padding:6px 10px;text-align:left">Gasto</th>
-          <th style="padding:6px 10px;text-align:left">Status</th>
-          <th style="padding:6px 10px;text-align:left">Obs</th>
-        </tr></thead>
-        <tbody>
-          ${hist.map(h=>`<tr style="border-bottom:1px solid #e0e5ef">
-            <td style="padding:6px 10px"><strong>${h.colaborador||'—'}</strong></td>
-            <td style="padding:6px 10px;font-family:monospace">${h.placa||'—'}</td>
-            <td style="padding:6px 10px">${h.data_retirada?fmtDate(h.data_retirada):'—'}</td>
-            <td style="padding:6px 10px">${h.data_devolucao?fmtDate(h.data_devolucao):'—'}</td>
-            <td style="padding:6px 10px">${h.km_inicial&&h.km_final?(h.km_final-h.km_inicial).toLocaleString('pt-BR')+' km':'—'}</td>
-            <td style="padding:6px 10px">${h.gasto?'R$ '+Number(h.gasto).toLocaleString('pt-BR',{minimumFractionDigits:0}):'—'}</td>
-            <td style="padding:6px 10px"><span class="badge ${h.status==='Ativo'?'badge-verde':h.status==='Transferido'?'badge-amarelo':'badge-cinza'}">${h.status||'—'}</span></td>
-            <td style="padding:6px 10px;color:var(--text2);font-size:11px">${h.observacao||'—'}</td>
-          </tr>`).join('')}
+      <div class="card-hdr"><h3>Equipe ativa — ${fmtD(hoje)}</h3></div>
+      <div class="card-body"><table>
+        <thead><tr><th>Nome</th><th>Função</th><th>Estado</th><th>Admissão</th></tr></thead>
+        <tbody>${lista.map(c=>`<tr>
+          <td><strong>${c.nome}</strong></td><td>${c.funcao||'—'}</td>
+          <td>${c.estado||'—'}</td><td>${fmtD(c.admissao)}</td>
+        </tr>`).join('')||'<tr><td colspan="4"><div class="empty-st">Nenhum colaborador ativo.</div></td></tr>'}
         </tbody>
-      </table>`;
-  } catch(e) { body.innerHTML=`<em style="color:var(--vermelho)">Erro: ${e.message}</em>`; }
+      </table></div>
+    </div>`;
 }
 
-function abrirModalFrota(id=null) {
-  document.getElementById('modal-frota-title').textContent = id ? 'Editar Frota' : 'Nova Frota';
-  ['frota-id','fr-reserva','fr-colaborador','fr-placa','fr-local','fr-obs'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
-  ['fr-data-ret','fr-mensalidade'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
-  document.getElementById('fr-locadora').value='Localiza';
-  document.getElementById('fr-veiculo').value='Kwid';
-  document.getElementById('fr-status').value='Ativo';
-  const dl = document.getElementById('colab-list-fr');
-  if (dl) dl.innerHTML = colaboradores.map(c=>`<option value="${c.nome}">`).join('');
-  if (id) {
-    const f = frotas.find(x=>x.id===id);
-    if (f) {
-      document.getElementById('frota-id').value=f.id;
-      document.getElementById('fr-locadora').value=f.locadora||'Localiza';
-      document.getElementById('fr-reserva').value=f.reserva||'';
-      document.getElementById('fr-colaborador').value=f.colaborador_atual||'';
-      document.getElementById('fr-placa').value=f.placa_atual||'';
-      document.getElementById('fr-veiculo').value=f.veiculo||'Kwid';
-      document.getElementById('fr-status').value=f.status||'Ativo';
-      document.getElementById('fr-mensalidade').value=f.mensalidade||'';
-      document.getElementById('fr-data-ret').value=f.data_retirada_ini||'';
-      document.getElementById('fr-local').value=f.local_retirada||'';
-      document.getElementById('fr-obs').value=f.observacao||'';
+// ─── FROTAS ──────────────────────────────────────────────────
+let frotas=[];
+async function renderFrotas(){
+  try{frotas=await db('frotas?order=data_retirada_ini.desc');}catch(e){toast('Erro: '+e.message,'e');}
+  const fSt=document.getElementById('fr-fst')?.value||'';
+  const q=(document.getElementById('fr-b')?.value||'').toLowerCase();
+  const ativos=frotas.filter(f=>f.status==='Ativo').length;
+  const dev=frotas.filter(f=>f.status==='Devolvido').length;
+  let lista=frotas;
+  if(fSt)lista=lista.filter(f=>f.status===fSt);
+  if(q)lista=lista.filter(f=>(f.colaborador_atual||'').toLowerCase().includes(q)||(f.placa_atual||'').toLowerCase().includes(q)||(f.locadora||'').toLowerCase().includes(q));
+  document.getElementById('content').innerHTML=`
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+      <div class="kpi-card"><div class="kpi-lbl">Reservas</div><div class="kpi-val">${frotas.length}</div></div>
+      <div class="kpi-card g"><div class="kpi-lbl">Ativos</div><div class="kpi-val">${ativos}</div></div>
+      <div class="kpi-card" style="border-left-color:var(--cinza)"><div class="kpi-lbl">Devolvidos</div><div class="kpi-val" style="color:var(--cinza)">${dev}</div></div>
+    </div>
+    <div class="sbar">
+      <input class="sinput" id="fr-b" placeholder="Buscar colaborador, placa, locadora..." oninput="renderFrotas()" value="${q}">
+      <select class="sselect" id="fr-fst" onchange="renderFrotas()">
+        <option value="">Todos</option><option ${fSt==='Ativo'?'selected':''}>Ativo</option><option ${fSt==='Devolvido'?'selected':''}>Devolvido</option>
+      </select>
+      <button class="btn btn-p" onclick="abrirMFr()">+ Nova Frota</button>
+    </div>
+    <div class="card"><div class="card-body"><table>
+      <thead><tr><th>Colaborador Atual</th><th>Placa</th><th>Veículo</th><th>Locadora</th><th>Retirada</th><th>Status</th><th>Ações</th></tr></thead>
+      <tbody>${lista.length?lista.map(f=>`
+        <tr>
+          <td><strong>${f.colaborador_atual||'—'}</strong></td>
+          <td><code style="background:#f0f2f5;padding:2px 6px;border-radius:4px;font-size:12px">${f.placa_atual||'—'}</code></td>
+          <td>${f.veiculo||'—'}</td><td style="font-size:12px">${f.locadora||'—'}</td>
+          <td style="font-size:12px">${fmtD(f.data_retirada_ini)}</td>
+          <td>${f.status==='Ativo'?badge('Ativo','bg'):badge('Devolvido','bc')}</td>
+          <td style="display:flex;gap:4px">
+            <button class="btn btn-sm btn-o" onclick="verHistFr('${f.id}')" title="Histórico">📋</button>
+            <button class="btn btn-sm btn-o" onclick="abrirMFr('${f.id}')">✏️</button>
+            <button class="btn btn-sm btn-d" onclick="delFrota('${f.id}')">🗑</button>
+          </td>
+        </tr>
+        <tr id="fh-${f.id}" style="display:none"><td colspan="7" style="padding:0;background:#f7f9fc">
+          <div id="fhb-${f.id}" style="padding:10px 16px"></div>
+        </td></tr>`).join(''):`<tr><td colspan="7"><div class="empty-st"><div class="ico">🚗</div><p>Nenhum veículo.</p></div></td></tr>`}
+      </tbody>
+    </table></div></div>`;
+}
+
+async function verHistFr(fid){
+  const tr=document.getElementById('fh-'+fid),body=document.getElementById('fhb-'+fid);
+  if(!tr)return;
+  if(tr.style.display!=='none'){tr.style.display='none';return;}
+  tr.style.display='table-row';
+  body.innerHTML='<em style="color:var(--text2);font-size:13px">Carregando...</em>';
+  try{
+    const hist=await db('frotas_historico?frota_id=eq.'+fid+'&order=data_retirada.asc');
+    if(!hist.length){body.innerHTML='<em>Sem histórico.</em>';return;}
+    body.innerHTML=`<strong style="font-size:12px;color:var(--azul);display:block;margin-bottom:7px">Histórico de movimentações</strong>
+    <table style="width:100%;font-size:12px;border-collapse:collapse">
+      <thead><tr style="background:#e8edf5">${['Colaborador','Placa','Retirada','Devolução','KM','Gasto','Status','Obs'].map(h=>`<th style="padding:5px 9px;text-align:left">${h}</th>`).join('')}</tr></thead>
+      <tbody>${hist.map(h=>`<tr style="border-bottom:1px solid #e0e5ef">
+        <td style="padding:5px 9px"><strong>${h.colaborador||'—'}</strong></td>
+        <td style="padding:5px 9px;font-family:monospace">${h.placa||'—'}</td>
+        <td style="padding:5px 9px">${fmtD(h.data_retirada)}</td>
+        <td style="padding:5px 9px">${fmtD(h.data_devolucao)}</td>
+        <td style="padding:5px 9px">${h.km_inicial&&h.km_final?(h.km_final-h.km_inicial).toLocaleString('pt-BR')+' km':'—'}</td>
+        <td style="padding:5px 9px">${h.gasto?'R$ '+Number(h.gasto).toLocaleString('pt-BR',{minimumFractionDigits:0}):'—'}</td>
+        <td style="padding:5px 9px">${badge(h.status||'—',h.status==='Ativo'?'bg':h.status==='Transferido'?'by':'bc')}</td>
+        <td style="padding:5px 9px;color:var(--text2);font-size:11px">${h.observacao||'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }catch(e){body.innerHTML='<em style="color:var(--vermelho)">Erro: '+e.message+'</em>';}
+}
+
+// ─── FOLGA ───────────────────────────────────────────────────
+function renderFolga(){
+  const q=(document.getElementById('fg-b')?.value||'').toLowerCase();
+  const fs=document.getElementById('fg-fs')?.value||'';
+  // Dados de folga vêm dos colaboradores (não temos tabela separada ainda — usando dados simulados)
+  // Por enquanto mostrar colaboradores ativos com info de folga placeholder
+  const ativos=colaboradores.filter(c=>c.situacao==='Ativo');
+  let lista=ativos;
+  if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q));
+  document.getElementById('content').innerHTML=`
+    <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#856404">
+      ⚠️ Aba de Folga em construção — os dados de controle de folgas serão integrados em breve. Por ora, exibe a equipe ativa.
+    </div>
+    <div class="sbar">
+      <input class="sinput" id="fg-b" placeholder="Buscar colaborador..." oninput="renderFolga()" value="${q}">
+    </div>
+    <div class="card"><div class="card-body"><table>
+      <thead><tr><th>Nome</th><th>Função</th><th>Estado</th><th>Admissão</th></tr></thead>
+      <tbody>${lista.map(c=>`<tr>
+        <td><strong>${c.nome}</strong></td><td>${c.funcao||'—'}</td>
+        <td>${c.estado||'—'}</td><td>${fmtD(c.admissao)}</td>
+      </tr>`).join('')||'<tr><td colspan="4"><div class="empty-st">Nenhum colaborador ativo.</div></td></tr>'}
+      </tbody>
+    </table></div></div>`;
+}
+
+// ─── PARCIAIS ────────────────────────────────────────────────
+function renderParciais(){
+  const q=(document.getElementById('pa-b')?.value||'').toLowerCase();
+  const fc=document.getElementById('pa-fc')?.value||'';
+  const ciclos=[...new Set(contratos.map(c=>c.ano).filter(Boolean))].sort().reverse();
+  // Parciais vêm das disciplinas com dados de progresso
+  let lista=disciplinas.filter(d=>d.qtd_real>0);
+  if(q)lista=lista.filter(d=>(d.contratos?.nome||'').toLowerCase().includes(q)||(d.nome||'').toLowerCase().includes(q));
+  if(fc){const ids=new Set(contratos.filter(c=>c.ano===fc).map(c=>c.id));lista=lista.filter(d=>ids.has(d.contrato_id));}
+  lista=lista.sort((a,b)=>{const pa=pct(a.qtd_feita||0,a.qtd_real),pb=pct(b.qtd_feita||0,b.qtd_real);return pa-pb;});
+  document.getElementById('content').innerHTML=`
+    <div style="background:#d0e8ff;border:1px solid #1a4a8a;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#1a4a8a">
+      ℹ️ Parciais baseadas no progresso atual das disciplinas. Integração completa com entregas parciais em desenvolvimento.
+    </div>
+    <div class="sbar">
+      <input class="sinput" id="pa-b" placeholder="Buscar contrato ou disciplina..." oninput="renderParciais()" value="${q}">
+      <select class="sselect" id="pa-fc" onchange="renderParciais()">
+        <option value="">Todos os ciclos</option>${ciclos.map(c=>`<option ${c===fc?'selected':''}>${c}</option>`).join('')}
+      </select>
+    </div>
+    <div class="card"><div class="card-body"><table>
+      <thead><tr><th>Contrato</th><th>Disciplina</th><th>Qtd Real</th><th>Qtd Feita</th><th>Unidade</th><th>Progresso</th><th>Status</th></tr></thead>
+      <tbody>${lista.length?lista.map(d=>{
+        const p=pct(d.qtd_feita||0,d.qtd_real);
+        const st=p>=100?badge('Concluído','bg'):p>=70?badge('Avançado','bb'):p>=30?badge('Em andamento','by'):badge('Início','bo');
+        return`<tr>
+          <td><strong>${d.contratos?.nome||'—'}</strong></td>
+          <td>${d.nome||'—'}</td>
+          <td>${fmtN(d.qtd_real)}</td>
+          <td>${fmtN(d.qtd_feita)}</td>
+          <td>${d.unidade||'—'}</td>
+          <td><div style="display:flex;align-items:center;gap:7px">
+            <div class="progress" style="width:100px"><div class="progress-bar" style="width:${p}%;background:${p>=100?'var(--verde)':p>=50?'var(--azul)':'var(--laranja)'}"></div></div>
+            <span style="font-size:12px;font-weight:600">${p}%</span></div></td>
+          <td>${st}</td>
+        </tr>`;
+      }).join(''):`<tr><td colspan="7"><div class="empty-st"><div class="ico">📬</div><p>Nenhuma disciplina encontrada.</p></div></td></tr>`}
+      </tbody>
+    </table></div></div>`;
+}
+
+// ─── CRUD CONTRATOS ──────────────────────────────────────────
+let discTemp=[];
+function abrirMC(id=null){
+  discTemp=[];
+  document.getElementById('mc-title').textContent=id?'Editar Contrato':'Novo Contrato';
+  ['mc-id','mc-nome','mc-ano','mc-est','mc-obs'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  ['mc-ini-p','mc-fim-p','mc-ini-r','mc-fim-e'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  document.getElementById('mc-status').value='Aguardando início';
+  const sel=document.getElementById('mc-cli');
+  sel.innerHTML='<option value="">Selecione...</option>'+clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  if(id){
+    const c=contratos.find(x=>x.id===id);
+    if(c){
+      document.getElementById('mc-id').value=c.id;
+      document.getElementById('mc-nome').value=c.nome||'';
+      document.getElementById('mc-cli').value=c.cliente_id||'';
+      document.getElementById('mc-ano').value=c.ano||'';
+      document.getElementById('mc-est').value=c.estado||'';
+      document.getElementById('mc-status').value=c.status||'Aguardando início';
+      document.getElementById('mc-ini-p').value=c.inicio_planejado||'';
+      document.getElementById('mc-fim-p').value=c.termino_planejado||'';
+      document.getElementById('mc-ini-r').value=c.inicio_real||'';
+      document.getElementById('mc-fim-e').value=c.termino_estimado||'';
+      document.getElementById('mc-obs').value=c.obs||'';
+      discTemp=disciplinas.filter(d=>d.contrato_id===id).map(d=>({...d,_saved:true}));
     }
   }
-  openModal('modal-frota');
+  renderDL();
+  document.getElementById('dform').style.display='none';
+  openM('mc');
 }
-function editarFrota(id){ abrirModalFrota(id); }
+function toggleDF(){const f=document.getElementById('dform');f.style.display=f.style.display==='none'?'block':'none';}
+function addD(){
+  const n=document.getElementById('d-nome').value;if(!n){toast('Selecione a disciplina','e');return;}
+  discTemp.push({nome:n,unidade:document.getElementById('d-un').value,num_frentes:parseInt(document.getElementById('d-fr').value)||1,
+    qtd_prevista:parseFloat(document.getElementById('d-qp').value)||0,qtd_real:parseFloat(document.getElementById('d-qr').value)||0,
+    produtividade_frente:parseFloat(document.getElementById('d-pr').value)||null,
+    inicio_planejado:document.getElementById('d-ini').value||null,termino_planejado:document.getElementById('d-fim').value||null,
+    termino_estimado:document.getElementById('d-est').value||null});
+  toggleDF();renderDL();toast('Disciplina adicionada','s');
+}
+function renderDL(){
+  const el=document.getElementById('disc-added-list');
+  if(!discTemp.length){el.innerHTML='<div style="color:var(--text2);font-size:13px;text-align:center;padding:10px">Nenhuma disciplina ainda</div>';return;}
+  el.innerHTML=discTemp.map((d,i)=>`<div class="dai">
+    <div><strong>${d.nome}</strong><span style="color:var(--text2);font-size:12px;margin-left:7px">${d.qtd_real||0} ${d.unidade||''} · ${d.num_frentes} frente(s)</span>
+    ${d._saved?badge('salvo','bg'):badge('novo','by')}</div>
+    ${d._saved?'':` <span onclick="discTemp.splice(${i},1);renderDL()" style="cursor:pointer;color:var(--vermelho);font-weight:700">✕</span>`}
+  </div>`).join('');
+}
+async function salvarC(){
+  const nome=document.getElementById('mc-nome').value.trim();if(!nome){toast('Nome obrigatório','e');return;}
+  try{
+    const p={nome,cliente_id:document.getElementById('mc-cli').value||null,ano:document.getElementById('mc-ano').value||null,
+      estado:document.getElementById('mc-est').value||null,status:document.getElementById('mc-status').value,
+      inicio_planejado:document.getElementById('mc-ini-p').value||null,termino_planejado:document.getElementById('mc-fim-p').value||null,
+      inicio_real:document.getElementById('mc-ini-r').value||null,termino_estimado:document.getElementById('mc-fim-e').value||null,
+      obs:document.getElementById('mc-obs').value||null,updated_at:new Date().toISOString()};
+    const cid=document.getElementById('mc-id').value;let ctrId;
+    if(cid){await db('contratos?id=eq.'+cid,'PATCH',p);ctrId=cid;}
+    else{const r=await db('contratos','POST',p);ctrId=r[0].id;}
+    for(const d of discTemp){if(d._saved)continue;await db('disciplinas','POST',{contrato_id:ctrId,...d,qtd_feita:0});}
+    toast(cid?'Contrato atualizado!':'Contrato salvo!','s');closeM('mc');await loadAll();
+  }catch(e){toast('Erro: '+e.message,'e');}
+}
+async function delC(id){if(!confirm('Excluir contrato e todas suas disciplinas?'))return;try{await db('disciplinas?contrato_id=eq.'+id,'DELETE');await db('contratos?id=eq.'+id,'DELETE');toast('Excluído','s');await loadAll();}catch(e){toast('Erro: '+e.message,'e');}}
+async function delD(id){if(!confirm('Remover disciplina?'))return;try{await db('disciplinas?id=eq.'+id,'DELETE');toast('Removido','s');await loadAll();}catch(e){toast('Erro: '+e.message,'e');}}
 
-async function salvarFrota() {
-  const colab = document.getElementById('fr-colaborador').value.trim();
-  if (!colab) { toast('Colaborador é obrigatório','error'); return; }
-  try {
-    const payload = {
-      locadora:        document.getElementById('fr-locadora').value,
-      reserva:         document.getElementById('fr-reserva').value||null,
-      colaborador_atual: colab,
-      placa_atual:     document.getElementById('fr-placa').value.toUpperCase()||null,
-      local_retirada:  document.getElementById('fr-local').value||null,
-      veiculo:         document.getElementById('fr-veiculo').value,
-      mensalidade:     parseFloat(document.getElementById('fr-mensalidade').value)||null,
-      data_retirada_ini: document.getElementById('fr-data-ret').value||null,
-      status:          document.getElementById('fr-status').value,
-      observacao:      document.getElementById('fr-obs').value||null,
-      updated_at:      new Date().toISOString(),
-    };
-    const fid = document.getElementById('frota-id').value;
-    if (fid) {
-      await db(`frotas?id=eq.${fid}`,'PATCH',payload);
-      toast('Frota atualizada!','success');
-    } else {
-      await db('frotas','POST',payload);
-      toast('Frota cadastrada!','success');
-    }
-    closeModal('modal-frota');
-    await renderFrotas();
-  } catch(e) { toast('Erro: '+e.message,'error'); }
+// ─── CRUD COLABORADORES ──────────────────────────────────────
+function autoTaxa(){const t={'Ajudante de Obras':0.70,'Auxiliar de Engenharia':0.75,'Assistente de Engenharia':0.90,'Terceirizado Campo':1.30};const f=document.getElementById('col-fn')?.value;const tx=document.getElementById('col-taxa');if(tx&&t[f])tx.value=t[f];}
+function abrirMCo(id=null){
+  document.getElementById('mco-title').textContent=id?'Editar Colaborador':'Novo Colaborador';
+  ['mco-id','col-nome','col-est','col-obs','col-nc'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  ['col-adm','col-des','col-pd','col-taxa'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  document.getElementById('col-fn').value='Ajudante de Obras';
+  document.getElementById('col-sit').value='Ativo';
+  autoTaxa();
+  if(id){const c=colaboradores.find(x=>x.id===id);if(c){
+    document.getElementById('mco-id').value=c.id;
+    document.getElementById('col-nome').value=c.nome||'';
+    document.getElementById('col-fn').value=c.funcao||'Ajudante de Obras';
+    document.getElementById('col-sit').value=c.situacao||'Ativo';
+    document.getElementById('col-est').value=c.estado||'';
+    document.getElementById('col-taxa').value=c.taxa||'';
+    document.getElementById('col-adm').value=c.admissao||'';
+    document.getElementById('col-des').value=c.desligamento||'';
+    document.getElementById('col-pd').value=c.promocao_data||'';
+    document.getElementById('col-nc').value=c.novo_cargo||'';
+    document.getElementById('col-obs').value=c.obs||'';
+  }}
+  openM('mco');
+}
+async function salvarColab(){
+  const nome=document.getElementById('col-nome').value.trim();if(!nome){toast('Nome obrigatório','e');return;}
+  try{
+    const p={nome,funcao:document.getElementById('col-fn').value,situacao:document.getElementById('col-sit').value,
+      estado:document.getElementById('col-est').value||null,taxa:parseFloat(document.getElementById('col-taxa').value)||null,
+      admissao:document.getElementById('col-adm').value||null,desligamento:document.getElementById('col-des').value||null,
+      promocao_data:document.getElementById('col-pd').value||null,novo_cargo:document.getElementById('col-nc').value||null,
+      obs:document.getElementById('col-obs').value||null,updated_at:new Date().toISOString()};
+    const cid=document.getElementById('mco-id').value;
+    if(cid){await db('colaboradores?id=eq.'+cid,'PATCH',p);toast('Atualizado!','s');}
+    else{await db('colaboradores','POST',p);toast('Salvo!','s');}
+    closeM('mco');await loadAll();
+  }catch(e){toast('Erro: '+e.message,'e');}
+}
+async function delColab(id){if(!confirm('Excluir colaborador?'))return;try{await db('colaboradores?id=eq.'+id,'DELETE');toast('Excluído','s');await loadAll();}catch(e){toast('Erro: '+e.message,'e');}}
+
+// ─── CRUD PRODUÇÃO ───────────────────────────────────────────
+function loadDiscs(){
+  const cid=document.getElementById('p-cont')?.value;
+  const sel=document.getElementById('p-disc');if(!sel)return;
+  const ds=disciplinas.filter(d=>d.contrato_id===cid);
+  sel.innerHTML=ds.length?'<option value="">Selecione...</option>'+ds.map(d=>`<option value="${d.id}">${d.nome}</option>`).join(''):'<option>Nenhuma disciplina</option>';
+}
+async function salvarProd(){
+  const cid=document.getElementById('p-cont')?.value,did=document.getElementById('p-disc')?.value,
+    data=document.getElementById('p-data')?.value,qtd=parseFloat(document.getElementById('p-qtd')?.value);
+  if(!cid||!did||!data||!qtd){toast('Preencha todos os campos obrigatórios','e');return;}
+  try{
+    await db('producao','POST',{contrato_id:cid,disciplina_id:did,data,quantidade:qtd,
+      colaborador:document.getElementById('p-colab')?.value||null,obs:document.getElementById('p-obs')?.value||null});
+    const disc=disciplinas.find(d=>d.id===did);
+    if(disc)await db('disciplinas?id=eq.'+did,'PATCH',{qtd_feita:(disc.qtd_feita||0)+qtd,updated_at:new Date().toISOString()});
+    toast('Produção lançada!','s');
+    ['p-qtd','p-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    prodData=[];await loadAll();
+  }catch(e){toast('Erro: '+e.message,'e');}
 }
 
-async function deletarFrota(id) {
-  if (!confirm('Excluir esta reserva e todo o seu histórico?')) return;
-  try {
-    await db(`frotas_historico?frota_id=eq.${id}`,'DELETE');
-    await db(`frotas?id=eq.${id}`,'DELETE');
-    toast('Excluído','success');
-    await renderFrotas();
-  } catch(e) { toast('Erro: '+e.message,'error'); }
+// ─── CRUD FROTAS ─────────────────────────────────────────────
+function abrirMFr(id=null){
+  document.getElementById('mfr-title').textContent=id?'Editar Frota':'Nova Frota';
+  ['mfr-id','fr-res','fr-col','fr-placa','fr-loc2','fr-obs','fr-men'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  document.getElementById('fr-dt').value='';
+  document.getElementById('fr-loc').value='Localiza';
+  document.getElementById('fr-vei').value='Kwid';
+  document.getElementById('fr-st').value='Ativo';
+  const dl=document.getElementById('fr-clist');if(dl)dl.innerHTML=colaboradores.map(c=>`<option value="${c.nome}">`).join('');
+  if(id){const f=frotas.find(x=>x.id===id);if(f){
+    document.getElementById('mfr-id').value=f.id;
+    document.getElementById('fr-loc').value=f.locadora||'Localiza';
+    document.getElementById('fr-res').value=f.reserva||'';
+    document.getElementById('fr-col').value=f.colaborador_atual||'';
+    document.getElementById('fr-placa').value=f.placa_atual||'';
+    document.getElementById('fr-vei').value=f.veiculo||'Kwid';
+    document.getElementById('fr-st').value=f.status||'Ativo';
+    document.getElementById('fr-men').value=f.mensalidade||'';
+    document.getElementById('fr-dt').value=f.data_retirada_ini||'';
+    document.getElementById('fr-loc2').value=f.local_retirada||'';
+    document.getElementById('fr-obs').value=f.observacao||'';
+  }}
+  openM('mfr');
 }
-
-// ── TAXA AUTOMÁTICA POR FUNÇÃO ────────────────────────────────
-const TAXAS = {
-  'Ajudante de Obras':       0.70,
-  'Auxiliar de Engenharia':  0.75,
-  'Assistente de Engenharia':0.90,
-  'Terceirizado Campo':      1.30,
-};
-function autoTaxa() {
-  const f = document.getElementById('col-funcao')?.value;
-  const t = document.getElementById('col-taxa');
-  if (t && TAXAS[f]) t.value = TAXAS[f];
+async function salvarFrota(){
+  const colab=document.getElementById('fr-col').value.trim();if(!colab){toast('Colaborador obrigatório','e');return;}
+  try{
+    const p={locadora:document.getElementById('fr-loc').value,reserva:document.getElementById('fr-res').value||null,
+      colaborador_atual:colab,placa_atual:document.getElementById('fr-placa').value.toUpperCase()||null,
+      local_retirada:document.getElementById('fr-loc2').value||null,veiculo:document.getElementById('fr-vei').value,
+      mensalidade:parseFloat(document.getElementById('fr-men').value)||null,
+      data_retirada_ini:document.getElementById('fr-dt').value||null,
+      status:document.getElementById('fr-st').value,observacao:document.getElementById('fr-obs').value||null,
+      updated_at:new Date().toISOString()};
+    const fid=document.getElementById('mfr-id').value;
+    if(fid){await db('frotas?id=eq.'+fid,'PATCH',p);toast('Atualizado!','s');}
+    else{await db('frotas','POST',p);toast('Cadastrado!','s');}
+    closeM('mfr');await renderFrotas();
+  }catch(e){toast('Erro: '+e.message,'e');}
 }
-function calcPct(discs) {
-  const com = discs.filter(d=>d.qtd_real>0);
-  if (!com.length) return 0;
-  return Math.round(com.reduce((s,d)=>s+Math.min(100,(d.qtd_feita||0)/d.qtd_real*100),0)/com.length);
-}
+async function delFrota(id){if(!confirm('Excluir reserva e histórico?'))return;try{await db('frotas_historico?frota_id=eq.'+id,'DELETE');await db('frotas?id=eq.'+id,'DELETE');toast('Excluído','s');await renderFrotas();}catch(e){toast('Erro: '+e.message,'e');}}
 
-function fmtDate(d) {
-  if (!d) return '—';
-  const [y,m,di] = d.split('T')[0].split('-');
-  return `${di}/${m}/${y}`;
-}
+// FECHAR MODAL CLICANDO FORA
+document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
 
-function badgeStatus(s) {
-  const map = {
-    'Concluído':'badge-verde','Em campo':'badge-azul',
-    'Em atraso':'badge-vermelho','Aguardando início':'badge-cinza','Pausado':'badge-amarelo'
-  };
-  return `<span class="badge ${map[s]||'badge-cinza'}">${s||'—'}</span>`;
-}
-
-function badgeSituacao(s) {
-  const map = {'Ativo':'badge-verde','Desligado':'badge-vermelho','INSS':'badge-amarelo','Desistiu':'badge-laranja','Contratação':'badge-azul'};
-  return `<span class="badge ${map[s]||'badge-cinza'}">${s||'—'}</span>`;
-}
-
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-function toast(msg, type='info') {
-  const el = document.createElement('div');
-  el.className = `toast-item ${type}`;
-  el.textContent = msg;
-  document.getElementById('toast').appendChild(el);
-  setTimeout(() => el.remove(), 3200);
-}
-
-// Fechar modal clicando fora
-document.querySelectorAll('.modal-bg').forEach(bg => {
-  bg.addEventListener('click', e => { if(e.target===bg) bg.classList.remove('open'); });
-});
-
-// ── INIT ──────────────────────────────────────────────────────
+// INIT
 loadAll();
 </script>
 </body>
