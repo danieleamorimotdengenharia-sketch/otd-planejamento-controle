@@ -102,6 +102,7 @@ textarea{resize:vertical;min-height:55px}
   <div class="nav-item" onclick="nav('frotas',this)"><span class="ic">🚗</span>Frotas</div>
   <div class="nav-item" onclick="nav('folga',this)"><span class="ic">🏖️</span>Folga</div>
   <div class="nav-item" onclick="nav('parciais',this)"><span class="ic">📬</span>Parciais</div>
+  <div class="nav-item" onclick="nav('bonificacoes',this)"><span class="ic">🏆</span>Bonificações</div>
   <div class="sb-footer">OTD Engenharia © 2026</div>
 </nav>
 
@@ -300,6 +301,7 @@ const PAGES={
   frotas:['Frotas','Controle de veículos'],
   folga:['Folga','Controle de folgas'],
   parciais:['Parciais','Entregas parciais'],
+  bonificacoes:['Bonificações / HHB','Performance e horas-homem bonificáveis'],
 };
 function nav(p,el){
   curPage=p;
@@ -314,7 +316,7 @@ function renderPage(p){
   const m={dashboard:renderDashboard,contratos:renderContratos,colaboradores:renderColaboradores,
     maodeobra:renderMO,producao:renderProd,producaootd:renderProdOTD,
     produtividade:renderProdutividade,recursos:renderRecursos,frotas:renderFrotas,
-    folga:renderFolga,parciais:renderParciais};
+    folga:renderFolga,parciais:renderParciais,bonificacoes:renderBonificacoes};
   if(m[p])m[p]();
 }
 
@@ -501,21 +503,27 @@ function renderColaboradores(){
     <div class="card"><div class="card-body"><table>
       <thead><tr>
         ${thSort('nome','Nome',coSort.col,coSort.asc)}
-        ${thSort('funcao','Função',coSort.col,coSort.asc)}
+        ${thSort('funcao','Função Atual',coSort.col,coSort.asc)}
         ${thSort('situacao','Situação',coSort.col,coSort.asc)}
         ${thSort('estado','Estado',coSort.col,coSort.asc)}
         ${thSort('admissao','Admissão',coSort.col,coSort.asc)}
         ${thSort('desligamento','Desligamento',coSort.col,coSort.asc)}
+        <th>Promoção</th>
         <th>Ações</th>
       </tr></thead>
       <tbody>${lista.length?lista.map(c=>`<tr>
-        <td><strong>${c.nome}</strong></td><td>${c.funcao||'—'}</td>
+        <td><strong>${c.nome}</strong></td>
+        <td>
+          ${c.funcao||'—'}
+          ${c.promocao_data?`<br><span style="font-size:11px;color:var(--verde)">→ ${c.novo_cargo||''} a partir de ${fmtD(c.promocao_data)}</span>`:''}
+        </td>
         <td>${badgeSit(c.situacao)}</td><td>${c.estado||'—'}</td>
         <td>${fmtD(c.admissao)}</td><td>${fmtD(c.desligamento)}</td>
+        <td>${c.promocao_data?`<span class="badge bg" style="font-size:10px">Promovido ${fmtD(c.promocao_data)}</span>`:'—'}</td>
         <td style="display:flex;gap:4px">
           <button class="btn btn-sm btn-o" onclick="abrirMCo('${c.id}')">✏️</button>
           <button class="btn btn-sm btn-d" onclick="delColab('${c.id}')">🗑</button>
-        </td></tr>`).join(''):`<tr><td colspan="7"><div class="empty-st"><div class="ico">👷</div><p>Nenhum colaborador.</p></div></td></tr>`}
+        </td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-st"><div class="ico">👷</div><p>Nenhum colaborador.</p></div></td></tr>`}
       </tbody>
     </table></div></div>`;
 }
@@ -583,49 +591,119 @@ function renderProd(){
 
 // ─── PRODUÇÃO OTD (HISTÓRICO) ────────────────────────────────
 let prodData=[],prodSort={col:'data',asc:false};
+
+// Metas por disciplina (modo solo vs dupla) — da tabela Combinações
+const METAS_DISC = {
+  'Terrapleno':                    {solo:42, dupla:60, dupla_aux:66},
+  'Drenagem':                      {solo:119, dupla:170, dupla_aux:187},
+  'Sinalização Horizontal':        {solo:115.5, dupla:165, dupla_aux:181.5},
+  'Sinalização Vertical':          {solo:115.5, dupla:165, dupla_aux:181.5},
+  'Faixa de Domínio (AC e OC)':    {solo:154, dupla:220, dupla_aux:242},
+  'Faixa de Domínio (Cercas)':     {solo:140, dupla:200, dupla_aux:220},
+  'EPS':                           {solo:280, dupla:400, dupla_aux:440},
+  'Edificações (EDF)':             {solo:4.2, dupla:6, dupla_aux:6.6},
+  'Pontos de Iluminação e EDE':    {solo:5.6, dupla:8, dupla_aux:8.8},
+};
+
+function metaEsperada(disc, dupla){
+  const d = Object.entries(METAS_DISC).find(([k])=>disc&&disc.toLowerCase().includes(k.toLowerCase()));
+  if(!d) return null;
+  const m = d[1];
+  if(!dupla) return m.solo;
+  return m.dupla;
+}
+
 async function renderProdOTD(){
   if(!prodData.length){
-    try{prodData=await db('producao?order=data.desc&limit=500&select=*,disciplinas(nome,unidade),contratos(nome)');}
-    catch(e){toast('Erro: '+e.message,'e');}
+    try{
+      prodData = await db('producao?order=data.desc&limit=2500&select=id,data,colaborador,dupla,contrato_id,disciplina_id,quantidade,taxa,hhb,revisoes,ano,obs,disciplinas(nome,unidade),contratos(nome)');
+    }catch(e){toast('Erro: '+e.message,'e');}
   }
   const q=(document.getElementById('po-b')?.value||'').toLowerCase();
   const fc=document.getElementById('po-fc')?.value||'';
   const fd=document.getElementById('po-fd')?.value||'';
-  let lista=prodData;
-  if(q)lista=lista.filter(r=>(r.contratos?.nome||'').toLowerCase().includes(q)||(r.colaborador||'').toLowerCase().includes(q));
-  if(fc)lista=lista.filter(r=>r.contratos?.nome===fc);
-  if(fd)lista=lista.filter(r=>r.disciplinas?.nome===fd);
+  const fa=document.getElementById('po-fa')?.value||'';
+  const fmodo=document.getElementById('po-fm')?.value||'';
+
   const conts=[...new Set(prodData.map(r=>r.contratos?.nome).filter(Boolean))].sort();
   const discs=[...new Set(prodData.map(r=>r.disciplinas?.nome).filter(Boolean))].sort();
+  const anos=[...new Set(prodData.map(r=>r.ano).filter(Boolean))].sort().reverse();
+
+  let lista=prodData;
+  if(q)lista=lista.filter(r=>(r.contratos?.nome||'').toLowerCase().includes(q)||(r.colaborador||'').toLowerCase().includes(q)||(r.dupla||'').toLowerCase().includes(q));
+  if(fc)lista=lista.filter(r=>r.contratos?.nome===fc);
+  if(fd)lista=lista.filter(r=>r.disciplinas?.nome===fd);
+  if(fa)lista=lista.filter(r=>r.ano===fa);
+  if(fmodo==='solo')lista=lista.filter(r=>!r.dupla);
+  if(fmodo==='dupla')lista=lista.filter(r=>!!r.dupla);
+
   const total=lista.reduce((s,r)=>s+(r.quantidade||0),0);
+  const totalHHB=lista.reduce((s,r)=>s+(r.hhb||0),0);
+  const abaixo=lista.filter(r=>{
+    const meta=metaEsperada(r.disciplinas?.nome,r.dupla);
+    return meta && (r.quantidade||0)<meta;
+  }).length;
+
   document.getElementById('content').innerHTML=`
-    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:420px">
-      <div class="kpi-card"><div class="kpi-lbl">Lançamentos</div><div class="kpi-val">${lista.length}</div></div>
-      <div class="kpi-card g"><div class="kpi-lbl">Total Produzido</div><div class="kpi-val">${fmtN(total)}</div></div>
-      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Colabs</div><div class="kpi-val" style="color:var(--azul2)">${new Set(lista.map(r=>r.colaborador).filter(Boolean)).size}</div></div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kpi-card"><div class="kpi-lbl">Lançamentos</div><div class="kpi-val" style="font-size:22px">${lista.length}</div></div>
+      <div class="kpi-card g"><div class="kpi-lbl">Total Produzido</div><div class="kpi-val" style="font-size:22px">${fmtN(Math.round(total))}</div></div>
+      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">HHB Total</div><div class="kpi-val" style="font-size:22px;color:var(--azul2)">${fmtN(totalHHB.toFixed(1))}</div></div>
+      <div class="kpi-card r"><div class="kpi-lbl">Abaixo da Meta</div><div class="kpi-val" style="font-size:22px">${abaixo}</div></div>
     </div>
-    <div class="sbar">
-      <input class="sinput" id="po-b" placeholder="Buscar contrato ou colaborador..." oninput="renderProdOTD()" value="${q}">
+    <div class="sbar" style="flex-wrap:wrap">
+      <input class="sinput" id="po-b" placeholder="Buscar contrato, colaborador ou dupla..." oninput="renderProdOTD()" value="${q}" style="min-width:260px">
       <select class="sselect" id="po-fc" onchange="renderProdOTD()">
         <option value="">Todos os contratos</option>${conts.map(c=>`<option ${c===fc?'selected':''}>${c}</option>`).join('')}
       </select>
       <select class="sselect" id="po-fd" onchange="renderProdOTD()">
         <option value="">Todas disciplinas</option>${discs.map(d=>`<option ${d===fd?'selected':''}>${d}</option>`).join('')}
       </select>
-      <button class="btn btn-o btn-sm" onclick="prodData=[];renderProdOTD()">↻ Recarregar</button>
+      <select class="sselect" id="po-fa" onchange="renderProdOTD()">
+        <option value="">Todos ciclos</option>${anos.map(a=>`<option ${a===fa?'selected':''}>${a}</option>`).join('')}
+      </select>
+      <select class="sselect" id="po-fm" onchange="renderProdOTD()">
+        <option value="">Solo e Dupla</option>
+        <option value="solo" ${fmodo==='solo'?'selected':''}>Solo apenas</option>
+        <option value="dupla" ${fmodo==='dupla'?'selected':''}>Dupla apenas</option>
+      </select>
+      <button class="btn btn-o btn-sm" onclick="prodData=[];renderProdOTD()">↻</button>
     </div>
-    <div class="card"><div class="card-body"><table>
-      <thead><tr><th>Data</th><th>Contrato</th><th>Disciplina</th><th>Colaborador</th><th>Quantidade</th><th>Unidade</th></tr></thead>
-      <tbody>${lista.length?lista.slice(0,200).map(r=>`<tr>
-        <td>${fmtD(r.data)}</td>
-        <td>${r.contratos?.nome||'—'}</td>
-        <td>${r.disciplinas?.nome||'—'}</td>
-        <td>${r.colaborador||'—'}</td>
-        <td style="font-weight:600">${fmtN(r.quantidade)}</td>
-        <td>${r.disciplinas?.unidade||'—'}</td>
-      </tr>`).join(''):`<tr><td colspan="6"><div class="empty-st"><div class="ico">📦</div><p>Nenhum lançamento encontrado.</p></div></td></tr>`}
-      </tbody>
-    </table>${lista.length>200?`<div style="padding:10px 14px;font-size:12px;color:var(--text2)">Mostrando 200 de ${lista.length} registros. Use os filtros para refinar.</div>`:''}
+    <div class="card"><div class="card-body">
+      <table>
+        <thead><tr>
+          <th>Data</th><th>Colaborador</th><th>Dupla</th><th>Modo</th>
+          <th>Contrato</th><th>Disciplina</th><th>Ciclo</th>
+          <th style="text-align:right">Produção</th><th style="text-align:right">Meta</th>
+          <th style="text-align:right">Taxa</th><th style="text-align:right">HHB</th>
+          <th>Revisões</th><th>Obs</th>
+        </tr></thead>
+        <tbody>${lista.length?lista.slice(0,300).map(r=>{
+          const meta = metaEsperada(r.disciplinas?.nome, r.dupla);
+          const qtd  = r.quantidade||0;
+          const abaixoMeta = meta && qtd < meta;
+          const acimaMeta  = meta && qtd >= meta;
+          const rowBg = abaixoMeta ? 'background:#fff5f5' : acimaMeta ? 'background:#f5fff8' : '';
+          const qtdColor = abaixoMeta ? 'color:var(--vermelho);font-weight:700' : acimaMeta ? 'color:var(--verde);font-weight:700' : 'font-weight:600';
+          return`<tr style="${rowBg}">
+            <td style="font-size:12px">${fmtD(r.data)}</td>
+            <td><strong>${r.colaborador||'—'}</strong></td>
+            <td style="font-size:12px;color:var(--text2)">${r.dupla||'<span style="color:#ccc">—</span>'}</td>
+            <td>${r.dupla?badge('Dupla','bb'):badge('Solo','bc')}</td>
+            <td style="font-size:12px">${r.contratos?.nome||'—'}</td>
+            <td style="font-size:12px">${r.disciplinas?.nome||'—'}</td>
+            <td style="font-size:11px;color:var(--text2)">${r.ano||'—'}</td>
+            <td style="text-align:right;${qtdColor}">${fmtN(qtd)} <span style="font-size:10px;font-weight:400;color:var(--text2)">${r.disciplinas?.unidade||''}</span></td>
+            <td style="text-align:right;font-size:12px;color:var(--text2)">${meta?fmtN(meta):'—'}</td>
+            <td style="text-align:right;font-size:12px">${r.taxa??'—'}</td>
+            <td style="text-align:right;font-size:12px;color:var(--azul2);font-weight:600">${r.hhb!=null?Number(r.hhb).toFixed(2):'—'}</td>
+            <td style="font-size:12px;text-align:center">${r.revisoes??'—'}</td>
+            <td style="font-size:11px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.obs||''}">${r.obs||'—'}</td>
+          </tr>`;
+        }).join(''):`<tr><td colspan="13"><div class="empty-st"><div class="ico">📦</div><p>Nenhum lançamento.<br>Rode o SQL de reimportação.</p></div></td></tr>`}
+        </tbody>
+      </table>
+      ${lista.length>300?`<div style="padding:10px 14px;font-size:12px;color:var(--text2)">Mostrando 300 de ${lista.length} registros. Use os filtros para refinar.</div>`:''}
     </div></div>`;
 }
 
@@ -863,27 +941,45 @@ async function verHistFr(fid){
 }
 
 // ─── FOLGA ───────────────────────────────────────────────────
-function renderFolga(){
+async function renderFolga(){
+  let folgas=[];
+  try{folgas=await db('folgas?order=proxima_folga.asc');}catch(e){toast('Erro folga: '+e.message,'e');}
   const q=(document.getElementById('fg-b')?.value||'').toLowerCase();
-  const fs=document.getElementById('fg-fs')?.value||'';
-  // Dados de folga vêm dos colaboradores (não temos tabela separada ainda — usando dados simulados)
-  // Por enquanto mostrar colaboradores ativos com info de folga placeholder
-  const ativos=colaboradores.filter(c=>c.situacao==='Ativo');
-  let lista=ativos;
-  if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q));
+  const fg=(document.getElementById('fg-g')?.value||'');
+  let lista=folgas;
+  if(q)lista=lista.filter(f=>(f.nome||'').toLowerCase().includes(q)||(f.contrato_atual||'').toLowerCase().includes(q));
+  if(fg)lista=lista.filter(f=>String(f.grupo)===fg);
+  const grupos=[...new Set(folgas.map(f=>f.grupo).filter(Boolean))].sort();
+  const urgente=folgas.filter(f=>(f.dias_restantes||99)<=7).length;
+  const ok=folgas.filter(f=>(f.dias_restantes||0)>7).length;
+  function corFolga(dias){
+    if(dias==null)return'bc';
+    if(dias<=7)return'br';if(dias<=20)return'by';return'bg';
+  }
   document.getElementById('content').innerHTML=`
-    <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#856404">
-      ⚠️ Aba de Folga em construção — os dados de controle de folgas serão integrados em breve. Por ora, exibe a equipe ativa.
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+      <div class="kpi-card"><div class="kpi-lbl">Total</div><div class="kpi-val">${folgas.length}</div></div>
+      <div class="kpi-card r"><div class="kpi-lbl">Urgente (≤7 dias)</div><div class="kpi-val">${urgente}</div></div>
+      <div class="kpi-card g"><div class="kpi-lbl">OK</div><div class="kpi-val">${ok}</div></div>
     </div>
     <div class="sbar">
-      <input class="sinput" id="fg-b" placeholder="Buscar colaborador..." oninput="renderFolga()" value="${q}">
+      <input class="sinput" id="fg-b" placeholder="Buscar colaborador ou contrato..." oninput="renderFolga()" value="${q}">
+      <select class="sselect" id="fg-g" onchange="renderFolga()">
+        <option value="">Todos os grupos</option>
+        ${grupos.map(g=>`<option value="${g}" ${String(g)===fg?'selected':''}>Grupo ${g}</option>`).join('')}
+      </select>
     </div>
     <div class="card"><div class="card-body"><table>
-      <thead><tr><th>Nome</th><th>Função</th><th>Estado</th><th>Admissão</th></tr></thead>
-      <tbody>${lista.map(c=>`<tr>
-        <td><strong>${c.nome}</strong></td><td>${c.funcao||'—'}</td>
-        <td>${c.estado||'—'}</td><td>${fmtD(c.admissao)}</td>
-      </tr>`).join('')||'<tr><td colspan="4"><div class="empty-st">Nenhum colaborador ativo.</div></td></tr>'}
+      <thead><tr><th>Colaborador</th><th>Grupo</th><th>Contrato Atual</th><th>Última Folga</th><th>Próxima Folga</th><th>Dias Restantes</th><th>Status</th></tr></thead>
+      <tbody>${lista.length?lista.map(f=>`<tr>
+        <td><strong>${f.nome||'—'}</strong></td>
+        <td style="text-align:center">${f.grupo||'—'}</td>
+        <td>${f.contrato_atual||'—'}</td>
+        <td>${fmtD(f.ultima_folga)}</td>
+        <td>${fmtD(f.proxima_folga)}</td>
+        <td style="text-align:center;font-weight:700;color:${(f.dias_restantes||99)<=7?'var(--vermelho)':(f.dias_restantes||99)<=20?'var(--amarelo)':'var(--verde)'}">${f.dias_restantes??'—'}</td>
+        <td>${badge(f.status_alerta||'—',corFolga(f.dias_restantes))}</td>
+      </tr>`).join(''):`<tr><td colspan="7"><div class="empty-st"><div class="ico">🏖️</div><p>Nenhuma folga cadastrada.<br>Rode o SQL de importação.</p></div></td></tr>`}
       </tbody>
     </table></div></div>`;
 }
@@ -892,39 +988,102 @@ function renderFolga(){
 function renderParciais(){
   const q=(document.getElementById('pa-b')?.value||'').toLowerCase();
   const fc=document.getElementById('pa-fc')?.value||'';
+  const fs=document.getElementById('pa-fs')?.value||'';
   const ciclos=[...new Set(contratos.map(c=>c.ano).filter(Boolean))].sort().reverse();
-  // Parciais vêm das disciplinas com dados de progresso
   let lista=disciplinas.filter(d=>d.qtd_real>0);
   if(q)lista=lista.filter(d=>(d.contratos?.nome||'').toLowerCase().includes(q)||(d.nome||'').toLowerCase().includes(q));
   if(fc){const ids=new Set(contratos.filter(c=>c.ano===fc).map(c=>c.id));lista=lista.filter(d=>ids.has(d.contrato_id));}
-  lista=lista.sort((a,b)=>{const pa=pct(a.qtd_feita||0,a.qtd_real),pb=pct(b.qtd_feita||0,b.qtd_real);return pa-pb;});
+  if(fs){
+    lista=lista.filter(d=>{
+      const p2=pct(d.qtd_feita||0,d.qtd_real);
+      if(fs==='concluido')return p2>=100;
+      if(fs==='avancado')return p2>=70&&p2<100;
+      if(fs==='andamento')return p2>=30&&p2<70;
+      if(fs==='inicio')return p2<30;
+      return true;
+    });
+  }
+  lista=lista.sort((a,b)=>pct(a.qtd_feita||0,a.qtd_real)-pct(b.qtd_feita||0,b.qtd_real));
+  const concl=disciplinas.filter(d=>pct(d.qtd_feita||0,d.qtd_real)>=100).length;
+  const emAndamento=disciplinas.filter(d=>{const p2=pct(d.qtd_feita||0,d.qtd_real);return p2>0&&p2<100;}).length;
   document.getElementById('content').innerHTML=`
-    <div style="background:#d0e8ff;border:1px solid #1a4a8a;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#1a4a8a">
-      ℹ️ Parciais baseadas no progresso atual das disciplinas. Integração completa com entregas parciais em desenvolvimento.
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+      <div class="kpi-card"><div class="kpi-lbl">Total Disciplinas</div><div class="kpi-val">${disciplinas.length}</div></div>
+      <div class="kpi-card g"><div class="kpi-lbl">Concluídas</div><div class="kpi-val">${concl}</div></div>
+      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Em Andamento</div><div class="kpi-val" style="color:var(--azul2)">${emAndamento}</div></div>
     </div>
     <div class="sbar">
       <input class="sinput" id="pa-b" placeholder="Buscar contrato ou disciplina..." oninput="renderParciais()" value="${q}">
       <select class="sselect" id="pa-fc" onchange="renderParciais()">
         <option value="">Todos os ciclos</option>${ciclos.map(c=>`<option ${c===fc?'selected':''}>${c}</option>`).join('')}
       </select>
+      <select class="sselect" id="pa-fs" onchange="renderParciais()">
+        <option value="">Todos os status</option>
+        <option value="concluido" ${fs==='concluido'?'selected':''}>Concluído</option>
+        <option value="avancado" ${fs==='avancado'?'selected':''}>Avançado (≥70%)</option>
+        <option value="andamento" ${fs==='andamento'?'selected':''}>Em andamento</option>
+        <option value="inicio" ${fs==='inicio'?'selected':''}>Início (&lt;30%)</option>
+      </select>
     </div>
     <div class="card"><div class="card-body"><table>
-      <thead><tr><th>Contrato</th><th>Disciplina</th><th>Qtd Real</th><th>Qtd Feita</th><th>Unidade</th><th>Progresso</th><th>Status</th></tr></thead>
+      <thead><tr><th>Contrato</th><th>Disciplina</th><th>Unid.</th><th>Qtd Real</th><th>Qtd Feita</th><th>Restante</th><th>Progresso</th><th>Status</th></tr></thead>
       <tbody>${lista.length?lista.map(d=>{
-        const p=pct(d.qtd_feita||0,d.qtd_real);
-        const st=p>=100?badge('Concluído','bg'):p>=70?badge('Avançado','bb'):p>=30?badge('Em andamento','by'):badge('Início','bo');
+        const p2=pct(d.qtd_feita||0,d.qtd_real);
+        const restante=(d.qtd_real||0)-(d.qtd_feita||0);
+        const st=p2>=100?badge('Concluído','bg'):p2>=70?badge('Avançado','bb'):p2>=30?badge('Em andamento','by'):badge('Início','bo');
         return`<tr>
           <td><strong>${d.contratos?.nome||'—'}</strong></td>
-          <td>${d.nome||'—'}</td>
-          <td>${fmtN(d.qtd_real)}</td>
-          <td>${fmtN(d.qtd_feita)}</td>
-          <td>${d.unidade||'—'}</td>
+          <td>${d.nome||'—'}</td><td>${d.unidade||'—'}</td>
+          <td>${fmtN(d.qtd_real)}</td><td>${fmtN(d.qtd_feita)}</td>
+          <td style="color:${restante>0?'var(--laranja)':'var(--verde)'};font-weight:600">${fmtN(Math.max(0,restante))}</td>
           <td><div style="display:flex;align-items:center;gap:7px">
-            <div class="progress" style="width:100px"><div class="progress-bar" style="width:${p}%;background:${p>=100?'var(--verde)':p>=50?'var(--azul)':'var(--laranja)'}"></div></div>
-            <span style="font-size:12px;font-weight:600">${p}%</span></div></td>
+            <div class="progress" style="width:90px"><div class="progress-bar" style="width:${p2}%;background:${p2>=100?'var(--verde)':p2>=50?'var(--azul)':'var(--laranja)'}"></div></div>
+            <span style="font-size:12px;font-weight:600">${p2}%</span></div></td>
           <td>${st}</td>
         </tr>`;
-      }).join(''):`<tr><td colspan="7"><div class="empty-st"><div class="ico">📬</div><p>Nenhuma disciplina encontrada.</p></div></td></tr>`}
+      }).join(''):`<tr><td colspan="8"><div class="empty-st"><div class="ico">📬</div><p>Nenhuma disciplina encontrada.</p></div></td></tr>`}
+      </tbody>
+    </table></div></div>`;
+}
+
+// ─── BONIFICAÇÕES / HHB ──────────────────────────────────────
+async function renderBonificacoes(){
+  let hhbData=[];
+  try{hhbData=await db('hhb?order=pct_hhb.desc');}catch(e){toast('Erro HHB: '+e.message,'e');}
+  const q=(document.getElementById('bo-b')?.value||'').toLowerCase();
+  const fa=document.getElementById('bo-a')?.value||'';
+  const anos=[...new Set(hhbData.map(h=>h.ano).filter(Boolean))].sort().reverse();
+  let lista=hhbData;
+  if(q)lista=lista.filter(h=>(h.concessionaria||'').toLowerCase().includes(q)||(h.disciplina||'').toLowerCase().includes(q));
+  if(fa)lista=lista.filter(h=>h.ano===fa);
+  const totPlan=lista.reduce((s,h)=>s+(h.hhb_planejado||0),0);
+  const totReal=lista.reduce((s,h)=>s+(h.hhb_real||0),0);
+  const pctMed=totPlan>0?((totReal/totPlan)*100).toFixed(1):0;
+  document.getElementById('content').innerHTML=`
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+      <div class="kpi-card"><div class="kpi-lbl">HHB Planejado</div><div class="kpi-val" style="font-size:20px">${(totPlan/1000).toFixed(1)}k</div></div>
+      <div class="kpi-card g"><div class="kpi-lbl">HHB Real</div><div class="kpi-val" style="font-size:20px">${(totReal/1000).toFixed(1)}k</div></div>
+      <div class="kpi-card ${pctMed>=100?'g':'r'}"><div class="kpi-lbl">Performance</div><div class="kpi-val" style="font-size:20px">${pctMed}%</div></div>
+    </div>
+    <div class="sbar">
+      <input class="sinput" id="bo-b" placeholder="Buscar concessionária ou disciplina..." oninput="renderBonificacoes()" value="${q}">
+      <select class="sselect" id="bo-a" onchange="renderBonificacoes()">
+        <option value="">Todos os ciclos</option>${anos.map(a=>`<option ${a===fa?'selected':''}>${a}</option>`).join('')}
+      </select>
+    </div>
+    <div class="card"><div class="card-body"><table>
+      <thead><tr><th>Concessionária</th><th>Disciplina</th><th>Ciclo</th><th>HHB Planejado</th><th>HHB Real</th><th>% HHB</th><th>Análise</th></tr></thead>
+      <tbody>${lista.length?lista.map(h=>{
+        const p2=h.pct_hhb?Math.round(h.pct_hhb*100):0;
+        return`<tr>
+          <td><strong>${h.concessionaria||'—'}</strong></td>
+          <td>${h.disciplina||'—'}</td><td>${h.ano||'—'}</td>
+          <td>${fmtN(h.hhb_planejado)}</td>
+          <td>${fmtN(h.hhb_real)}</td>
+          <td style="font-weight:700;color:${p2>=100?'var(--verde)':p2>=80?'var(--amarelo)':'var(--vermelho)'}">${p2}%</td>
+          <td style="font-size:12px;color:var(--text2)">${h.analise||'—'}</td>
+        </tr>`;
+      }).join(''):`<tr><td colspan="7"><div class="empty-st"><div class="ico">🏆</div><p>Nenhum dado de HHB.<br>Rode o SQL de importação.</p></div></td></tr>`}
       </tbody>
     </table></div></div>`;
 }
