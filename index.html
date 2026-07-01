@@ -553,7 +553,8 @@ async function loadAll() {
 // ── DASHBOARD ────────────────────────────────────────────────
 function renderDashboard() {
   const ciclos = [...new Set(contratos.map(c => c.ano).filter(Boolean))].sort().reverse();
-  const sel = document.getElementById('filtro-ciclo')?.value || ciclos[0] || '';
+  const selEl = document.getElementById('filtro-ciclo');
+  const sel = selEl ? selEl.value : (ciclos[0] || '');
   const lista = sel ? contratos.filter(c => c.ano === sel) : contratos;
 
   const total   = lista.length;
