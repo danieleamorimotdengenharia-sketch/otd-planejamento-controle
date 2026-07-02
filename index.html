@@ -94,6 +94,7 @@ textarea{resize:vertical;min-height:55px}
   <div class="ni" onclick="nav('recursos',this)"><span class="ic">📅</span>Recursos</div>
   <div class="ni" onclick="nav('frotas',this)"><span class="ic">🚗</span>Frotas</div>
   <div class="ni" onclick="nav('folga',this)"><span class="ic">🏖️</span>Folga</div>
+  <div class="ni" onclick="nav('alocacao',this)"><span class="ic">🗂️</span>Alocação</div>
   <div class="ni" onclick="nav('parciais',this)"><span class="ic">📬</span>Parciais</div>
   <div class="ni" onclick="nav('bonificacoes',this)"><span class="ic">🏆</span>Bonificações</div>
   <div class="sbf">OTD Engenharia © 2026</div>
@@ -277,12 +278,14 @@ async function loadAll(){
       db('colaboradores?order=nome'),
     ]);
     document.getElementById('lupd').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR');
+    rAloc && alocColabs.length===0 && db('alocacao_colabs?order=nome').then(d=>{alocColabs=d||[];}).catch(()=>{});
     renderPg(curPg);
   }catch(e){toast('Erro ao carregar: '+e.message,'e');}
 }
-const PAGES={dashboard:['Dashboard','Visão geral'],contratos:['Contratos','Gerencie contratos e disciplinas'],colaboradores:['Colaboradores','Equipe de campo'],maodeobra:['Mão de Obra','Equipe por função'],lancarprod:['Lançar Produção','Registro diário'],producaootd:['Produção OTD','Histórico de lançamentos'],produtividade:['Produtividade','Visão semanal'],recursos:['Recursos','Cronograma pessoal e carros'],frotas:['Frotas','Controle de veículos'],folga:['Folga','Controle de folgas'],parciais:['Parciais','Entregas parciais'],bonificacoes:['Bonificações','HHB e performance']};
+const PAGES={dashboard:['Dashboard','Visão geral'],contratos:['Contratos','Gerencie contratos e disciplinas'],colaboradores:['Colaboradores','Equipe de campo'],maodeobra:['Mão de Obra','Equipe por função'],lancarprod:['Lançar Produção','Registro diário'],producaootd:['Produção OTD','Histórico de lançamentos'],produtividade:['Produtividade','Visão semanal'],recursos:['Recursos','Cronograma pessoal e carros'],frotas:['Frotas','Controle de veículos'],
+  alocacao:['Alocação','Gantt de colaboradores e contratos'],folga:['Folga','Controle de folgas'],parciais:['Parciais','Entregas parciais'],bonificacoes:['Bonificações','HHB e performance']};
 function nav(p,el){curPg=p;document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));el.classList.add('active');const[t,s]=PAGES[p]||['',''];document.getElementById('ptitle').textContent=t;document.getElementById('psub').textContent=s;prodData=[];renderPg(p);}
-function renderPg(p){const m={dashboard:rDash,contratos:rContr,colaboradores:rColab,maodeobra:rMO,lancarprod:rLancar,producaootd:rProdOTD,produtividade:rProdutiv,recursos:rRecursos,frotas:rFrotas,folga:rFolga,parciais:rParciais,bonificacoes:rBonif};if(m[p])m[p]();}
+function renderPg(p){const m={dashboard:rDash,contratos:rContr,colaboradores:rColab,maodeobra:rMO,lancarprod:rLancar,producaootd:rProdOTD,produtividade:rProdutiv,recursos:rRecursos,frotas:rFrotas,alocacao:rAloc,folga:rFolga,parciais:rParciais,bonificacoes:rBonif};if(m[p])m[p]();}
 function rDash(){
   const ciclos=[...new Set(contratos.map(c=>c.ano).filter(Boolean))].sort().reverse();
   const sel=document.getElementById('f-ci')?.value||'';
@@ -393,15 +396,38 @@ function rColab(){
     </tr>`).join(''):`<tr><td colspan="7"><div class="est"><div class="ic">👷</div><p>Nenhum colaborador.</p></div></td></tr>`}
     </tbody></table></div></div>`;
 }
+
+// ── MÃO DE OBRA COMPLETA ─────────────────────────────────────
 function rMO(){
   const q=(document.getElementById('mo-bq')?.value||'').toLowerCase(),ff=document.getElementById('mo-ff')?.value||'';
   const ativos=colaboradores.filter(c=>c.situacao==='Ativo');
+  const inativos=colaboradores.filter(c=>c.situacao!=='Ativo');
   const aj=ativos.filter(c=>c.funcao==='Ajudante de Obras'||!c.funcao).length;
   const aux=ativos.filter(c=>c.funcao==='Auxiliar de Engenharia').length;
   const ass=ativos.filter(c=>c.funcao==='Assistente de Engenharia').length;
   const ter=ativos.filter(c=>c.funcao==='Terceirizado Campo').length;
-  let lista=ativos;if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q)||(c.funcao||'').toLowerCase().includes(q));
+  let lista=ativos;
+  if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q)||(c.funcao||'').toLowerCase().includes(q));
   if(ff)lista=lista.filter(c=>c.funcao===ff);
+  // Gráfico de barras por função
+  const total=ativos.length||1;
+  const bars=[
+    {lbl:'Ajudante de Obras',n:aj,cor:'var(--az)'},
+    {lbl:'Auxiliar de Engenharia',n:aux,cor:'var(--az2)'},
+    {lbl:'Assistente de Engenharia',n:ass,cor:'var(--am)'},
+    {lbl:'Terceirizado Campo',n:ter,cor:'var(--ci)'},
+  ];
+  const grafico=bars.map(b=>`
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span>${b.lbl}</span><span style="font-weight:700;color:${b.cor}">${b.n}</span>
+      </div>
+      <div style="background:#f0f2f5;border-radius:4px;height:18px;overflow:hidden">
+        <div style="background:${b.cor};width:${Math.round(b.n/total*100)}%;height:100%;transition:width .3s;display:flex;align-items:center;padding-left:6px;font-size:10px;color:#fff;font-weight:600">
+          ${b.n>0?Math.round(b.n/total*100)+'%':''}
+        </div>
+      </div>
+    </div>`).join('');
   document.getElementById('ct').innerHTML=`
     <div class="kg" style="grid-template-columns:repeat(5,1fr)">
       <div class="kc g"><div class="kl">Total Ativos</div><div class="kv">${ativos.length}</div></div>
@@ -410,15 +436,271 @@ function rMO(){
       <div class="kc y"><div class="kl">Assistentes</div><div class="kv">${ass}</div></div>
       <div class="kc c"><div class="kl">Terceirizados</div><div class="kv" style="color:var(--ci)">${ter}</div></div>
     </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+      <div class="card" style="flex:1;min-width:280px;margin-bottom:0">
+        <div class="ch"><h3>Distribuição por função</h3></div>
+        <div style="padding:16px">${grafico}</div>
+      </div>
+      <div class="card" style="flex:1;min-width:280px;margin-bottom:0">
+        <div class="ch"><h3>Por estado</h3></div>
+        <div style="padding:16px">
+          ${[...new Set(ativos.map(c=>c.estado).filter(Boolean))].sort().map(est=>{
+            const n=ativos.filter(c=>c.estado===est).length;
+            return`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f2f5;font-size:13px"><span>${est}</span><span style="font-weight:700">${n}</span></div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
     <div class="sb_">
       <input class="si" id="mo-bq" placeholder="Buscar nome ou função..." oninput="rMO()" value="${q}" style="min-width:200px">
       <select class="si" id="mo-ff" onchange="rMO()"><option value="">Todas funções</option>${['Ajudante de Obras','Auxiliar de Engenharia','Assistente de Engenharia','Terceirizado Campo'].map(s=>`<option ${s===ff?'selected':''}>${s}</option>`).join('')}</select>
     </div>
-    <div class="card"><div class="cb"><table>
-    <thead><tr><th>Nome</th><th>Função</th><th>Estado</th><th>Admissão</th><th>Promoção</th></tr></thead>
-    <tbody>${lista.length?lista.map(c=>`<tr><td><strong>${c.nome}</strong></td><td>${c.funcao||'—'}</td><td>${c.estado||'—'}</td><td>${fmtD(c.admissao)}</td><td>${c.promocao_data?`${fmtD(c.promocao_data)} → ${c.novo_cargo||''}`:'—'}</td></tr>`).join(''):`<tr><td colspan="5"><div class="est">Nenhum colaborador ativo.</div></td></tr>`}
+    <div class="card"><div class="ch"><h3>Equipe ativa (${lista.length})</h3></div><div class="cb"><table>
+    <thead><tr><th>Nome</th><th>Função</th><th>Estado</th><th>Admissão</th><th>Contrato Atual</th><th>Dupla</th><th>Promoção</th></tr></thead>
+    <tbody>${lista.length?lista.map(c=>{
+      const alc=alocColabs.find(a=>a.nome===c.nome);
+      return`<tr><td><strong>${c.nome}</strong></td><td>${c.funcao||'—'}</td><td>${c.estado||'—'}</td><td>${fmtD(c.admissao)}</td>
+      <td style="font-size:12px">${alc?`${alc.contrato_atual||'—'}<br><span style="color:var(--tx2);font-size:10px">${alc.contrato_disciplina||''} · ${alc.contrato_ano||''}</span>`:'—'}</td>
+      <td style="font-size:12px;color:var(--az2)">${alc?.dupla_atual||'—'}</td>
+      <td>${c.promocao_data?`<span class="bge bgg" style="font-size:10px">${fmtD(c.promocao_data)} → ${c.novo_cargo||''}</span>`:'—'}</td></tr>`;
+    }).join(''):`<tr><td colspan="7"><div class="est">Nenhum colaborador ativo.</div></td></tr>`}
     </tbody></table></div></div>`;
 }
+// ── PARCIAIS COMPLETO — CARDS IGUAIS AO ANTIGO ────────────────
+async function rParciais(){
+  let parcData=[];
+  try{parcData=await db('parciais?order=alerta.asc,contrato.asc');}catch(e){toast('Erro parciais: '+e.message,'e');}
+  const q=(document.getElementById('pa-bq')?.value||'').toLowerCase();
+  const fc=document.getElementById('pa-fc')?.value||'';
+  const fa=document.getElementById('pa-fa')?.value||'';
+  const fs=document.getElementById('pa-fs')?.value||'';
+  const ciclos=[...new Set(parcData.map(p=>p.ano).filter(Boolean))].sort().reverse();
+  const conts=[...new Set(parcData.map(p=>p.contrato).filter(Boolean))].sort();
+  let lista=parcData;
+  if(q)lista=lista.filter(p=>(p.contrato||'').toLowerCase().includes(q)||(p.disciplina||'').toLowerCase().includes(q));
+  if(fc)lista=lista.filter(p=>p.contrato===fc);
+  if(fa)lista=lista.filter(p=>p.ano===fa);
+  if(fs)lista=lista.filter(p=>p.alerta===fs);
+  const criticos=parcData.filter(p=>p.alerta==='critico').length;
+  const alertas=parcData.filter(p=>p.alerta==='alerta').length;
+  const ok=parcData.filter(p=>p.alerta==='ok').length;
+  document.getElementById('ct').innerHTML=`
+    <div class="kg" style="grid-template-columns:repeat(4,1fr);max-width:560px">
+      <div class="kc"><div class="kl">Total</div><div class="kv">${parcData.length}</div></div>
+      <div class="kc r"><div class="kl">🔴 Atrasados</div><div class="kv">${criticos}</div></div>
+      <div class="kc y"><div class="kl">🟡 Em risco</div><div class="kv">${alertas}</div></div>
+      <div class="kc g"><div class="kl">🟢 Em dia</div><div class="kv">${ok}</div></div>
+    </div>
+    <div class="sb_">
+      <input class="si" id="pa-bq" placeholder="Buscar contrato ou disciplina..." oninput="rParciais()" value="${q}" style="min-width:220px">
+      <select class="si" id="pa-fc" onchange="rParciais()"><option value="">Todos os contratos</option>${conts.map(c=>`<option ${c===fc?'selected':''}>${c}</option>`).join('')}</select>
+      <select class="si" id="pa-fa" onchange="rParciais()"><option value="">Todos os ciclos</option>${ciclos.map(c=>`<option ${c===fa?'selected':''}>${c}</option>`).join('')}</select>
+      <select class="si" id="pa-fs" onchange="rParciais()">
+        <option value="">Todos os alertas</option>
+        <option value="critico" ${fs==='critico'?'selected':''}>🔴 Atrasado</option>
+        <option value="alerta" ${fs==='alerta'?'selected':''}>🟡 Em risco</option>
+        <option value="ok" ${fs==='ok'?'selected':''}>🟢 Em dia</option>
+      </select>
+    </div>
+    ${lista.length===0?`<div class="est"><div class="ic">📬</div><p>Nenhuma parcial encontrada.<br>Rode o SQL importar_parciais_alocacao.sql</p></div>`:''}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px">
+    ${lista.map(p=>{
+      const alertaCor={critico:'var(--vm)',alerta:'#e6a817',ok:'var(--vd)',info:'var(--ci)'}[p.alerta]||'var(--ci)';
+      const alertaLbl={critico:'🔴 Atrasado',alerta:'🟡 Em risco',ok:'🟢 Em dia',info:'⬜ Aguardando'}[p.alerta]||'—';
+      const pctE=p.pct_entregue||0;
+      const pctC=p.pct_campo||0;
+      const backlogPct=p.previsto>0?Math.round((p.backlog_escritorio||0)/p.previsto*100):0;
+      const alerts=[];
+      if(p.atrasados>0)alerts.push(`<span class="bge bgr">📉 ${p.atrasados} parcial(is) atrasada(s)</span>`);
+      if((p.backlog_escritorio||0)>0)alerts.push(`<span class="bge bgy">📦 Backlog escritório: ${fmtN(p.backlog_escritorio)} unid.</span>`);
+      if(p.dias_proxima!==null&&p.dias_proxima!==undefined){
+        const d=p.dias_proxima;
+        if(d<0)alerts.push(`<span class="bge bgr">⚠ Próxima ATRASADA ${Math.abs(d)}d</span>`);
+        else if(d<=7)alerts.push(`<span class="bge bgy">⚠ Próxima em ${d}d</span>`);
+      }
+      return`<div class="card" style="margin-bottom:0;border-left:4px solid ${alertaCor}">
+        <div class="ch" style="background:#f7f9fc">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--az)">${p.contrato}</div>
+            <div style="font-size:11px;color:var(--tx2)">${p.disciplina} · ${p.ano}</div>
+          </div>
+          <span class="bge" style="background:${alertaCor}20;color:${alertaCor};border:1px solid ${alertaCor}40">${alertaLbl}</span>
+        </div>
+        <div style="padding:12px 14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;text-align:center">
+            <div style="background:#f7f9fc;border-radius:7px;padding:8px">
+              <div style="font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">Parciais</div>
+              <div style="font-size:16px;font-weight:700;color:var(--az)">${p.entregues||0}/${p.devidos||0}</div>
+              <div style="font-size:10px;color:var(--tx2)">${p.num_parciais} total</div>
+            </div>
+            <div style="background:#f7f9fc;border-radius:7px;padding:8px">
+              <div style="font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">Campo</div>
+              <div style="font-size:16px;font-weight:700;color:${pctC>=100?'var(--vd)':pctC>=70?'var(--am)':'var(--vm)'}">${pctC}%</div>
+              <div style="font-size:10px;color:var(--tx2)">levantado</div>
+            </div>
+            <div style="background:#f7f9fc;border-radius:7px;padding:8px">
+              <div style="font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px">Entregue</div>
+              <div style="font-size:16px;font-weight:700;color:${pctE>=100?'var(--vd)':pctE>=70?'var(--am)':'var(--vm)'}">${pctE}%</div>
+              <div style="font-size:10px;color:var(--tx2)">ao cliente</div>
+            </div>
+          </div>
+          <div style="margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx2);margin-bottom:3px"><span>Progresso campo</span><span>${pctC}%</span></div>
+            <div style="background:#e9ecef;border-radius:3px;height:6px"><div style="background:${pctC>=100?'var(--vd)':'var(--az)'};width:${Math.min(100,pctC)}%;height:100%;border-radius:3px"></div></div>
+          </div>
+          <div style="margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx2);margin-bottom:3px"><span>Entregue ao cliente</span><span>${pctE}%</span></div>
+            <div style="background:#e9ecef;border-radius:3px;height:6px"><div style="background:${pctE>=100?'var(--vd)':'var(--am)'};width:${Math.min(100,pctE)}%;height:100%;border-radius:3px"></div></div>
+          </div>
+          ${p.campo_fim_plan?`<div style="font-size:11px;color:var(--tx2);margin-bottom:4px">Fim campo plan: <strong>${p.campo_fim_plan}</strong> · Estimado: <strong style="color:${p.campo_status==='atrasado'?'var(--vm)':'var(--vd)'}">${p.campo_fim_estim||'—'}</strong></div>`:''}
+          ${alerts.length>0?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${alerts.join('')}</div>`:''}
+        </div>
+      </div>`;
+    }).join('')}
+    </div>`;
+}
+// ── BONIFICAÇÕES COMPLETO ─────────────────────────────────────
+async function rBonif(){
+  let hhbData=[];
+  try{hhbData=await db('hhb?order=pct_hhb.desc');}catch(e){}
+  const q=(document.getElementById('bo-bq')?.value||'').toLowerCase();
+  const fa=document.getElementById('bo-fa')?.value||'';
+  const anos=[...new Set(hhbData.map(h=>h.ano).filter(Boolean))].sort().reverse();
+  let lista=hhbData;
+  if(q)lista=lista.filter(h=>(h.concessionaria||'').toLowerCase().includes(q)||(h.disciplina||'').toLowerCase().includes(q));
+  if(fa)lista=lista.filter(h=>h.ano===fa);
+  const totP=lista.reduce((s,h)=>s+(h.hhb_planejado||0),0);
+  const totR=lista.reduce((s,h)=>s+(h.hhb_real||0),0);
+  const pM=totP>0?((totR/totP)*100).toFixed(1):0;
+  const acima=lista.filter(h=>h.pct_hhb>=1).length;
+  const abaixo=lista.filter(h=>h.pct_hhb<1&&h.pct_hhb>0).length;
+  document.getElementById('ct').innerHTML=`
+    <div class="kg" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kc"><div class="kl">HHB Planejado</div><div class="kv" style="font-size:20px">${(totP/1000).toFixed(1)}k</div></div>
+      <div class="kc g"><div class="kl">HHB Real</div><div class="kv" style="font-size:20px">${(totR/1000).toFixed(1)}k</div></div>
+      <div class="kc ${parseFloat(pM)>=100?'g':'r'}"><div class="kl">Performance Geral</div><div class="kv" style="font-size:20px">${pM}%</div></div>
+      <div class="kc"><div class="kl">Acima da meta</div><div class="kv" style="font-size:20px;color:var(--vd)">${acima}</div></div>
+    </div>
+    <div class="sb_">
+      <input class="si" id="bo-bq" placeholder="Buscar concessionária ou disciplina..." oninput="rBonif()" value="${q}" style="min-width:240px">
+      <select class="si" id="bo-fa" onchange="rBonif()"><option value="">Todos os ciclos</option>${anos.map(a=>`<option ${a===fa?'selected':''}>${a}</option>`).join('')}</select>
+    </div>
+    ${lista.length===0?`<div class="est"><div class="ic">🏆</div><p>Nenhum dado HHB.<br>Rode o SQL importar_complementar.sql</p></div>`:''}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">
+    ${lista.map(h=>{
+      const p2=h.pct_hhb?Math.round(h.pct_hhb*100):0;
+      const cor=p2>=100?'var(--vd)':p2>=80?'var(--am)':'var(--vm)';
+      const bordL=p2>=100?'var(--vd)':p2>=80?'var(--am)':'var(--vm)';
+      return`<div class="card" style="margin-bottom:0;border-left:4px solid ${bordL}">
+        <div class="ch" style="background:#f7f9fc">
+          <div><div style="font-size:13px;font-weight:700;color:var(--az)">${h.concessionaria||'—'}</div>
+          <div style="font-size:11px;color:var(--tx2)">${h.disciplina||'—'} · ${h.ano||'—'}</div></div>
+          <span style="font-size:20px;font-weight:800;color:${cor}">${p2}%</span>
+        </div>
+        <div style="padding:12px 14px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+            <span style="color:var(--tx2)">Planejado: <strong>${fmtN(h.hhb_planejado)}</strong></span>
+            <span style="color:var(--tx2)">Real: <strong style="color:${cor}">${fmtN(h.hhb_real)}</strong></span>
+          </div>
+          <div style="background:#e9ecef;border-radius:4px;height:10px;overflow:hidden">
+            <div style="background:${cor};width:${Math.min(200,p2)}%;height:100%;border-radius:4px;transition:width .3s"></div>
+          </div>
+          ${h.analise?`<div style="font-size:11px;color:var(--tx2);margin-top:7px;font-style:italic">📝 ${h.analise}</div>`:''}
+        </div>
+      </div>`;
+    }).join('')}
+    </div>`;
+}
+// ── ALOCAÇÃO / GANTT ─────────────────────────────────────────
+let alocColabs=[],alocFuturos=[];
+async function rAloc(){
+  try{
+    [alocColabs,alocFuturos]=await Promise.all([
+      db('alocacao_colabs?order=nome'),
+      db('alocacao_futuros?order=inicio'),
+    ]);
+  }catch(e){toast('Erro alocação: '+e.message,'e');}
+  const q=(document.getElementById('al-bq')?.value||'').toLowerCase();
+  const fc=document.getElementById('al-fc')?.value||'';
+  const hojeStr=new Date().toISOString().slice(0,10);
+  // Calcular janela: 3 meses atrás até 6 meses à frente
+  const xMin=new Date();xMin.setMonth(xMin.getMonth()-3);xMin.setDate(1);
+  const xMax=new Date();xMax.setMonth(xMax.getMonth()+6);xMax.setDate(1);
+  const totalDias=Math.round((xMax-xMin)/(1000*60*60*24));
+  const pxPorDia=2;
+  const largTotal=totalDias*pxPorDia;
+  const fmtMes=d=>{const m=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];return m[d.getMonth()]+'/'+String(d.getFullYear()).slice(2);}
+  const posX=d=>{const dt=new Date(d+'T00:00:00');return Math.max(0,Math.round((dt-xMin)/(1000*60*60*24))*pxPorDia);}
+  const largBarra=ini=>fim=>{const i=new Date(ini+'T00:00:00'),f=new Date(fim+'T00:00:00');return Math.max(4,Math.round((f-i)/(1000*60*60*24))*pxPorDia);}
+  // Meses header
+  const meses=[];let cm=new Date(xMin);
+  while(cm<xMax){meses.push(new Date(cm));cm.setMonth(cm.getMonth()+1);}
+  const mesesHdr=meses.map(m=>{const pos=posX(m.toISOString().slice(0,10));const dias=new Date(m.getFullYear(),m.getMonth()+1,0).getDate();const larg=dias*pxPorDia;return`<div style="position:absolute;left:${pos}px;width:${larg}px;border-right:1px solid #dde3ec;padding:4px 6px;font-size:10px;font-weight:600;color:var(--tx2);overflow:hidden;white-space:nowrap">${fmtMes(m)}</div>`;}).join('');
+  const hojePx=posX(hojeStr);
+  let colabsFilt=alocColabs;
+  if(q)colabsFilt=colabsFilt.filter(c=>(c.nome||'').toLowerCase().includes(q)||(c.contrato_atual||'').toLowerCase().includes(q));
+  if(fc)colabsFilt=colabsFilt.filter(c=>c.contrato_atual===fc);
+  const contratos_opts=[...new Set(alocColabs.map(c=>c.contrato_atual).filter(Boolean))].sort();
+  document.getElementById('ct').innerHTML=`
+    <div class="kg" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+      <div class="kc g"><div class="kl">Colabs Alocados</div><div class="kv">${alocColabs.length}</div></div>
+      <div class="kc y"><div class="kl">Contratos Futuros</div><div class="kv">${alocFuturos.length}</div></div>
+      <div class="kc" style="border-left-color:var(--az2)"><div class="kl">Contratos Ativos</div><div class="kv" style="color:var(--az2)">${[...new Set(alocColabs.map(c=>c.contrato_atual).filter(Boolean))].length}</div></div>
+    </div>
+    <div class="sb_">
+      <input class="si" id="al-bq" placeholder="Buscar colaborador ou contrato..." oninput="rAloc()" value="${q}" style="min-width:220px">
+      <select class="si" id="al-fc" onchange="rAloc()"><option value="">Todos os contratos</option>${contratos_opts.map(c=>`<option ${c===fc?'selected':''}>${c}</option>`).join('')}</select>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="ch"><h3>📊 Gantt — Alocação de Colaboradores</h3><span style="font-size:11px;color:var(--tx2)">Janela: ${xMin.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})} → ${xMax.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})}</span></div>
+      <div style="display:flex;flex-direction:column;min-width:0">
+        <!-- Header nomes -->
+        <div style="display:flex">
+          <div style="min-width:180px;max-width:180px;padding:6px 10px;background:#f7f9fc;border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase">Colaborador</div>
+          <div style="flex:1;overflow:hidden">
+            <div style="position:relative;height:28px;background:#f7f9fc;border-bottom:1px solid var(--bd);min-width:${largTotal}px">${mesesHdr}
+              <div style="position:absolute;left:${hojePx}px;top:0;bottom:0;width:2px;background:var(--vm);z-index:2"></div>
+            </div>
+          </div>
+        </div>
+        <div style="max-height:420px;overflow:auto">
+        ${colabsFilt.length===0?`<div class="est"><div class="ic">🏗️</div><p>Nenhum colaborador alocado.<br>Rode importar_parciais_alocacao.sql</p></div>`:
+        colabsFilt.map((c,i)=>{
+          const ini=c.contrato_inicio,fim=c.contrato_fim;
+          const px=ini?posX(ini):0;const larg=(ini&&fim)?Math.max(4,largBarra(ini)(fim)):0;
+          const bg=i%2===0?'#fff':'#f9fafb';
+          const concluido=fim&&fim<hojeStr;
+          const barCor=concluido?'var(--ci)':'var(--az)';
+          return`<div style="display:flex;border-bottom:1px solid #f0f2f5">
+            <div style="min-width:180px;max-width:180px;padding:7px 10px;background:${bg};border-right:1px solid var(--bd);font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">
+              <strong>${c.nome||'—'}</strong><br>
+              <span style="font-size:10px;color:var(--tx2)">${c.funcao||''} · ${c.estado||''}</span>
+            </div>
+            <div style="flex:1;position:relative;overflow:hidden;background:${bg};min-width:${largTotal}px">
+              <div style="position:absolute;left:${hojePx}px;top:0;bottom:0;width:1px;background:rgba(220,53,69,.3);z-index:1"></div>
+              ${larg>0?`<div title="${c.contrato_atual||''} · ${c.contrato_disciplina||''} · ${ini?fmtD(ini):''} → ${fim?fmtD(fim):''}" style="position:absolute;left:${px}px;top:5px;height:18px;width:${larg}px;background:${barCor};border-radius:4px;opacity:${concluido?.5:1};display:flex;align-items:center;padding:0 5px;font-size:10px;color:#fff;font-weight:600;overflow:hidden;white-space:nowrap;cursor:default">${(c.contrato_atual||'').split(' ').slice(-2).join(' ')}</div>`:''}
+            </div>
+          </div>`;
+        }).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>📋 Contratos futuros / sem alocação (${alocFuturos.length})</h3></div>
+      <div class="cb"><table>
+        <thead><tr><th>Contrato</th><th>Disciplina</th><th>Ciclo</th><th>Início Previsto</th><th>Fim Previsto</th></tr></thead>
+        <tbody>${alocFuturos.length?alocFuturos.map(f=>`<tr>
+          <td><strong>${f.contrato||'—'}</strong></td>
+          <td>${f.disciplina||'—'}</td>
+          <td style="font-size:11px;color:var(--tx2)">${f.ano||'—'}</td>
+          <td>${fmtD(f.inicio)}</td>
+          <td>${fmtD(f.fim)}</td>
+        </tr>`).join(''):`<tr><td colspan="5" class="est">Nenhum contrato futuro.</td></tr>`}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+
 function rLancar(){
   const cl=colaboradores.filter(c=>c.situacao==='Ativo').map(c=>`<option value="${c.nome}">`).join('');
   document.getElementById('ct').innerHTML=`
@@ -705,57 +987,8 @@ async function rFolga(){
     }).join(''):`<tr><td colspan="8"><div class="est"><div class="ic">🏖️</div><p>Nenhuma folga encontrada.</p></div></td></tr>`}
     </tbody></table></div></div>`;
 }
-function rParciais(){
-  const q=(document.getElementById('pa-bq')?.value||'').toLowerCase(),fc=document.getElementById('pa-fc')?.value||'',fs=document.getElementById('pa-fs')?.value||'';
-  const ciclos=[...new Set(contratos.map(c=>c.ano).filter(Boolean))].sort().reverse();
-  let lista=disciplinas.filter(d=>d.qtd_real>0);
-  if(q)lista=lista.filter(d=>(d.contratos?.nome||'').toLowerCase().includes(q)||(d.nome||'').toLowerCase().includes(q));
-  if(fc){const ids=new Set(contratos.filter(c=>c.ano===fc).map(c=>c.id));lista=lista.filter(d=>ids.has(d.contrato_id));}
-  if(fs){lista=lista.filter(d=>{const p2=pct(d.qtd_feita||0,d.qtd_real);if(fs==='100')return p2>=100;if(fs==='70')return p2>=70&&p2<100;if(fs==='30')return p2>=30&&p2<70;if(fs==='0')return p2<30;return true;});}
-  lista=lista.sort((a,b)=>pct(a.qtd_feita||0,a.qtd_real)-pct(b.qtd_feita||0,b.qtd_real));
-  const concl=disciplinas.filter(d=>pct(d.qtd_feita||0,d.qtd_real)>=100).length;
-  const and2=disciplinas.filter(d=>{const p2=pct(d.qtd_feita||0,d.qtd_real);return p2>0&&p2<100;}).length;
-  document.getElementById('ct').innerHTML=`
-    <div class="kg" style="grid-template-columns:repeat(3,1fr);max-width:420px">
-      <div class="kc"><div class="kl">Total Disciplinas</div><div class="kv">${disciplinas.length}</div></div>
-      <div class="kc g"><div class="kl">Concluídas</div><div class="kv">${concl}</div></div>
-      <div class="kc" style="border-left-color:var(--az2)"><div class="kl">Em Andamento</div><div class="kv" style="color:var(--az2)">${and2}</div></div>
-    </div>
-    <div class="sb_">
-      <input class="si" id="pa-bq" placeholder="Buscar contrato ou disciplina..." oninput="rParciais()" value="${q}" style="min-width:220px">
-      <select class="si" id="pa-fc" onchange="rParciais()"><option value="">Todos os ciclos</option>${ciclos.map(c=>`<option ${c===fc?'selected':''}>${c}</option>`).join('')}</select>
-      <select class="si" id="pa-fs" onchange="rParciais()"><option value="">Todos</option><option value="100" ${fs==='100'?'selected':''}>Concluído (100%)</option><option value="70" ${fs==='70'?'selected':''}>Avançado (≥70%)</option><option value="30" ${fs==='30'?'selected':''}>Em andamento</option><option value="0" ${fs==='0'?'selected':''}>Início (&lt;30%)</option></select>
-    </div>
-    <div class="card"><div class="cb"><table>
-    <thead><tr><th>Contrato</th><th>Ciclo</th><th>Disciplina</th><th>Unid.</th><th style="text-align:right">Qtd Real</th><th style="text-align:right">Qtd Feita</th><th style="text-align:right">Restante</th><th>Progresso</th><th>Status</th></tr></thead>
-    <tbody>${lista.length?lista.map(d=>{const p2=pct(d.qtd_feita||0,d.qtd_real);const rest=Math.max(0,(d.qtd_real||0)-(d.qtd_feita||0));const st=p2>=100?badge('Concluído','bgg'):p2>=70?badge('Avançado','bgb'):p2>=30?badge('Em andamento','bgy'):badge('Início','bgo');
-      return`<tr><td><strong>${d.contratos?.nome||'—'}</strong></td><td style="font-size:11px;color:var(--tx2)">${d.contratos?.ano||'—'}</td><td>${d.nome||'—'}</td><td>${d.unidade||'—'}</td><td style="text-align:right">${fmtN(d.qtd_real)}</td><td style="text-align:right">${fmtN(d.qtd_feita)}</td><td style="text-align:right;color:${rest>0?'var(--la)':'var(--vd)'};font-weight:600">${fmtN(Math.round(rest))}</td><td><div style="display:flex;align-items:center;gap:6px"><div class="pr" style="width:90px"><div class="pb" style="width:${p2}%;background:${p2>=100?'var(--vd)':p2>=50?'var(--az)':'var(--la)'}"></div></div><span style="font-size:12px;font-weight:600">${p2}%</span></div></td><td>${st}</td></tr>`;
-    }).join(''):`<tr><td colspan="9"><div class="est"><div class="ic">📬</div><p>Nenhuma disciplina.</p></div></td></tr>`}
-    </tbody></table></div></div>`;
-}
-async function rBonif(){
-  let hhbData=[];try{hhbData=await db('hhb?order=pct_hhb.desc');}catch(e){toast('Erro HHB: '+e.message,'e');}
-  const q=(document.getElementById('bo-bq')?.value||'').toLowerCase(),fa=document.getElementById('bo-fa')?.value||'';
-  const anos=[...new Set(hhbData.map(h=>h.ano).filter(Boolean))].sort().reverse();
-  let lista=hhbData;if(q)lista=lista.filter(h=>(h.concessionaria||'').toLowerCase().includes(q)||(h.disciplina||'').toLowerCase().includes(q));if(fa)lista=lista.filter(h=>h.ano===fa);
-  const totP=lista.reduce((s,h)=>s+(h.hhb_planejado||0),0),totR=lista.reduce((s,h)=>s+(h.hhb_real||0),0);const pM=totP>0?((totR/totP)*100).toFixed(1):0;
-  document.getElementById('ct').innerHTML=`
-    <div class="kg" style="grid-template-columns:repeat(3,1fr);max-width:420px">
-      <div class="kc"><div class="kl">HHB Planejado</div><div class="kv" style="font-size:20px">${(totP/1000).toFixed(1)}k</div></div>
-      <div class="kc g"><div class="kl">HHB Real</div><div class="kv" style="font-size:20px">${(totR/1000).toFixed(1)}k</div></div>
-      <div class="kc ${parseFloat(pM)>=100?'g':'r'}"><div class="kl">Performance</div><div class="kv" style="font-size:20px">${pM}%</div></div>
-    </div>
-    <div class="sb_">
-      <input class="si" id="bo-bq" placeholder="Buscar concessionária ou disciplina..." oninput="rBonif()" value="${q}" style="min-width:240px">
-      <select class="si" id="bo-fa" onchange="rBonif()"><option value="">Todos os ciclos</option>${anos.map(a=>`<option ${a===fa?'selected':''}>${a}</option>`).join('')}</select>
-    </div>
-    <div class="card"><div class="cb"><table>
-    <thead><tr><th>Concessionária</th><th>Disciplina</th><th>Ciclo</th><th style="text-align:right">HHB Planejado</th><th style="text-align:right">HHB Real</th><th style="text-align:center">% HHB</th><th>Análise</th></tr></thead>
-    <tbody>${lista.length?lista.map(h=>{const p2=h.pct_hhb?Math.round(h.pct_hhb*100):0;
-      return`<tr><td><strong>${h.concessionaria||'—'}</strong></td><td>${h.disciplina||'—'}</td><td style="font-size:11px;color:var(--tx2)">${h.ano||'—'}</td><td style="text-align:right">${fmtN(h.hhb_planejado)}</td><td style="text-align:right">${fmtN(h.hhb_real)}</td><td style="text-align:center;font-weight:700;color:${p2>=100?'var(--vd)':p2>=80?'var(--am)':'var(--vm)'}">${p2}%</td><td style="font-size:12px;color:var(--tx2)">${h.analise||'—'}</td></tr>`;
-    }).join(''):`<tr><td colspan="7"><div class="est"><div class="ic">🏆</div><p>Nenhum dado de HHB.<br>Rode o SQL importar_complementar.sql</p></div></td></tr>`}
-    </tbody></table></div></div>`;
-}
+
+
 // CRUD
 
 function abrirMC(id=null){discTemp=[];document.getElementById('mc-t').textContent=id?'Editar Contrato':'Novo Contrato';['mc-id','mc-nm','mc-an','mc-es','mc-ob'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});['mc-ip','mc-fp','mc-ir','mc-fe'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});document.getElementById('mc-st').value='Aguardando início';const sel=document.getElementById('mc-cl');sel.innerHTML='<option value="">Selecione...</option>'+clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');if(id){const c=contratos.find(x=>x.id===id);if(c){document.getElementById('mc-id').value=c.id;document.getElementById('mc-nm').value=c.nome||'';document.getElementById('mc-cl').value=c.cliente_id||'';document.getElementById('mc-an').value=c.ano||'';document.getElementById('mc-es').value=c.estado||'';document.getElementById('mc-st').value=c.status||'Aguardando início';document.getElementById('mc-ip').value=c.inicio_planejado||'';document.getElementById('mc-fp').value=c.termino_planejado||'';document.getElementById('mc-ir').value=c.inicio_real||'';document.getElementById('mc-fe').value=c.termino_estimado||'';document.getElementById('mc-ob').value=c.obs||'';discTemp=disciplinas.filter(d=>d.contrato_id===id).map(d=>({...d,_sv:true}));}}rDL();document.getElementById('dform').style.display='none';openM('mc');}
