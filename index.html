@@ -834,40 +834,314 @@ async function exportProd(semKey){
 }
 
 // ─── RECURSOS ────────────────────────────────────────────────
-function renderRecursos(){
-  const hoje=new Date().toISOString().split('T')[0];
-  const ativos=colaboradores.filter(c=>{
-    if(c.situacao!=='Ativo')return false;
-    if(c.funcao==='Terceirizado Campo')return false;
-    return true;
+// Exatamente igual ao dashboard antigo: tabela cronograma dia × mês
+// Passado = real (Colaboradores), Futuro = planejado (disciplinas × frentes)
+
+const HIER_FUNC = ['Ajudante de Obras','Auxiliar de Engenharia','Assistente de Engenharia','Terceirizado Campo'];
+
+function getColabInfo(){
+  // Monta colab_info a partir dos colaboradores carregados
+  const info = {};
+  const hoje_y = new Date().getFullYear();
+  colaboradores.forEach(c => {
+    if(!c.nome) return;
+    const ini = c.admissao || `${hoje_y}-01-01`;
+    let fim;
+    if(c.desligamento) fim = c.desligamento;
+    else if(c.situacao !== 'Ativo' && c.situacao !== '') fim = `${hoje_y}-06-30`; // corte conservador
+    else fim = `${hoje_y}-12-31`;
+    info[c.nome] = {
+      funcao: c.funcao || 'Ajudante de Obras',
+      inicio: ini.slice(0,10),
+      fim: fim.slice(0,10),
+      promocao_data: c.promocao_data ? c.promocao_data.slice(0,10) : null,
+      novo_cargo: c.novo_cargo || null,
+    };
   });
-  const aj=ativos.filter(c=>c.funcao==='Ajudante de Obras'||!c.funcao).length;
-  const aux=ativos.filter(c=>c.funcao==='Auxiliar de Engenharia').length;
-  const ass=ativos.filter(c=>c.funcao==='Assistente de Engenharia').length;
-  const q=(document.getElementById('re-b')?.value||'').toLowerCase();
-  let lista=ativos;if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q));
-  document.getElementById('content').innerHTML=`
+  return info;
+}
+
+function calcContPessoas(colabInfo, ano, fContrato, colabContratos){
+  const cont = {};
+  const pIni = new Date(ano,0,1), pFim = new Date(ano,11,31);
+  Object.entries(colabInfo).forEach(([nome, info]) => {
+    if(fContrato && colabContratos){
+      const ctrs = colabContratos[nome] || [];
+      if(!ctrs.includes(fContrato)) return;
+    }
+    const ini = new Date(info.inicio + 'T00:00:00');
+    const fim = new Date(info.fim + 'T00:00:00');
+    const startDt = ini > pIni ? ini : pIni;
+    const endDt   = fim < pFim ? fim : pFim;
+    const cur = new Date(startDt);
+    while(cur <= endDt){
+      const di = cur.toISOString().slice(0,10);
+      const funcaoVig = (info.promocao_data && info.novo_cargo && di >= info.promocao_data)
+        ? info.novo_cargo : info.funcao;
+      if(!cont[di]) cont[di] = {TOTAL:0};
+      if(!funcaoVig.toLowerCase().includes('terceirizado')){
+        cont[di].TOTAL = (cont[di].TOTAL||0) + 1;
+      }
+      cont[di][funcaoVig] = (cont[di][funcaoVig]||0) + 1;
+      cur.setDate(cur.getDate()+1);
+    }
+  });
+  return cont;
+}
+
+function getNecPlanejada(dataIso, disciplinasFiltradas){
+  const dt = new Date(dataIso+'T00:00:00');
+  if(isNaN(dt)) return null;
+  const r = {TOTAL:0, _carros:0};
+  disciplinasFiltradas.forEach(d => {
+    const pct2 = Math.round(((d.qtd_feita||0)/(d.qtd_real||1))*100);
+    if(pct2 >= 100) return;
+    const ini = d.inicio_planejado||d.inicio_real;
+    const fim = d.inicio_real ? (d.termino_estimado||d.termino_planejado) : d.termino_planejado;
+    if(!ini||!fim) return;
+    if(dataIso < ini || dataIso > fim) return;
+    const frentes = d.num_frentes||1;
+    const pessoas = 2; // padrão 2 pessoas/frente
+    r.TOTAL += frentes * pessoas;
+    r._carros += frentes;
+  });
+  return r;
+}
+
+function tabelaRecursos(getterFn, totaisMes, titulo, corTema, ano, hojeStr, categoria){
+  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const mesAtual = parseInt((hojeStr||'').slice(5,7));
+  const totalGeral = totaisMes.reduce((a,b)=>a+b,0);
+  const corMes = m => m < mesAtual ? '#e6f4ea' : (m === mesAtual ? '#fff4d4' : '#e8effb');
+
+  let h = `<div style="margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:13px;font-weight:700;color:${corTema}">${titulo}</div>
+      <div style="font-size:11px;color:var(--text2)">Total ${ano}: <strong>${totalGeral.toLocaleString('pt-BR')}</strong></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:6px;font-size:10px;color:var(--text2);align-items:center;flex-wrap:wrap">
+      <span style="background:#e6f4ea;padding:2px 8px;border-radius:3px">real</span>
+      <span style="background:#fff4d4;padding:2px 8px;border-radius:3px">atual</span>
+      <span style="background:#e8effb;padding:2px 8px;border-radius:3px">projeção</span>
+      <span style="margin-left:auto;color:var(--azul);font-weight:600;font-size:10px">💡 Clique em célula futura para auditar</span>
+    </div>
+    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:6px;background:#fff">
+    <table style="border-collapse:collapse;width:100%;min-width:780px;font-size:11px;font-family:monospace">
+      <thead><tr style="background:#f7f9fc">
+        <th style="position:sticky;left:0;background:#f7f9fc;padding:8px 10px;border-right:1px solid var(--border);font-size:10px;color:var(--text2);text-align:center;min-width:40px">DIA</th>`;
+  meses.forEach(m => {
+    h += `<th style="padding:8px 6px;border-right:1px solid var(--border);font-size:10px;color:var(--text2);font-weight:600;text-align:center;min-width:50px">${m}/${String(ano).slice(2)}</th>`;
+  });
+  h += `</tr></thead><tbody>`;
+
+  for(let dia=1;dia<=31;dia++){
+    h += `<tr>`;
+    h += `<td style="position:sticky;left:0;background:#fff;padding:4px 10px;border-right:1px solid var(--border);font-weight:700;color:var(--text);text-align:center">${dia}</td>`;
+    for(let m=1;m<=12;m++){
+      const lastDay = new Date(ano,m,0).getDate();
+      if(dia > lastDay){ h+=`<td style="background:rgba(0,0,0,.03);border-right:1px solid rgba(0,0,0,.04)"></td>`; continue; }
+      const v = getterFn(ano,m,dia);
+      const cor = corMes(m);
+      const di = `${ano}-${String(m).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+      const ehProj = di > hojeStr;
+      const clk = (ehProj && categoria && v > 0)
+        ? ` onclick="auditarDia('${di}','${categoria}')" style="background:${cor};border-right:1px solid rgba(0,0,0,.04);padding:4px 6px;text-align:center;font-weight:600;cursor:pointer;color:var(--azul)" title="Clique para auditar"`
+        : ` style="background:${cor};border-right:1px solid rgba(0,0,0,.04);padding:4px 6px;text-align:center;color:var(--text);font-weight:${v>0?'600':'400'}"`;
+      h += `<td${clk}>${v>0?v:''}</td>`;
+    }
+    h += `</tr>`;
+  }
+  h += `<tr style="background:#f7f9fc;border-top:2px solid var(--border)">
+    <td style="position:sticky;left:0;background:#f7f9fc;padding:8px 10px;border-right:1px solid var(--border);font-weight:700;text-align:center;font-size:10px">∑</td>`;
+  totaisMes.forEach(t => { h+=`<td style="padding:8px 6px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid var(--border)">${t.toLocaleString('pt-BR')}</td>`; });
+  h += `</tr></tbody></table></div></div>`;
+  return h;
+}
+
+function renderRecursos(){
+  const ano = parseInt(document.getElementById('rec-ano')?.value) || new Date().getFullYear();
+  const fContr = document.getElementById('rec-contr')?.value || '';
+  const hojeStr = new Date().toISOString().slice(0,10);
+
+  const colabInfo = getColabInfo();
+
+  // Contagem REAL (passado): de colaboradores
+  const contPessoas = calcContPessoas(colabInfo, ano, fContr, null);
+
+  // Contagem CARROS real: de produção (frentes únicas por dia)
+  // Usamos os dados de produção já carregados (prodData se disponível)
+  const contCarros = {};
+
+  // Getter: passado = real, futuro = planejado
+  const discFiltradas = fContr
+    ? disciplinas.filter(d => d.contratos?.nome === fContr)
+    : disciplinas;
+
+  const getter = (cat) => (ano_, m, dia) => {
+    const di = `${ano_}-${String(m).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    if(di <= hojeStr){
+      return (contPessoas[di]||{})[cat] || 0;
+    } else {
+      const np = getNecPlanejada(di, discFiltradas);
+      if(!np) return 0;
+      return cat === '_carros' ? (np._carros||0) : (np[cat]||0);
+    }
+  };
+
+  const getterCarros = (ano_, m, dia) => {
+    const di = `${ano_}-${String(m).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    if(di <= hojeStr){
+      return contCarros[di] || 0;
+    } else {
+      const np = getNecPlanejada(di, discFiltradas);
+      return np ? (np._carros||0) : 0;
+    }
+  };
+
+  const calcTotais = (fn) => {
+    const arr = [];
+    for(let m=1;m<=12;m++){
+      const last = new Date(ano,m,0).getDate();
+      let s=0; for(let d=1;d<=last;d++) s+=fn(ano,m,d);
+      arr.push(s);
+    }
+    return arr;
+  };
+
+  // KPIs
+  const ativos = colaboradores.filter(c=>c.situacao==='Ativo'&&!c.funcao?.toLowerCase().includes('terceirizado'));
+  const aj  = ativos.filter(c=>c.funcao==='Ajudante de Obras'||!c.funcao).length;
+  const aux = ativos.filter(c=>c.funcao==='Auxiliar de Engenharia').length;
+  const ass = ativos.filter(c=>c.funcao==='Assistente de Engenharia').length;
+
+  const anos = [...new Set([ano-1,ano,ano+1])];
+  const contratos_opts = [...new Set(disciplinas.map(d=>d.contratos?.nome).filter(Boolean))].sort();
+
+  document.getElementById('content').innerHTML = `
     <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);max-width:560px">
       <div class="kpi-card g"><div class="kpi-lbl">Total Ativos</div><div class="kpi-val">${ativos.length}</div></div>
-      <div class="kpi-card"><div class="kpi-lbl">Ajudantes</div><div class="kpi-val">${aj}</div></div>
+      <div class="kpi-card"><div class="kpi-lbl">Ajudantes de Obras</div><div class="kpi-val">${aj}</div></div>
       <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Auxiliares</div><div class="kpi-val" style="color:var(--azul2)">${aux}</div></div>
       <div class="kpi-card y"><div class="kpi-lbl">Assistentes</div><div class="kpi-val">${ass}</div></div>
     </div>
     <div class="sbar">
-      <input class="sinput" id="re-b" placeholder="Buscar colaborador..." oninput="renderRecursos()" value="${q}">
+      <label style="font-size:11px;font-weight:600;color:var(--text2)">Ano</label>
+      <select class="sselect" id="rec-ano" onchange="renderRecursos()">
+        ${anos.map(y=>`<option value="${y}" ${y===ano?'selected':''}>${y}</option>`).join('')}
+      </select>
+      <label style="font-size:11px;font-weight:600;color:var(--text2)">Contrato</label>
+      <select class="sselect" id="rec-contr" onchange="renderRecursos()">
+        <option value="">Todos</option>
+        ${contratos_opts.map(c=>`<option value="${c}" ${c===fContr?'selected':''}>${c}</option>`).join('')}
+      </select>
     </div>
-    <div class="card">
-      <div class="card-hdr"><h3>Equipe ativa — ${fmtD(hoje)}</h3></div>
-      <div class="card-body"><table>
-        <thead><tr><th>Nome</th><th>Função</th><th>Estado</th><th>Admissão</th></tr></thead>
-        <tbody>${lista.map(c=>`<tr>
-          <td><strong>${c.nome}</strong></td><td>${c.funcao||'—'}</td>
-          <td>${c.estado||'—'}</td><td>${fmtD(c.admissao)}</td>
-        </tr>`).join('')||'<tr><td colspan="4"><div class="empty-st">Nenhum colaborador ativo.</div></td></tr>'}
-        </tbody>
-      </table></div>
-    </div>`;
+    <div style="background:#e8effb;border-left:3px solid var(--azul);padding:10px 14px;border-radius:7px;font-size:12px;margin-bottom:16px;line-height:1.6">
+      <strong>Como funciona:</strong>
+      <strong>Passado/hoje</strong> = pessoal REAL (Colaboradores com promoções aplicadas).
+      <strong>Futuro</strong> = pessoal PLANEJADO (disciplinas × frentes × pessoas).
+      TOTAL <strong>exclui Terceirizado Campo</strong>.
+      Conta <strong>todos os dias</strong> do mês (mensalistas geram custo fixo).
+      <strong>💡 Clique em célula futura</strong> para ver de quais contratos o número vem.
+    </div>
+    <div id="rec-tabelas"></div>`;
+
+  // Renderizar tabelas
+  const el = document.getElementById('rec-tabelas');
+  let html = '';
+
+  // TOTAL (sem terceirizado)
+  const totT = calcTotais(getter('TOTAL'));
+  html += tabelaRecursos(getter('TOTAL'), totT,
+    '👷 PESSOAL DE CAMPO — TOTAL <span style="font-size:11px;color:var(--text2);font-weight:400">(sem Terceirizado Campo)</span>',
+    'var(--text)', ano, hojeStr, 'TOTAL');
+
+  // Por função
+  HIER_FUNC.forEach(f => {
+    const tots = calcTotais(getter(f));
+    const temAlguem = tots.some(v=>v>0);
+    if(temAlguem || f !== 'Terceirizado Campo'){
+      const sub = temAlguem ? '' : ' <span style="font-size:11px;color:var(--text2);font-weight:400">(sem ninguém)</span>';
+      html += tabelaRecursos(getter(f), tots,
+        `  ↳ ${f}${sub}`, 'var(--text2)', ano, hojeStr, f);
+    }
+  });
+
+  // CARROS
+  const totC = calcTotais(getterCarros);
+  html += tabelaRecursos(getterCarros, totC,
+    '🚗 CARROS', 'var(--laranja)', ano, hojeStr, '_carros');
+
+  el.innerHTML = html;
 }
+
+// Modal de auditoria — mostra quais contratos contribuem para uma célula futura
+window.auditarDia = function(dataIso, categoria){
+  const discFiltradas = disciplinas;
+  const linhas = [];
+  let totalSoma = 0;
+  const fmtD2 = d => d ? d.split('-').reverse().join('/') : '—';
+  discFiltradas.forEach(d => {
+    const pct2 = Math.round(((d.qtd_feita||0)/(d.qtd_real||1))*100);
+    if(pct2 >= 100) return;
+    const ini = d.inicio_planejado||d.inicio_real;
+    const fim = d.inicio_real ? (d.termino_estimado||d.termino_planejado) : d.termino_planejado;
+    if(!ini||!fim) return;
+    if(dataIso < ini || dataIso > fim) return;
+    const frentes = d.num_frentes||1;
+    const pessoas = 2;
+    let valor = 0;
+    if(categoria==='_carros') valor = frentes;
+    else if(categoria==='TOTAL') valor = frentes * pessoas;
+    else valor = 0;
+    if(valor > 0){
+      linhas.push({contrato:d.contratos?.nome||'—',disc:d.nome,frentes,pessoas,valor,ini,fim,pct:pct2});
+      totalSoma += valor;
+    }
+  });
+  linhas.sort((a,b)=>b.valor-a.valor);
+  const catLabel = categoria==='_carros'?'Carros':categoria==='TOTAL'?'TOTAL pessoas':categoria;
+  const dt = new Date(dataIso+'T00:00:00');
+  const dias=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const html = `<div onclick="event.stopPropagation()" style="background:#fff;border-radius:10px;max-width:900px;width:96%;max-height:88vh;overflow:auto;padding:20px 24px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div>
+        <div style="font-size:17px;font-weight:700;color:var(--azul)">Auditoria — ${dias[dt.getDay()]} ${fmtD2(dataIso)}</div>
+        <div style="font-size:12px;color:var(--text2)">${catLabel}: ${totalSoma} de ${linhas.length} linha(s)</div>
+      </div>
+      <button onclick="document.getElementById('rec-modal').remove()" style="background:var(--vermelho);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600">Fechar</button>
+    </div>
+    ${linhas.length===0?'<p style="text-align:center;color:var(--text2);padding:30px">Nenhuma linha ativa nesse dia.</p>':`
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:#f7f9fc">
+        <th style="padding:8px 10px;text-align:left">Contrato</th><th style="padding:8px 10px;text-align:left">Disciplina</th>
+        <th style="text-align:center;padding:8px">Frentes</th><th style="text-align:center;padding:8px">Contribui</th>
+        <th style="text-align:center;padding:8px">% Concl.</th><th style="padding:8px;text-align:left">Período</th>
+      </tr></thead>
+      <tbody>${linhas.map(l=>`<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:6px 10px"><strong>${l.contrato}</strong></td>
+        <td style="padding:6px 10px">${l.disc}</td>
+        <td style="text-align:center;padding:6px">${l.frentes}</td>
+        <td style="text-align:center;padding:6px;font-weight:700;font-size:14px;color:var(--azul)">${l.valor}</td>
+        <td style="text-align:center;padding:6px;color:${l.pct>=70?'var(--verde)':l.pct>0?'var(--laranja)':'var(--vermelho)'}">${l.pct}%</td>
+        <td style="padding:6px;font-size:10px;color:var(--text2)">${fmtD2(l.ini)} → ${fmtD2(l.fim)}</td>
+      </tr>`).join('')}
+      <tr style="background:#f7f9fc;font-weight:700;border-top:2px solid var(--text)">
+        <td colspan="3" style="padding:8px 10px;text-align:right">TOTAL</td>
+        <td style="text-align:center;padding:8px;font-size:14px;color:var(--azul)">${totalSoma}</td>
+        <td colspan="2"></td>
+      </tr>
+      </tbody>
+    </table>`}
+  </div>`;
+  let modal = document.getElementById('rec-modal');
+  if(modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id='rec-modal';
+  modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.onclick=()=>modal.remove();
+  modal.innerHTML=html;
+  document.body.appendChild(modal);
+};
 
 // ─── FROTAS ──────────────────────────────────────────────────
 async function renderFrotas(){
