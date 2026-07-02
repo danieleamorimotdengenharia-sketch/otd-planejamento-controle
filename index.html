@@ -5,261 +5,224 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OTD Engenharia — Planejamento e Controle</title>
 <style>
-:root{--azul:#1F3864;--azul2:#2d4f8e;--verde:#28a745;--laranja:#FF8C00;--vermelho:#dc3545;--amarelo:#ffc107;--cinza:#6c757d;--bg:#f0f2f5;--card:#fff;--border:#dde3ec;--text:#212529;--text2:#5a6478;--sb:220px}
+:root{--az:#1F3864;--az2:#2d4f8e;--vd:#28a745;--la:#FF8C00;--vm:#dc3545;--am:#ffc107;--ci:#6c757d;--bg:#f0f2f5;--cd:#fff;--bd:#dde3ec;--tx:#212529;--tx2:#5a6478;--sb:224px}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
-#sidebar{width:var(--sb);background:var(--azul);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
-.sb-logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.15)}
-.sb-logo .lt{font-size:15px;font-weight:700}.sb-logo .ls{font-size:10px;opacity:.6;letter-spacing:1px;text-transform:uppercase}
-.sb-sec{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;opacity:.45;padding:14px 16px 4px}
-.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.8);border-left:3px solid transparent;transition:all .15s}
-.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
-.nav-item.active{background:rgba(255,255,255,.13);color:#fff;border-left-color:#fff;font-weight:600}
-.nav-item .ic{font-size:15px;width:20px;text-align:center}
-.sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;opacity:.45}
-#main{margin-left:var(--sb);flex:1;display:flex;flex-direction:column;min-height:100vh}
-#topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.tb-title{font-size:15px;font-weight:700;color:var(--azul)}.tb-sub{font-size:11px;color:var(--text2)}
-#content{padding:20px 24px;flex:1}
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:20px}
-.kpi-card{background:var(--card);border-radius:9px;padding:16px 18px;border:1px solid var(--border);border-left:4px solid var(--azul)}
-.kpi-card.g{border-left-color:var(--verde)}.kpi-card.r{border-left-color:var(--vermelho)}.kpi-card.y{border-left-color:var(--amarelo)}.kpi-card.o{border-left-color:var(--laranja)}
-.kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text2);margin-bottom:5px}
-.kpi-val{font-size:26px;font-weight:700;color:var(--azul)}
-.kpi-card.g .kpi-val{color:var(--verde)}.kpi-card.r .kpi-val{color:var(--vermelho)}.kpi-card.y .kpi-val{color:#856404}
-.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
-.btn-p{background:var(--azul);color:#fff}.btn-p:hover{background:var(--azul2)}
-.btn-g{background:var(--verde);color:#fff}.btn-g:hover{filter:brightness(1.1)}
-.btn-d{background:var(--vermelho);color:#fff}.btn-d:hover{filter:brightness(1.1)}
-.btn-o{background:transparent;color:var(--azul);border:1.5px solid var(--azul)}.btn-o:hover{background:var(--azul);color:#fff}
-.btn-sm{padding:4px 9px;font-size:12px}
-.card{background:var(--card);border-radius:9px;border:1px solid var(--border);margin-bottom:18px;overflow:hidden}
-.card-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-hdr h3{font-size:13px;font-weight:700;color:var(--azul)}
-.card-body{overflow-x:auto}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--tx);display:flex;min-height:100vh}
+#sb{width:var(--sb);background:var(--az);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.sbl{padding:16px 14px 12px;border-bottom:1px solid rgba(255,255,255,.15)}
+.sbn{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;opacity:.45;padding:14px 14px 4px}
+.ni{display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.8);border-left:3px solid transparent;transition:all .15s}
+.ni:hover{background:rgba(255,255,255,.08);color:#fff}
+.ni.active{background:rgba(255,255,255,.13);color:#fff;border-left-color:#fff;font-weight:600}
+.ni .ic{font-size:14px;width:18px;text-align:center}
+.sbf{padding:10px 14px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;opacity:.4;margin-top:auto}
+#main{margin-left:var(--sb);flex:1;display:flex;flex-direction:column}
+#tb{background:var(--cd);border-bottom:1px solid var(--bd);padding:0 22px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tbt{font-size:15px;font-weight:700;color:var(--az)}.tbs{font-size:11px;color:var(--tx2)}
+#ct{padding:18px 22px;flex:1}
+.kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:18px}
+.kc{background:var(--cd);border-radius:9px;padding:14px 16px;border:1px solid var(--bd);border-left:4px solid var(--az)}
+.kc.g{border-left-color:var(--vd)}.kc.r{border-left-color:var(--vm)}.kc.y{border-left-color:var(--am)}.kc.o{border-left-color:var(--la)}.kc.c{border-left-color:var(--ci)}
+.kl{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--tx2);margin-bottom:4px}
+.kv{font-size:24px;font-weight:700;color:var(--az)}
+.kc.g .kv{color:var(--vd)}.kc.r .kv{color:var(--vm)}.kc.y .kv{color:#856404}.kc.o .kv{color:var(--la)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.bp{background:var(--az);color:#fff}.bp:hover{background:var(--az2)}
+.bg_{background:var(--vd);color:#fff}.bg_:hover{filter:brightness(1.1)}
+.br_{background:var(--vm);color:#fff}.br_:hover{filter:brightness(1.1)}
+.bo{background:transparent;color:var(--az);border:1.5px solid var(--az)}.bo:hover{background:var(--az);color:#fff}
+.bs{padding:4px 9px;font-size:12px}
+.card{background:var(--cd);border-radius:9px;border:1px solid var(--bd);margin-bottom:16px;overflow:hidden}
+.ch{padding:13px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.ch h3{font-size:13px;font-weight:700;color:var(--az)}
+.cb{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{background:#f7f9fc;padding:9px 13px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+th{background:#f7f9fc;padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2);border-bottom:1px solid var(--bd);white-space:nowrap;cursor:pointer;user-select:none}
 th:hover{background:#eef1f7}
-th .sort-ico{opacity:.4;margin-left:4px;font-size:10px}
-th.sorted .sort-ico{opacity:1}
-td{padding:9px 13px;border-bottom:1px solid #f0f2f5;vertical-align:middle}
+td{padding:8px 12px;border-bottom:1px solid #f0f2f5;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#f7f9fc}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
-.bg{background:#d4edda;color:#155724}.bb{background:#d0e8ff;color:#1a4a8a}.br{background:#f8d7da;color:#721c24}
-.by{background:#fff3cd;color:#856404}.bc{background:#e2e3e5;color:#383d41}.bo{background:#ffe8cc;color:#7a4000}
-.progress{height:5px;background:#e9ecef;border-radius:3px;min-width:70px}
-.progress-bar{height:100%;border-radius:3px}
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
-.modal-bg.open{display:flex}
-.modal{background:#fff;border-radius:11px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-.modal-hdr{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.modal-hdr h3{font-size:15px;font-weight:700;color:var(--azul)}
-.modal-body{padding:18px 22px}
-.modal-ftr{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
-.cls-btn{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2)}.cls-btn:hover{color:var(--vermelho)}
-.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.fg.c3{grid-template-columns:1fr 1fr 1fr}
-.fgrp{display:flex;flex-direction:column;gap:4px}
-.fgrp.full{grid-column:1/-1}
-label{font-size:11px;font-weight:600;color:var(--text2)}
-input,select,textarea{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;color:var(--text);background:#fff;width:100%;transition:border-color .15s}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--azul)}
+.bge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.bgg{background:#d4edda;color:#155724}.bgb{background:#d0e8ff;color:#1a4a8a}.bgr{background:#f8d7da;color:#721c24}
+.bgy{background:#fff3cd;color:#856404}.bgc{background:#e2e3e5;color:#383d41}.bgo{background:#ffe8cc;color:#7a4000}
+.pr{height:5px;background:#e9ecef;border-radius:3px;min-width:70px}
+.pb{height:100%;border-radius:3px}
+.mb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
+.mb.open{display:flex}
+.md{background:#fff;border-radius:11px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.mh{padding:16px 20px 12px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
+.mh h3{font-size:15px;font-weight:700;color:var(--az)}
+.mb_{padding:16px 20px}.mf_{padding:12px 20px;border-top:1px solid var(--bd);display:flex;gap:10px;justify-content:flex-end}
+.xb{background:none;border:none;font-size:20px;cursor:pointer;color:var(--tx2)}.xb:hover{color:var(--vm)}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fg3{grid-template-columns:1fr 1fr 1fr}
+.fgp{display:flex;flex-direction:column;gap:4px}
+.fgp.full{grid-column:1/-1}
+label{font-size:11px;font-weight:600;color:var(--tx2)}
+input,select,textarea{padding:7px 10px;border:1.5px solid var(--bd);border-radius:7px;font-size:13px;color:var(--tx);background:#fff;width:100%;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--az)}
 textarea{resize:vertical;min-height:55px}
-.sbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
-.sinput{padding:7px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;min-width:220px}
-.sinput:focus{outline:none;border-color:var(--azul)}
-.sselect{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;color:var(--text);background:#fff}
-#toast{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:7px}
-.toast-item{padding:11px 16px;border-radius:8px;font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:slideIn .2s ease}
-.ts{background:var(--verde)}.te{background:var(--vermelho)}.ti{background:var(--azul)}
-@keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
-.empty-st{text-align:center;padding:44px 20px;color:var(--text2)}
-.empty-st .ico{font-size:34px;margin-bottom:11px}
-.disc-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#f7f9fc;border-radius:7px;border:1px solid var(--border);margin-bottom:7px}
-#disc-added-list .dai{display:flex;justify-content:space-between;align-items:center;padding:7px 11px;background:#f0f6ff;border-radius:6px;margin-bottom:5px;font-size:13px}
+.sb_{display:flex;gap:8px;margin-bottom:13px;flex-wrap:wrap;align-items:center}
+.si{padding:7px 10px;border:1.5px solid var(--bd);border-radius:7px;font-size:13px;background:#fff;color:var(--tx)}
+.si:focus{outline:none;border-color:var(--az)}
+#toast{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+.ti{padding:10px 15px;border-radius:8px;font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:sI .2s ease}
+.ts{background:var(--vd)}.te{background:var(--vm)}.tn{background:var(--az)}
+@keyframes sI{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+.est{text-align:center;padding:40px 20px;color:var(--tx2)}
+.est .ic{font-size:32px;margin-bottom:10px}
+.di{display:flex;align-items:center;gap:9px;padding:8px 11px;background:#f7f9fc;border-radius:7px;border:1px solid var(--bd);margin-bottom:6px}
+.dib{display:flex;justify-content:space-between;align-items:center;padding:7px 11px;background:#f0f6ff;border-radius:6px;margin-bottom:5px;font-size:13px}
 </style>
 </head>
 <body>
-<nav id="sidebar">
-  <div class="sb-logo">
-    <div style="display:flex;align-items:center;gap:9px">
-      <div style="background:#fff;color:var(--azul);font-weight:900;font-size:13px;padding:4px 7px;border-radius:5px">OTD</div>
-      <div><div class="lt">Planejamento</div><div class="ls">e Controle</div></div>
-    </div>
-  </div>
-  <div class="sb-sec">Visão Geral</div>
-  <div class="nav-item active" onclick="nav('dashboard',this)"><span class="ic">📊</span>Dashboard</div>
-  <div class="sb-sec">Cadastros</div>
-  <div class="nav-item" onclick="nav('contratos',this)"><span class="ic">📋</span>Contratos</div>
-  <div class="nav-item" onclick="nav('colaboradores',this)"><span class="ic">👷</span>Colaboradores</div>
-  <div class="sb-sec">Operação</div>
-  <div class="nav-item" onclick="nav('maodeobra',this)"><span class="ic">🏗️</span>Mão de Obra</div>
-  <div class="nav-item" onclick="nav('producao',this)"><span class="ic">⚡</span>Lançar Produção</div>
-  <div class="nav-item" onclick="nav('producaootd',this)"><span class="ic">📦</span>Produção OTD</div>
-  <div class="nav-item" onclick="nav('produtividade',this)"><span class="ic">📈</span>Produtividade</div>
-  <div class="nav-item" onclick="nav('recursos',this)"><span class="ic">📅</span>Recursos</div>
-  <div class="nav-item" onclick="nav('frotas',this)"><span class="ic">🚗</span>Frotas</div>
-  <div class="nav-item" onclick="nav('folga',this)"><span class="ic">🏖️</span>Folga</div>
-  <div class="nav-item" onclick="nav('parciais',this)"><span class="ic">📬</span>Parciais</div>
-  <div class="nav-item" onclick="nav('bonificacoes',this)"><span class="ic">🏆</span>Bonificações</div>
-  <div class="sb-footer">OTD Engenharia © 2026</div>
+<nav id="sb">
+  <div class="sbl"><div style="display:flex;align-items:center;gap:9px">
+    <div style="background:#fff;color:var(--az);font-weight:900;font-size:13px;padding:4px 7px;border-radius:5px">OTD</div>
+    <div><div style="font-size:14px;font-weight:700">Planejamento</div><div style="font-size:10px;opacity:.6;letter-spacing:1px;text-transform:uppercase">e Controle</div></div>
+  </div></div>
+  <div class="sbn">Visão Geral</div>
+  <div class="ni active" onclick="nav('dashboard',this)"><span class="ic">📊</span>Dashboard</div>
+  <div class="sbn">Cadastros</div>
+  <div class="ni" onclick="nav('contratos',this)"><span class="ic">📋</span>Contratos</div>
+  <div class="ni" onclick="nav('colaboradores',this)"><span class="ic">👷</span>Colaboradores</div>
+  <div class="sbn">Operação</div>
+  <div class="ni" onclick="nav('maodeobra',this)"><span class="ic">🏗️</span>Mão de Obra</div>
+  <div class="ni" onclick="nav('lancarprod',this)"><span class="ic">⚡</span>Lançar Produção</div>
+  <div class="ni" onclick="nav('producaootd',this)"><span class="ic">📦</span>Produção OTD</div>
+  <div class="ni" onclick="nav('produtividade',this)"><span class="ic">📈</span>Produtividade</div>
+  <div class="ni" onclick="nav('recursos',this)"><span class="ic">📅</span>Recursos</div>
+  <div class="ni" onclick="nav('frotas',this)"><span class="ic">🚗</span>Frotas</div>
+  <div class="ni" onclick="nav('folga',this)"><span class="ic">🏖️</span>Folga</div>
+  <div class="ni" onclick="nav('parciais',this)"><span class="ic">📬</span>Parciais</div>
+  <div class="ni" onclick="nav('bonificacoes',this)"><span class="ic">🏆</span>Bonificações</div>
+  <div class="sbf">OTD Engenharia © 2026</div>
 </nav>
-
 <div id="main">
-  <div id="topbar">
-    <div><div class="tb-title" id="ptitle">Dashboard</div><div class="tb-sub" id="psub">Visão geral</div></div>
+  <div id="tb">
+    <div><div class="tbt" id="ptitle">Dashboard</div><div class="tbs" id="psub">Visão geral</div></div>
     <div style="display:flex;gap:8px;align-items:center">
-      <span id="lupd" style="font-size:11px;color:var(--text2)"></span>
-      <button class="btn btn-p btn-sm" onclick="loadAll()">↻ Atualizar</button>
+      <span id="lupd" style="font-size:11px;color:var(--tx2)"></span>
+      <button class="btn bp bs" onclick="loadAll()">↻ Atualizar</button>
     </div>
   </div>
-  <div id="content"></div>
+  <div id="ct"></div>
 </div>
 <div id="toast"></div>
-
 <!-- MODAL CONTRATO -->
-<div class="modal-bg" id="mc">
-  <div class="modal" style="max-width:640px">
-    <div class="modal-hdr"><h3 id="mc-title">Novo Contrato</h3><button class="cls-btn" onclick="closeM('mc')">×</button></div>
-    <div class="modal-body">
-      <input type="hidden" id="mc-id">
-      <div class="fg">
-        <div class="fgrp full"><label>Nome do Contrato *</label><input id="mc-nome"></div>
-        <div class="fgrp"><label>Cliente</label><select id="mc-cli"></select></div>
-        <div class="fgrp"><label>Ciclo/Ano</label><input id="mc-ano" placeholder="2026.1"></div>
-        <div class="fgrp"><label>Estado</label><input id="mc-est"></div>
-        <div class="fgrp"><label>Status</label>
-          <select id="mc-status"><option>Aguardando início</option><option>Em campo</option><option>Em atraso</option><option>Concluído</option><option>Pausado</option></select></div>
-        <div class="fgrp"><label>Início Planejado</label><input type="date" id="mc-ini-p"></div>
-        <div class="fgrp"><label>Término Planejado (prazo cliente)</label><input type="date" id="mc-fim-p"></div>
-        <div class="fgrp"><label>Início Real</label><input type="date" id="mc-ini-r"></div>
-        <div class="fgrp"><label>Término Estimado (nossa previsão)</label><input type="date" id="mc-fim-e"></div>
-        <div class="fgrp full"><label>Observações</label><textarea id="mc-obs"></textarea></div>
-      </div>
-      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <strong style="font-size:13px;color:var(--azul)">Disciplinas</strong>
-          <button class="btn btn-o btn-sm" onclick="toggleDF()">+ Adicionar</button>
-        </div>
-        <div id="dform" style="display:none;background:#f7f9fc;padding:12px;border-radius:8px;margin-bottom:10px">
-          <div class="fg c3">
-            <div class="fgrp"><label>Disciplina *</label>
-              <select id="d-nome"><option value="">Selecione...</option>
-                <option>Terrapleno</option><option>Drenagem</option><option>Sinalização Horizontal</option>
-                <option>Sinalização Vertical</option><option>Edificações (EDF)</option>
-                <option>Faixa de Domínio (AC e OC)</option><option>Faixa de Domínio (Cercas)</option>
-                <option>EPS</option><option>Pontos de Iluminação e EDE</option><option>Outro</option>
-              </select></div>
-            <div class="fgrp"><label>Unidade</label>
-              <select id="d-un"><option>Und</option><option>m²</option><option>m³</option><option>m</option><option>km</option></select></div>
-            <div class="fgrp"><label>Nº Frentes</label><input type="number" id="d-fr" value="1" min="1"></div>
-            <div class="fgrp"><label>Qtd. Prevista</label><input type="number" id="d-qp"></div>
-            <div class="fgrp"><label>Qtd. Real</label><input type="number" id="d-qr"></div>
-            <div class="fgrp"><label>Prod./frente/dia</label><input type="number" id="d-pr"></div>
-            <div class="fgrp"><label>Início Plan.</label><input type="date" id="d-ini"></div>
-            <div class="fgrp"><label>Término Plan.</label><input type="date" id="d-fim"></div>
-            <div class="fgrp"><label>Término Est.</label><input type="date" id="d-est"></div>
-          </div>
-          <div style="margin-top:9px;display:flex;gap:7px">
-            <button class="btn btn-g btn-sm" onclick="addD()">✓ Confirmar</button>
-            <button class="btn btn-sm btn-o" onclick="toggleDF()">Cancelar</button>
-          </div>
-        </div>
-        <div id="disc-added-list"></div>
-      </div>
+<div class="mb" id="mc"><div class="md" style="max-width:660px">
+  <div class="mh"><h3 id="mc-t">Novo Contrato</h3><button class="xb" onclick="closeM('mc')">×</button></div>
+  <div class="mb_"><input type="hidden" id="mc-id">
+    <div class="fg">
+      <div class="fgp full"><label>Nome do Contrato *</label><input id="mc-nm"></div>
+      <div class="fgp"><label>Cliente</label><select id="mc-cl"></select></div>
+      <div class="fgp"><label>Ciclo/Ano</label><input id="mc-an" placeholder="2026.1"></div>
+      <div class="fgp"><label>Estado</label><input id="mc-es"></div>
+      <div class="fgp"><label>Status</label><select id="mc-st"><option>Aguardando início</option><option>Em campo</option><option>Em atraso</option><option>Concluído</option><option>Pausado</option></select></div>
+      <div class="fgp"><label>Início Planejado</label><input type="date" id="mc-ip"></div>
+      <div class="fgp"><label>Término Planejado (prazo cliente)</label><input type="date" id="mc-fp"></div>
+      <div class="fgp"><label>Início Real</label><input type="date" id="mc-ir"></div>
+      <div class="fgp"><label>Término Estimado</label><input type="date" id="mc-fe"></div>
+      <div class="fgp full"><label>Obs</label><textarea id="mc-ob" rows="2"></textarea></div>
     </div>
-    <div class="modal-ftr">
-      <button class="btn btn-o" onclick="closeM('mc')">Cancelar</button>
-      <button class="btn btn-p" onclick="salvarC()">Salvar Contrato</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL COLABORADOR -->
-<div class="modal-bg" id="mco">
-  <div class="modal">
-    <div class="modal-hdr"><h3 id="mco-title">Novo Colaborador</h3><button class="cls-btn" onclick="closeM('mco')">×</button></div>
-    <div class="modal-body">
-      <input type="hidden" id="mco-id">
-      <div class="fg">
-        <div class="fgrp full"><label>Nome *</label><input id="col-nome"></div>
-        <div class="fgrp"><label>Função</label>
-          <select id="col-fn" onchange="autoTaxa()">
-            <option>Ajudante de Obras</option><option>Auxiliar de Engenharia</option>
-            <option>Assistente de Engenharia</option><option>Terceirizado Campo</option>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--bd)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <strong style="font-size:13px;color:var(--az)">Disciplinas</strong>
+        <button class="btn bo bs" onclick="tDF()">+ Adicionar disciplina</button>
+      </div>
+      <div id="dform" style="display:none;background:#f7f9fc;padding:12px;border-radius:8px;margin-bottom:10px">
+        <div class="fg fg3">
+          <div class="fgp"><label>Disciplina *</label><select id="d-nm"><option value="">Selecione...</option>
+            <option>Terrapleno</option><option>Drenagem</option><option>Sinalização Horizontal</option>
+            <option>Sinalização Vertical</option><option>Edificações (EDF)</option>
+            <option>Faixa de Dominio (AC e OC)</option><option>Faixa de Dominio (Cercas)</option>
+            <option>EPS</option><option>Pontos de Iluminação e EDE</option><option>Outro</option>
           </select></div>
-        <div class="fgrp"><label>Situação</label>
-          <select id="col-sit"><option>Ativo</option><option>Desligado</option><option>INSS</option><option>Desistiu</option><option>Contratação</option></select></div>
-        <div class="fgrp"><label>Estado</label><input id="col-est"></div>
-        <div class="fgrp"><label>Taxa (HH)</label><input type="number" id="col-taxa" step="0.01"></div>
-        <div class="fgrp"><label>Admissão</label><input type="date" id="col-adm"></div>
-        <div class="fgrp"><label>Desligamento</label><input type="date" id="col-des"></div>
-        <div class="fgrp"><label>Promoção (data)</label><input type="date" id="col-pd"></div>
-        <div class="fgrp"><label>Novo Cargo</label><input id="col-nc" list="cargos-list" placeholder="Ex: Auxiliar de Engenharia">
-          <datalist id="cargos-list">
-            <option>Ajudante de Obras</option><option>Auxiliar de Engenharia</option>
-            <option>Assistente de Engenharia</option><option>Terceirizado Campo</option>
-          </datalist></div>
-        <div class="fgrp full"><label>Obs</label><textarea id="col-obs"></textarea></div>
+          <div class="fgp"><label>Unidade</label><select id="d-un"><option>Und</option><option>m²</option><option>m³</option><option>m</option><option>km</option></select></div>
+          <div class="fgp"><label>Nº Frentes</label><input type="number" id="d-fr" value="1" min="1"></div>
+          <div class="fgp"><label>Qtd. Prevista</label><input type="number" id="d-qp" placeholder="0"></div>
+          <div class="fgp"><label>Qtd. Real</label><input type="number" id="d-qr" placeholder="0"></div>
+          <div class="fgp"><label>Prod./frente/dia</label><input type="number" id="d-pr" placeholder="0"></div>
+          <div class="fgp"><label>Início Plan.</label><input type="date" id="d-ii"></div>
+          <div class="fgp"><label>Término Plan.</label><input type="date" id="d-fi"></div>
+          <div class="fgp"><label>Término Est.</label><input type="date" id="d-fe"></div>
+        </div>
+        <div style="margin-top:9px;display:flex;gap:7px">
+          <button class="btn bg_ bs" onclick="addD()">✓ Confirmar</button>
+          <button class="btn bo bs" onclick="tDF()">Cancelar</button>
+        </div>
       </div>
-    </div>
-    <div class="modal-ftr">
-      <button class="btn btn-o" onclick="closeM('mco')">Cancelar</button>
-      <button class="btn btn-p" onclick="salvarColab()">Salvar</button>
+      <div id="dl"></div>
     </div>
   </div>
-</div>
-
-<!-- MODAL PRODUÇÃO -->
-<div class="modal-bg" id="mprod">
-  <div class="modal" style="max-width:480px">
-    <div class="modal-hdr"><h3>Lançar Produção</h3><button class="cls-btn" onclick="closeM('mprod')">×</button></div>
-    <div class="modal-body">
-      <div class="fg">
-        <div class="fgrp full"><label>Contrato *</label><select id="p-cont" onchange="loadDiscs()"></select></div>
-        <div class="fgrp full"><label>Disciplina *</label><select id="p-disc"></select></div>
-        <div class="fgrp"><label>Data *</label><input type="date" id="p-data"></div>
-        <div class="fgrp"><label>Quantidade *</label><input type="number" id="p-qtd"></div>
-        <div class="fgrp full"><label>Colaborador</label><input id="p-colab" list="clist"><datalist id="clist"></datalist></div>
-        <div class="fgrp full"><label>Obs</label><textarea id="p-obs"></textarea></div>
-      </div>
-    </div>
-    <div class="modal-ftr">
-      <button class="btn btn-o" onclick="closeM('mprod')">Cancelar</button>
-      <button class="btn btn-g" onclick="salvarProd()">Lançar</button>
+  <div class="mf_"><button class="btn bo" onclick="closeM('mc')">Cancelar</button><button class="btn bp" onclick="salvarC()">Salvar Contrato</button></div>
+</div></div>
+<!-- MODAL COLABORADOR -->
+<div class="mb" id="mco"><div class="md">
+  <div class="mh"><h3 id="mco-t">Novo Colaborador</h3><button class="xb" onclick="closeM('mco')">×</button></div>
+  <div class="mb_"><input type="hidden" id="co-id">
+    <div class="fg">
+      <div class="fgp full"><label>Nome *</label><input id="co-nm"></div>
+      <div class="fgp"><label>Função</label><select id="co-fn" onchange="autoTx()">
+        <option>Ajudante de Obras</option><option>Auxiliar de Engenharia</option>
+        <option>Assistente de Engenharia</option><option>Terceirizado Campo</option></select></div>
+      <div class="fgp"><label>Situação</label><select id="co-si"><option>Ativo</option><option>Desligado</option><option>INSS</option><option>Desistiu</option><option>Contratação</option></select></div>
+      <div class="fgp"><label>Estado</label><input id="co-es"></div>
+      <div class="fgp"><label>Taxa (HH)</label><input type="number" id="co-tx" step="0.01"></div>
+      <div class="fgp"><label>Admissão</label><input type="date" id="co-ad"></div>
+      <div class="fgp"><label>Desligamento</label><input type="date" id="co-de"></div>
+      <div class="fgp"><label>Promoção (data)</label><input type="date" id="co-pd"></div>
+      <div class="fgp"><label>Novo Cargo</label><input id="co-nc" list="cl-nc" placeholder="Ex: Auxiliar de Engenharia"><datalist id="cl-nc"><option>Ajudante de Obras</option><option>Auxiliar de Engenharia</option><option>Assistente de Engenharia</option></datalist></div>
+      <div class="fgp full"><label>Obs</label><textarea id="co-ob" rows="2"></textarea></div>
     </div>
   </div>
-</div>
-
+  <div class="mf_"><button class="btn bo" onclick="closeM('mco')">Cancelar</button><button class="btn bp" onclick="salvarCo()">Salvar</button></div>
+</div></div>
+<!-- MODAL FOLGA -->
+<div class="mb" id="mfg"><div class="md" style="max-width:480px">
+  <div class="mh"><h3 id="mfg-t">Editar Folga</h3><button class="xb" onclick="closeM('mfg')">×</button></div>
+  <div class="mb_"><input type="hidden" id="fg-id">
+    <div class="fg">
+      <div class="fgp full"><label>Colaborador *</label><input id="fg-nm" list="cl-fg"><datalist id="cl-fg"></datalist></div>
+      <div class="fgp"><label>Grupo</label><input type="number" id="fg-gr" min="1"></div>
+      <div class="fgp"><label>Contrato Atual</label><input id="fg-ct"></div>
+      <div class="fgp"><label>Última Folga</label><input type="date" id="fg-ul"></div>
+      <div class="fgp"><label>Próxima Folga</label><input type="date" id="fg-pr"></div>
+    </div>
+  </div>
+  <div class="mf_"><button class="btn bo" onclick="closeM('mfg')">Cancelar</button><button class="btn bp" onclick="salvarFg()">Salvar</button></div>
+</div></div>
 <!-- MODAL FROTA -->
-<div class="modal-bg" id="mfr">
-  <div class="modal" style="max-width:560px">
-    <div class="modal-hdr"><h3 id="mfr-title">Nova Frota</h3><button class="cls-btn" onclick="closeM('mfr')">×</button></div>
-    <div class="modal-body">
-      <input type="hidden" id="mfr-id">
-      <div class="fg">
-        <div class="fgrp"><label>Locadora</label>
-          <select id="fr-loc"><option>Localiza</option><option>Movida</option><option>Localiza (Pura Eng.)</option><option>Movida (Pura Eng.)</option><option>Outro</option></select></div>
-        <div class="fgrp"><label>Código Reserva</label><input id="fr-res"></div>
-        <div class="fgrp full"><label>Colaborador Atual *</label><input id="fr-col" list="fr-clist"><datalist id="fr-clist"></datalist></div>
-        <div class="fgrp"><label>Placa</label><input id="fr-placa" style="text-transform:uppercase"></div>
-        <div class="fgrp"><label>Veículo</label>
-          <select id="fr-vei"><option>Kwid</option><option>Mobi</option><option>Hyundai HB20</option><option>Onix</option><option>Outro</option></select></div>
-        <div class="fgrp"><label>Status</label><select id="fr-st"><option>Ativo</option><option>Devolvido</option></select></div>
-        <div class="fgrp"><label>Mensalidade (R$)</label><input type="number" id="fr-men"></div>
-        <div class="fgrp"><label>Data Retirada Inicial</label><input type="date" id="fr-dt"></div>
-        <div class="fgrp full"><label>Local Retirada</label><input id="fr-loc2"></div>
-        <div class="fgrp full"><label>Obs</label><textarea id="fr-obs"></textarea></div>
-      </div>
+<div class="mb" id="mfr"><div class="md" style="max-width:580px">
+  <div class="mh"><h3 id="mfr-t">Nova Frota</h3><button class="xb" onclick="closeM('mfr')">×</button></div>
+  <div class="mb_"><input type="hidden" id="fr-id">
+    <div class="fg">
+      <div class="fgp"><label>Locadora</label><select id="fr-lc"><option>Localiza</option><option>Movida</option><option>Localiza (Pura Eng.)</option><option>Movida (Pura Eng.)</option><option>Outro</option></select></div>
+      <div class="fgp"><label>Código Reserva</label><input id="fr-rs"></div>
+      <div class="fgp full"><label>Colaborador Atual *</label><input id="fr-co" list="cl-fr"><datalist id="cl-fr"></datalist></div>
+      <div class="fgp"><label>Placa</label><input id="fr-pl" style="text-transform:uppercase"></div>
+      <div class="fgp"><label>Veículo</label><select id="fr-ve"><option>Kwid</option><option>Mobi</option><option>Hyundai HB20</option><option>Onix</option><option>Outro</option></select></div>
+      <div class="fgp"><label>Status</label><select id="fr-st"><option>Ativo</option><option>Devolvido</option></select></div>
+      <div class="fgp"><label>Mensalidade (R$)</label><input type="number" id="fr-mn"></div>
+      <div class="fgp"><label>Data Retirada Inicial</label><input type="date" id="fr-dt"></div>
+      <div class="fgp full"><label>Local Retirada</label><input id="fr-lo"></div>
+      <div class="fgp full"><label>Obs</label><textarea id="fr-ob" rows="2"></textarea></div>
     </div>
-    <div class="modal-ftr">
-      <button class="btn btn-o" onclick="closeM('mfr')">Cancelar</button>
-      <button class="btn btn-p" onclick="salvarFrota()">Salvar</button>
+    <div id="fr-hs" style="display:none;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)">
+      <strong style="font-size:13px;color:var(--az)">Registrar Transferência</strong>
+      <div class="fg" style="margin-top:8px">
+        <div class="fgp"><label>Novo Colaborador</label><input id="fr-nc" list="cl-fr2"><datalist id="cl-fr2"></datalist></div>
+        <div class="fgp"><label>Nova Placa</label><input id="fr-np"></div>
+        <div class="fgp"><label>Data Transferência</label><input type="date" id="fr-nt"></div>
+        <div class="fgp"><label>KM Devolução</label><input type="number" id="fr-kf"></div>
+        <div class="fgp"><label>KM Inicial novo</label><input type="number" id="fr-ki"></div>
+        <div class="fgp"><label>Gasto Total (R$)</label><input type="number" id="fr-gs"></div>
+      </div>
+      <button class="btn bg_ bs" style="margin-top:8px" onclick="salvarTransf()">✓ Confirmar Transferência</button>
     </div>
   </div>
-</div>
-
+  <div class="mf_"><button class="btn bo" onclick="closeM('mfr')">Cancelar</button><button class="btn bp" onclick="salvarFr()">Salvar</button></div>
+</div></div>
 <script>
 const SU='https://uouyhhekfxfgaxhbnnjw.supabase.co',SK='sb_publishable_zXDofvqd-soKxH6hR7qp6w_eHS5X9Ja';
 const SH={'Content-Type':'application/json','apikey':SK,'Authorization':'Bearer '+SK,'Prefer':'return=representation'};
@@ -268,1275 +231,554 @@ async function db(p,m='GET',b=null){
   if(!r.ok){const e=await r.json();throw new Error(e.message||'Erro '+r.status);}
   return r.status===204?null:r.json();
 }
-
-// STATE
-let clientes=[],contratos=[],disciplinas=[],colaboradores=[],producao=[],frotas=[],discTemp=[];
-let sortState={col:null,asc:true};
-
-// INIT
+let clientes=[],contratos=[],disciplinas=[],colaboradores=[],frotas=[],folgas=[],prodData=[],discTemp=[];
+let curPg='dashboard';
+const METAS={
+  'Ajudante+Ajudante':{'Terrapleno':60,'Drenagem':170,'Sinalização Horizontal':165,'Sinalização Vertical':165,'Faixa de Dominio (AC e OC)':220,'Faixa de Dominio (Cercas)':200,'EPS':400,'Edificações (EDF)':6,'Pontos de Iluminação e EDE':8},
+  'Ajudante+Auxiliar':{'Terrapleno':66,'Drenagem':187,'Sinalização Horizontal':181.5,'Sinalização Vertical':181.5,'Faixa de Dominio (AC e OC)':242,'Faixa de Dominio (Cercas)':220,'EPS':440,'Edificações (EDF)':6.6,'Pontos de Iluminação e EDE':8.8},
+  'Ajudante+Assistente':{'Terrapleno':70.8,'Drenagem':200.6,'Sinalização Horizontal':194.7,'Sinalização Vertical':194.7,'Faixa de Dominio (AC e OC)':259.6,'Faixa de Dominio (Cercas)':236,'EPS':472,'Edificações (EDF)':7.08,'Pontos de Iluminação e EDE':9.44},
+  'Ajudante':{'Terrapleno':42,'Drenagem':119,'Sinalização Horizontal':115.5,'Sinalização Vertical':115.5,'Faixa de Dominio (AC e OC)':154,'Faixa de Dominio (Cercas)':140,'EPS':280,'Edificações (EDF)':4.2,'Pontos de Iluminação e EDE':5.6},
+  'Auxiliar+Auxiliar':{'Terrapleno':76.2,'Drenagem':215.9,'Sinalização Horizontal':209.55,'Sinalização Vertical':209.55,'Faixa de Dominio (AC e OC)':279.4,'Faixa de Dominio (Cercas)':254,'EPS':508,'Edificações (EDF)':7.62,'Pontos de Iluminação e EDE':10.16},
+  'Auxiliar+Assistente':{'Terrapleno':81,'Drenagem':229.5,'Sinalização Horizontal':222.75,'Sinalização Vertical':222.75,'Faixa de Dominio (AC e OC)':297,'Faixa de Dominio (Cercas)':270,'EPS':540,'Edificações (EDF)':8.1,'Pontos de Iluminação e EDE':10.8},
+  'Auxiliar':{'Terrapleno':45,'Drenagem':127.5,'Sinalização Horizontal':123.75,'Sinalização Vertical':123.75,'Faixa de Dominio (AC e OC)':165,'Faixa de Dominio (Cercas)':150,'EPS':300,'Edificações (EDF)':4.5,'Pontos de Iluminação e EDE':6},
+  'Assistente+Assistente':{'Terrapleno':90,'Drenagem':255,'Sinalização Horizontal':247.5,'Sinalização Vertical':247.5,'Faixa de Dominio (AC e OC)':330,'Faixa de Dominio (Cercas)':300,'EPS':600,'Edificações (EDF)':9,'Pontos de Iluminação e EDE':12},
+  'Assistente':{'Terrapleno':51,'Drenagem':144.5,'Sinalização Horizontal':140.25,'Sinalização Vertical':140.25,'Faixa de Dominio (AC e OC)':187,'Faixa de Dominio (Cercas)':170,'EPS':340,'Edificações (EDF)':5.1,'Pontos de Iluminação e EDE':6.8},
+  'Terceirizado Campo':{'Terrapleno':78,'Drenagem':221,'Sinalização Horizontal':214.5,'Sinalização Vertical':214.5,'Faixa de Dominio (AC e OC)':286,'Faixa de Dominio (Cercas)':260,'EPS':520,'Edificações (EDF)':7.8,'Pontos de Iluminação e EDE':10.4}
+};
+function norm(f){return(f||'').replace(' de Obras','').replace(' de Engenharia','').replace(' Campo','');}
+function getMeta(disc,co,dp){
+  const fn=norm(colaboradores.find(c=>c.nome===co)?.funcao||'Ajudante');
+  const fn2=dp?norm(colaboradores.find(c=>c.nome===dp)?.funcao||''):null;
+  const keys=fn2?[fn+'+'+fn2,fn2+'+'+fn,[fn,fn2].sort().join('+')]:[fn];
+  let tbl=null;
+  for(const k of keys){if(METAS[k]){tbl=METAS[k];break;}}
+  if(!tbl)tbl=METAS[fn]||{};
+  for(const[k,v]of Object.entries(tbl)){if(disc&&disc.toLowerCase().includes(k.toLowerCase()))return v;}
+  return null;
+}
+const fmtD=d=>{if(!d)return'—';const s=(d+'').split('T')[0];const[y,m,di]=s.split('-');return`${di}/${m}/${y}`};
+const fmtN=n=>n!=null?Number(n).toLocaleString('pt-BR'):'—';
+const isoD=d=>d instanceof Date?d.toISOString().split('T')[0]:d;
+const addDays=(d,n)=>{const r=new Date(d);r.setDate(r.getDate()+n);return r};
+const pct=(f,r)=>r>0?Math.round(Math.min(100,(f||0)/r*100)):0;
+function badge(t,c){return`<span class="bge ${c}">${t}</span>`}
+function badgeSt(s){const m={'Concluído':'bgg','Em campo':'bgb','Em atraso':'bgr','Aguardando início':'bgc','Pausado':'bgy'};return badge(s||'—',m[s]||'bgc')}
+function badgeSi(s){const m={'Ativo':'bgg','Desligado':'bgr','INSS':'bgy','Desistiu':'bgo','Contratação':'bgb'};return badge(s||'—',m[s]||'bgc')}
+function toast(msg,t='n'){const el=document.createElement('div');el.className='ti t'+t;el.textContent=msg;document.getElementById('toast').appendChild(el);setTimeout(()=>el.remove(),3200)}
+function openM(id){document.getElementById(id).classList.add('open')}
+function closeM(id){document.getElementById(id).classList.remove('open')}
+function cpct(ds){const c=ds.filter(d=>d.qtd_real>0);return c.length?Math.round(c.reduce((s,d)=>s+pct(d.qtd_feita||0,d.qtd_real),0)/c.length):0}
 async function loadAll(){
   try{
     [clientes,contratos,disciplinas,colaboradores]=await Promise.all([
       db('clientes?order=nome'),
       db('contratos?order=nome&select=*,clientes(nome,sigla)'),
-      db('disciplinas?order=nome&select=*,contratos(nome)'),
+      db('disciplinas?order=nome&select=*,contratos(nome,ano)'),
       db('colaboradores?order=nome'),
     ]);
     document.getElementById('lupd').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR');
-    renderPage(curPage);
+    renderPg(curPg);
   }catch(e){toast('Erro ao carregar: '+e.message,'e');}
 }
-
-// NAV
-let curPage='dashboard';
-const PAGES={
-  dashboard:['Dashboard','Visão geral'],
-  contratos:['Contratos','Gerencie contratos e disciplinas'],
-  colaboradores:['Colaboradores','Equipe de campo'],
-  maodeobra:['Mão de Obra','Equipe por contrato'],
-  producao:['Lançar Produção','Registro diário'],
-  producaootd:['Produção OTD','Histórico de lançamentos'],
-  produtividade:['Produtividade','Visão semanal'],
-  recursos:['Recursos','Pessoas e carros por período'],
-  frotas:['Frotas','Controle de veículos'],
-  folga:['Folga','Controle de folgas'],
-  parciais:['Parciais','Entregas parciais'],
-  bonificacoes:['Bonificações / HHB','Performance e horas-homem bonificáveis'],
-};
-function nav(p,el){
-  curPage=p;
-  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-  el.classList.add('active');
-  const[t,s]=PAGES[p]||['',''];
-  document.getElementById('ptitle').textContent=t;
-  document.getElementById('psub').textContent=s;
-  renderPage(p);
-}
-function renderPage(p){
-  const m={dashboard:renderDashboard,contratos:renderContratos,colaboradores:renderColaboradores,
-    maodeobra:renderMO,producao:renderProd,producaootd:renderProdOTD,
-    produtividade:renderProdutividade,recursos:renderRecursos,frotas:renderFrotas,
-    folga:renderFolga,parciais:renderParciais,bonificacoes:renderBonificacoes};
-  if(m[p])m[p]();
-}
-
-// UTILS
-function fmtD(d){if(!d)return'—';const[y,m,di]=(d+'').split('T')[0].split('-');return`${di}/${m}/${y}`}
-function isoD(d){return d instanceof Date?d.toISOString().split('T')[0]:d}
-function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
-function pct(f,r){return r>0?Math.round(Math.min(100,f/r*100)):0}
-function fmtN(n){return n!=null?Number(n).toLocaleString('pt-BR'):'—'}
-function badge(txt,cls){return`<span class="badge ${cls}">${txt}</span>`}
-function badgeSt(s){const m={'Concluído':'bg','Em campo':'bb','Em atraso':'br','Aguardando início':'bc','Pausado':'by'};return badge(s||'—',m[s]||'bc')}
-function badgeSit(s){const m={'Ativo':'bg','Desligado':'br','INSS':'by','Desistiu':'bo','Contratação':'bb'};return badge(s||'—',m[s]||'bc')}
-function toast(msg,t='i'){const el=document.createElement('div');el.className='toast-item t'+(t==='s'?'s':t==='e'?'e':'i');el.textContent=msg;document.getElementById('toast').appendChild(el);setTimeout(()=>el.remove(),3200)}
-function openM(id){document.getElementById(id).classList.add('open')}
-function closeM(id){document.getElementById(id).classList.remove('open')}
-function calcPct(discs){const c=discs.filter(d=>d.qtd_real>0);return c.length?Math.round(c.reduce((s,d)=>s+pct(d.qtd_feita||0,d.qtd_real),0)/c.length):0}
-
-// SORT TABLE
-function sortTable(data,col,asc){
-  return [...data].sort((a,b)=>{
-    let va=a[col]??'',vb=b[col]??'';
-    if(typeof va==='number'||!isNaN(va))return asc?(+va)-(+vb):(+vb)-(+va);
-    return asc?String(va).localeCompare(String(vb)):String(vb).localeCompare(String(va));
-  });
-}
-function thSort(col,label,cur,asc){
-  const ico=cur===col?(asc?'↑':'↓'):'↕';
-  return`<th onclick="sortCol('${col}')" class="${cur===col?'sorted':''}">${label}<span class="sort-ico">${ico}</span></th>`;
-}
-
-// ─── DASHBOARD ───────────────────────────────────────────────
-function renderDashboard(){
+const PAGES={dashboard:['Dashboard','Visão geral'],contratos:['Contratos','Gerencie contratos e disciplinas'],colaboradores:['Colaboradores','Equipe de campo'],maodeobra:['Mão de Obra','Equipe por função'],lancarprod:['Lançar Produção','Registro diário'],producaootd:['Produção OTD','Histórico de lançamentos'],produtividade:['Produtividade','Visão semanal'],recursos:['Recursos','Cronograma pessoal e carros'],frotas:['Frotas','Controle de veículos'],folga:['Folga','Controle de folgas'],parciais:['Parciais','Entregas parciais'],bonificacoes:['Bonificações','HHB e performance']};
+function nav(p,el){curPg=p;document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));el.classList.add('active');const[t,s]=PAGES[p]||['',''];document.getElementById('ptitle').textContent=t;document.getElementById('psub').textContent=s;prodData=[];renderPg(p);}
+function renderPg(p){const m={dashboard:rDash,contratos:rContr,colaboradores:rColab,maodeobra:rMO,lancarprod:rLancar,producaootd:rProdOTD,produtividade:rProdutiv,recursos:rRecursos,frotas:rFrotas,folga:rFolga,parciais:rParciais,bonificacoes:rBonif};if(m[p])m[p]();}
+function rDash(){
   const ciclos=[...new Set(contratos.map(c=>c.ano).filter(Boolean))].sort().reverse();
-  const selEl=document.getElementById('f-ciclo');
-  const sel=selEl?selEl.value:'';
+  const sel=document.getElementById('f-ci')?.value||'';
   const lista=sel?contratos.filter(c=>c.ano===sel):contratos;
-  const total=lista.length,concl=lista.filter(c=>c.status==='Concluído').length,
-    campo=lista.filter(c=>c.status==='Em campo').length,
-    atraso=lista.filter(c=>c.status==='Em atraso').length,
-    aguard=lista.filter(c=>c.status==='Aguardando início').length;
+  const total=lista.length,concl=lista.filter(c=>c.status==='Concluído').length,campo=lista.filter(c=>c.status==='Em campo').length,atraso=lista.filter(c=>c.status==='Em atraso').length,aguard=lista.filter(c=>c.status==='Aguardando início').length;
   const ids=new Set(lista.map(c=>c.id));
   const dc=disciplinas.filter(d=>ids.has(d.contrato_id)&&d.qtd_real>0);
   const avg=dc.length?Math.round(dc.reduce((s,d)=>s+pct(d.qtd_feita||0,d.qtd_real),0)/dc.length):0;
-  document.getElementById('content').innerHTML=`
+  document.getElementById('ct').innerHTML=`
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <label style="font-size:13px;font-weight:600;color:var(--text2)">Ciclo:</label>
-      <select id="f-ciclo" onchange="renderDashboard()" class="sselect">
+      <label style="font-size:12px;font-weight:600;color:var(--tx2)">Ciclo:</label>
+      <select class="si" id="f-ci" onchange="rDash()">
         <option value="" ${!sel?'selected':''}>Todos os ciclos</option>
         ${ciclos.map(c=>`<option value="${c}" ${c===sel?'selected':''}>${c}</option>`).join('')}
       </select>
     </div>
-    <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-lbl">Total</div><div class="kpi-val">${total}</div></div>
-      <div class="kpi-card g"><div class="kpi-lbl">Concluídos</div><div class="kpi-val">${concl}</div></div>
-      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Em Campo</div><div class="kpi-val" style="color:var(--azul2)">${campo}</div></div>
-      <div class="kpi-card r"><div class="kpi-lbl">Em Atraso</div><div class="kpi-val">${atraso}</div></div>
-      <div class="kpi-card y"><div class="kpi-lbl">Aguardando</div><div class="kpi-val">${aguard}</div></div>
-      <div class="kpi-card"><div class="kpi-lbl">Avanço Médio</div><div class="kpi-val">${avg}%</div></div>
+    <div class="kg">
+      <div class="kc"><div class="kl">Total</div><div class="kv">${total}</div></div>
+      <div class="kc g"><div class="kl">Concluídos</div><div class="kv">${concl}</div></div>
+      <div class="kc" style="border-left-color:var(--az2)"><div class="kl">Em Campo</div><div class="kv" style="color:var(--az2)">${campo}</div></div>
+      <div class="kc r"><div class="kl">Em Atraso</div><div class="kv">${atraso}</div></div>
+      <div class="kc y"><div class="kl">Aguardando</div><div class="kv">${aguard}</div></div>
+      <div class="kc"><div class="kl">Avanço Médio</div><div class="kv">${avg}%</div></div>
     </div>
-    <div class="card">
-      <div class="card-hdr"><h3>Contratos ativos / em atraso — ${sel||'Todos os ciclos'}</h3></div>
-      <div class="card-body"><table>
-        <thead><tr><th>Contrato</th><th>Cliente</th><th>Ciclo</th><th>Disciplinas</th><th>Status</th><th>Prazo Cliente</th></tr></thead>
-        <tbody>${lista.filter(c=>c.status!=='Concluído'&&c.status!=='Aguardando início').map(c=>{
-          const ds=disciplinas.filter(d=>d.contrato_id===c.id),p=calcPct(ds);
-          return`<tr><td><strong>${c.nome}</strong></td><td>${c.clientes?.nome||'—'}</td><td>${c.ano||'—'}</td>
-          <td><div style="display:flex;align-items:center;gap:7px">
-            <div class="progress"><div class="progress-bar" style="width:${p}%;background:${p>=100?'var(--verde)':p>=50?'var(--azul)':'var(--laranja)'}"></div></div>
-            <span style="font-size:12px;font-weight:600">${p}%</span><span class="badge bb">${ds.length}</span></div></td>
-          <td>${badgeSt(c.status)}</td><td>${fmtD(c.termino_planejado)}</td></tr>`;
-        }).join('')||'<tr><td colspan="6" class="empty-st">Nenhum contrato ativo.</td></tr>'}
-        </tbody>
-      </table></div>
-    </div>`;
+    <div class="card"><div class="ch"><h3>Contratos ativos / em atraso — ${sel||'Todos os ciclos'}</h3></div>
+    <div class="cb"><table><thead><tr><th>Contrato</th><th>Cliente</th><th>Ciclo</th><th>Avanço</th><th>Status</th><th>Prazo Cliente</th><th>Previsão OTD</th></tr></thead>
+    <tbody>${lista.filter(c=>c.status!=='Concluído'&&c.status!=='Aguardando início').map(c=>{
+      const ds=disciplinas.filter(d=>d.contrato_id===c.id),p=cpct(ds);
+      return`<tr><td><strong>${c.nome}</strong></td><td>${c.clientes?.nome||'—'}</td><td>${c.ano||'—'}</td>
+      <td><div style="display:flex;align-items:center;gap:6px"><div class="pr" style="width:80px"><div class="pb" style="width:${p}%;background:${p>=100?'var(--vd)':p>=50?'var(--az)':'var(--la)'}"></div></div><span style="font-size:12px;font-weight:600">${p}%</span><span class="bge bgb">${ds.length}</span></div></td>
+      <td>${badgeSt(c.status)}</td><td>${fmtD(c.termino_planejado)}</td><td>${fmtD(c.termino_estimado)}</td></tr>`;
+    }).join('')||'<tr><td colspan="7" class="est">Nenhum contrato ativo neste ciclo.</td></tr>'}
+    </tbody></table></div></div>`;
 }
-
-// ─── CONTRATOS ───────────────────────────────────────────────
-let cSort={col:'nome',asc:true};
-function sortCol(col){
-  if(cSort.col===col)cSort.asc=!cSort.asc;else{cSort.col=col;cSort.asc=true;}
-  renderContratos();
-}
-function renderContratos(){
-  const q=(document.getElementById('c-busca')?.value||'').toLowerCase();
-  const fs=document.getElementById('c-fst')?.value||'';
-  const fa=document.getElementById('c-fano')?.value||'';
+let cSrt={col:'nome',asc:true};
+function rContr(){
+  const q=(document.getElementById('c-bq')?.value||'').toLowerCase();
+  const fs=document.getElementById('c-fs')?.value||'',fa=document.getElementById('c-fa')?.value||'';
+  const ciclos=[...new Set(contratos.map(c=>c.ano).filter(Boolean))].sort().reverse();
   let lista=contratos;
   if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q)||(c.clientes?.nome||'').toLowerCase().includes(q));
   if(fs)lista=lista.filter(c=>c.status===fs);
   if(fa)lista=lista.filter(c=>c.ano===fa);
-  lista=sortTable(lista,cSort.col,cSort.asc);
-  const ciclos=[...new Set(contratos.map(c=>c.ano).filter(Boolean))].sort().reverse();
-  document.getElementById('content').innerHTML=`
-    <div class="sbar">
-      <input class="sinput" id="c-busca" placeholder="Buscar contrato ou cliente..." oninput="renderContratos()" value="${q}">
-      <select class="sselect" id="c-fst" onchange="renderContratos()">
-        <option value="">Todos os status</option>
-        ${['Aguardando início','Em campo','Em atraso','Concluído','Pausado'].map(s=>`<option ${s===fs?'selected':''}>${s}</option>`).join('')}
-      </select>
-      <select class="sselect" id="c-fano" onchange="renderContratos()">
-        <option value="">Todos os ciclos</option>
-        ${ciclos.map(c=>`<option ${c===fa?'selected':''}>${c}</option>`).join('')}
-      </select>
-      <button class="btn btn-p" onclick="abrirMC()">+ Novo Contrato</button>
+  lista=[...lista].sort((a,b)=>{let va=a[cSrt.col]??'',vb=b[cSrt.col]??'';return cSrt.asc?String(va).localeCompare(String(vb)):String(vb).localeCompare(String(va));});
+  document.getElementById('ct').innerHTML=`
+    <div class="sb_">
+      <input class="si" id="c-bq" placeholder="Buscar contrato ou cliente..." oninput="rContr()" value="${q}" style="min-width:220px">
+      <select class="si" id="c-fs" onchange="rContr()"><option value="">Todos os status</option>${['Aguardando início','Em campo','Em atraso','Concluído','Pausado'].map(s=>`<option ${s===fs?'selected':''}>${s}</option>`).join('')}</select>
+      <select class="si" id="c-fa" onchange="rContr()"><option value="">Todos os ciclos</option>${ciclos.map(c=>`<option ${c===fa?'selected':''}>${c}</option>`).join('')}</select>
+      <button class="btn bp" onclick="abrirMC()">+ Novo Contrato</button>
     </div>
-    <div class="card">
-      <div class="card-hdr"><h3>${lista.length} contrato(s)</h3></div>
-      <div class="card-body"><table>
-        <thead><tr>
-          ${thSort('nome','Contrato',cSort.col,cSort.asc)}
-          ${thSort('clientes','Cliente',cSort.col,cSort.asc)}
-          ${thSort('ano','Ciclo',cSort.col,cSort.asc)}
-          ${thSort('status','Status',cSort.col,cSort.asc)}
-          <th>Disciplinas / Avanço</th>
-          ${thSort('termino_planejado','Prazo Cliente',cSort.col,cSort.asc)}
-          ${thSort('termino_estimado','Previsão OTD',cSort.col,cSort.asc)}
-          <th>Ações</th>
-        </tr></thead>
-        <tbody>${lista.length?lista.map(c=>{
-          const ds=disciplinas.filter(d=>d.contrato_id===c.id),p=calcPct(ds);
-          return`<tr>
-            <td><strong>${c.nome}</strong>${c.estado?`<span style="font-size:11px;color:var(--text2);margin-left:6px">${c.estado}</span>`:''}
-            </td>
-            <td>${c.clientes?.sigla||c.clientes?.nome||'—'}</td>
-            <td>${c.ano||'—'}</td>
-            <td>${badgeSt(c.status)}</td>
-            <td><div style="display:flex;align-items:center;gap:7px">
-              <div class="progress"><div class="progress-bar" style="width:${p}%;background:${p>=100?'var(--verde)':p>=50?'var(--azul)':'var(--laranja)'}"></div></div>
-              <span style="font-size:12px;font-weight:600">${p}%</span><span class="badge bb">${ds.length}</span></div></td>
-            <td>${fmtD(c.termino_planejado)}</td><td>${fmtD(c.termino_estimado)}</td>
-            <td style="display:flex;gap:4px">
-              <button class="btn btn-sm btn-o" onclick="abrirMC('${c.id}')">✏️</button>
-              <button class="btn btn-sm btn-d" onclick="delC('${c.id}')">🗑</button>
-            </td></tr>
-          ${ds.length?`<tr style="background:#f9fafb"><td colspan="8" style="padding:0">
-            <div style="padding:8px 16px">${ds.map(d=>{
-              const p2=pct(d.qtd_feita||0,d.qtd_real||0);
-              return`<div class="disc-item">
-                <span style="font-weight:600;font-size:13px;flex:1">${d.nome}</span>
-                <span style="font-size:12px;color:var(--text2)">${fmtN(d.qtd_feita)}/${fmtN(d.qtd_real)} ${d.unidade||''}</span>
-                <div class="progress" style="width:100px"><div class="progress-bar" style="width:${p2}%;background:${p2>=100?'var(--verde)':p2>=50?'var(--azul)':'var(--laranja)'}"></div></div>
-                <span style="font-size:12px;font-weight:600;min-width:30px">${p2}%</span>
-                <button class="btn btn-sm btn-d" onclick="delD('${d.id}')">🗑</button>
-              </div>`;
-            }).join('')}</div>
-          </td></tr>`:''}`;
-        }).join(''):`<tr><td colspan="8"><div class="empty-st"><div class="ico">📋</div><p>Nenhum contrato encontrado.</p></div></td></tr>`}
-        </tbody>
-      </table></div>
-    </div>`;
+    <div class="card"><div class="ch"><h3>${lista.length} contrato(s)</h3></div><div class="cb"><table>
+    <thead><tr>
+      <th onclick="cSrt={col:'nome',asc:cSrt.col==='nome'?!cSrt.asc:true};rContr()">Contrato ↕</th>
+      <th onclick="cSrt={col:'clientes',asc:!cSrt.asc};rContr()">Cliente ↕</th>
+      <th onclick="cSrt={col:'ano',asc:!cSrt.asc};rContr()">Ciclo ↕</th>
+      <th onclick="cSrt={col:'status',asc:!cSrt.asc};rContr()">Status ↕</th>
+      <th>Disciplinas / Avanço</th>
+      <th onclick="cSrt={col:'termino_planejado',asc:!cSrt.asc};rContr()">Prazo Cliente ↕</th>
+      <th onclick="cSrt={col:'termino_estimado',asc:!cSrt.asc};rContr()">Previsão OTD ↕</th>
+      <th>Ações</th>
+    </tr></thead>
+    <tbody>${lista.length?lista.map(c=>{
+      const ds=disciplinas.filter(d=>d.contrato_id===c.id),p=cpct(ds);
+      return`<tr>
+        <td><strong>${c.nome}</strong>${c.estado?`<span style="font-size:11px;color:var(--tx2);margin-left:5px">${c.estado}</span>`:''}</td>
+        <td>${c.clientes?.sigla||c.clientes?.nome||'—'}</td><td>${c.ano||'—'}</td><td>${badgeSt(c.status)}</td>
+        <td><div style="display:flex;align-items:center;gap:6px"><div class="pr" style="width:80px"><div class="pb" style="width:${p}%;background:${p>=100?'var(--vd)':p>=50?'var(--az)':'var(--la)'}"></div></div><span style="font-size:12px;font-weight:600">${p}%</span><span class="bge bgb">${ds.length}</span></div></td>
+        <td>${fmtD(c.termino_planejado)}</td><td>${fmtD(c.termino_estimado)}</td>
+        <td style="display:flex;gap:4px"><button class="btn bo bs" onclick="abrirMC('${c.id}')">✏️</button><button class="btn br_ bs" onclick="delC('${c.id}')">🗑</button></td>
+      </tr>
+      ${ds.length?`<tr style="background:#f9fafb"><td colspan="8" style="padding:0"><div style="padding:7px 14px">${ds.map(d=>{const p2=pct(d.qtd_feita||0,d.qtd_real||0);return`<div class="di"><span style="font-weight:600;font-size:13px;flex:1">${d.nome}</span><span style="font-size:12px;color:var(--tx2)">${fmtN(d.qtd_feita)}/${fmtN(d.qtd_real)} ${d.unidade||''}</span><div class="pr" style="width:90px"><div class="pb" style="width:${p2}%;background:${p2>=100?'var(--vd)':p2>=50?'var(--az)':'var(--la)'}"></div></div><span style="font-size:12px;font-weight:600;min-width:32px">${p2}%</span><button class="btn br_ bs" onclick="delD('${d.id}')">🗑</button></div>`;}).join('')}</div></td></tr>`:''}`;
+    }).join(''):`<tr><td colspan="8"><div class="est"><div class="ic">📋</div><p>Nenhum contrato.</p></div></td></tr>`}
+    </tbody></table></div></div>`;
 }
-
-// ─── COLABORADORES ───────────────────────────────────────────
-let coSort={col:'nome',asc:true};
-function sortColColab(col){if(coSort.col===col)coSort.asc=!coSort.asc;else{coSort.col=col;coSort.asc=true;}renderColaboradores();}
-function renderColaboradores(){
-  const q=(document.getElementById('co-b')?.value||'').toLowerCase();
-  const fs=document.getElementById('co-fst')?.value||'';
-  const ff=document.getElementById('co-ffn')?.value||'';
+let coSrt={col:'nome',asc:true};
+function rColab(){
+  const q=(document.getElementById('co-bq')?.value||'').toLowerCase(),fs=document.getElementById('co-fs')?.value||'',ff=document.getElementById('co-ff')?.value||'';
   let lista=colaboradores;
   if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q));
-  if(fs)lista=lista.filter(c=>c.situacao===fs);
-  if(ff)lista=lista.filter(c=>c.funcao===ff);
-  lista=sortTable(lista,coSort.col,coSort.asc);
+  if(fs)lista=lista.filter(c=>c.situacao===fs);if(ff)lista=lista.filter(c=>c.funcao===ff);
+  lista=[...lista].sort((a,b)=>coSrt.asc?(a[coSrt.col]||'').localeCompare(b[coSrt.col]||''):(b[coSrt.col]||'').localeCompare(a[coSrt.col]||''));
   const ativos=colaboradores.filter(c=>c.situacao==='Ativo').length;
-  document.getElementById('content').innerHTML=`
-    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:420px">
-      <div class="kpi-card g"><div class="kpi-lbl">Ativos</div><div class="kpi-val">${ativos}</div></div>
-      <div class="kpi-card r"><div class="kpi-lbl">Inativos</div><div class="kpi-val">${colaboradores.length-ativos}</div></div>
-      <div class="kpi-card"><div class="kpi-lbl">Total</div><div class="kpi-val">${colaboradores.length}</div></div>
+  document.getElementById('ct').innerHTML=`
+    <div class="kg" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+      <div class="kc g"><div class="kl">Ativos</div><div class="kv">${ativos}</div></div>
+      <div class="kc r"><div class="kl">Inativos</div><div class="kv">${colaboradores.length-ativos}</div></div>
+      <div class="kc"><div class="kl">Total</div><div class="kv">${colaboradores.length}</div></div>
     </div>
-    <div class="sbar">
-      <input class="sinput" id="co-b" placeholder="Buscar colaborador..." oninput="renderColaboradores()" value="${q}">
-      <select class="sselect" id="co-fst" onchange="renderColaboradores()">
-        <option value="">Todas situações</option>
-        ${['Ativo','Desligado','INSS','Desistiu','Contratação'].map(s=>`<option ${s===fs?'selected':''}>${s}</option>`).join('')}
-      </select>
-      <select class="sselect" id="co-ffn" onchange="renderColaboradores()">
-        <option value="">Todas funções</option>
-        ${['Ajudante de Obras','Auxiliar de Engenharia','Assistente de Engenharia','Terceirizado Campo'].map(s=>`<option ${s===ff?'selected':''}>${s}</option>`).join('')}
-      </select>
-      <button class="btn btn-p" onclick="abrirMCo()">+ Novo Colaborador</button>
+    <div class="sb_">
+      <input class="si" id="co-bq" placeholder="Buscar colaborador..." oninput="rColab()" value="${q}" style="min-width:200px">
+      <select class="si" id="co-fs" onchange="rColab()"><option value="">Todas situações</option>${['Ativo','Desligado','INSS','Desistiu','Contratação'].map(s=>`<option ${s===fs?'selected':''}>${s}</option>`).join('')}</select>
+      <select class="si" id="co-ff" onchange="rColab()"><option value="">Todas funções</option>${['Ajudante de Obras','Auxiliar de Engenharia','Assistente de Engenharia','Terceirizado Campo'].map(s=>`<option ${s===ff?'selected':''}>${s}</option>`).join('')}</select>
+      <button class="btn bp" onclick="abrirMCo()">+ Novo Colaborador</button>
     </div>
-    <div class="card"><div class="card-body"><table>
-      <thead><tr>
-        ${thSort('nome','Nome',coSort.col,coSort.asc)}
-        ${thSort('funcao','Função Atual',coSort.col,coSort.asc)}
-        ${thSort('situacao','Situação',coSort.col,coSort.asc)}
-        ${thSort('estado','Estado',coSort.col,coSort.asc)}
-        ${thSort('admissao','Admissão',coSort.col,coSort.asc)}
-        ${thSort('desligamento','Desligamento',coSort.col,coSort.asc)}
-        <th>Promoção</th>
-        <th>Ações</th>
-      </tr></thead>
-      <tbody>${lista.length?lista.map(c=>`<tr>
-        <td><strong>${c.nome}</strong></td>
-        <td>
-          ${c.funcao||'—'}
-          ${c.promocao_data?`<br><span style="font-size:11px;color:var(--verde)">→ ${c.novo_cargo||''} a partir de ${fmtD(c.promocao_data)}</span>`:''}
-        </td>
-        <td>${badgeSit(c.situacao)}</td><td>${c.estado||'—'}</td>
-        <td>${fmtD(c.admissao)}</td><td>${fmtD(c.desligamento)}</td>
-        <td>${c.promocao_data?`<span class="badge bg" style="font-size:10px">Promovido ${fmtD(c.promocao_data)}</span>`:'—'}</td>
-        <td style="display:flex;gap:4px">
-          <button class="btn btn-sm btn-o" onclick="abrirMCo('${c.id}')">✏️</button>
-          <button class="btn btn-sm btn-d" onclick="delColab('${c.id}')">🗑</button>
-        </td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-st"><div class="ico">👷</div><p>Nenhum colaborador.</p></div></td></tr>`}
-      </tbody>
-    </table></div></div>`;
+    <div class="card"><div class="cb"><table>
+    <thead><tr>
+      <th onclick="coSrt={col:'nome',asc:!coSrt.asc};rColab()">Nome ↕</th>
+      <th onclick="coSrt={col:'funcao',asc:!coSrt.asc};rColab()">Função ↕</th>
+      <th>Situação</th><th>Estado</th>
+      <th onclick="coSrt={col:'admissao',asc:!coSrt.asc};rColab()">Admissão ↕</th>
+      <th>Promoção</th><th>Ações</th>
+    </tr></thead>
+    <tbody>${lista.length?lista.map(c=>`<tr>
+      <td><strong>${c.nome}</strong></td><td>${c.funcao||'—'}</td><td>${badgeSi(c.situacao)}</td><td>${c.estado||'—'}</td><td>${fmtD(c.admissao)}</td>
+      <td>${c.promocao_data?`<span class="bge bgg" style="font-size:10px">${fmtD(c.promocao_data)} → ${c.novo_cargo||''}</span>`:'—'}</td>
+      <td style="display:flex;gap:4px"><button class="btn bo bs" onclick="abrirMCo('${c.id}')">✏️</button><button class="btn br_ bs" onclick="delCo('${c.id}')">🗑</button></td>
+    </tr>`).join(''):`<tr><td colspan="7"><div class="est"><div class="ic">👷</div><p>Nenhum colaborador.</p></div></td></tr>`}
+    </tbody></table></div></div>`;
 }
-
-// ─── MÃO DE OBRA ─────────────────────────────────────────────
-function renderMO(){
-  const q=(document.getElementById('mo-b')?.value||'').toLowerCase();
-  const fc=document.getElementById('mo-fc')?.value||'';
-  const ativos=colaboradores.filter(c=>c.situacao==='Ativo'&&c.funcao!=='Terceirizado Campo');
-  let lista=ativos;
-  if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q)||(c.funcao||'').toLowerCase().includes(q));
-  if(fc)lista=lista.filter(c=>c.funcao===fc);
+function rMO(){
+  const q=(document.getElementById('mo-bq')?.value||'').toLowerCase(),ff=document.getElementById('mo-ff')?.value||'';
+  const ativos=colaboradores.filter(c=>c.situacao==='Ativo');
   const aj=ativos.filter(c=>c.funcao==='Ajudante de Obras'||!c.funcao).length;
   const aux=ativos.filter(c=>c.funcao==='Auxiliar de Engenharia').length;
   const ass=ativos.filter(c=>c.funcao==='Assistente de Engenharia').length;
-  document.getElementById('content').innerHTML=`
-    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);max-width:560px">
-      <div class="kpi-card g"><div class="kpi-lbl">Total Ativos</div><div class="kpi-val">${ativos.length}</div></div>
-      <div class="kpi-card"><div class="kpi-lbl">Ajudantes</div><div class="kpi-val">${aj}</div></div>
-      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Auxiliares</div><div class="kpi-val" style="color:var(--azul2)">${aux}</div></div>
-      <div class="kpi-card y"><div class="kpi-lbl">Assistentes</div><div class="kpi-val">${ass}</div></div>
+  const ter=ativos.filter(c=>c.funcao==='Terceirizado Campo').length;
+  let lista=ativos;if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q)||(c.funcao||'').toLowerCase().includes(q));
+  if(ff)lista=lista.filter(c=>c.funcao===ff);
+  document.getElementById('ct').innerHTML=`
+    <div class="kg" style="grid-template-columns:repeat(5,1fr)">
+      <div class="kc g"><div class="kl">Total Ativos</div><div class="kv">${ativos.length}</div></div>
+      <div class="kc"><div class="kl">Ajudantes de Obras</div><div class="kv">${aj}</div></div>
+      <div class="kc" style="border-left-color:var(--az2)"><div class="kl">Auxiliares</div><div class="kv" style="color:var(--az2)">${aux}</div></div>
+      <div class="kc y"><div class="kl">Assistentes</div><div class="kv">${ass}</div></div>
+      <div class="kc c"><div class="kl">Terceirizados</div><div class="kv" style="color:var(--ci)">${ter}</div></div>
     </div>
-    <div class="sbar">
-      <input class="sinput" id="mo-b" placeholder="Buscar nome ou função..." oninput="renderMO()" value="${q}">
-      <select class="sselect" id="mo-fc" onchange="renderMO()">
-        <option value="">Todas funções</option>
-        ${['Ajudante de Obras','Auxiliar de Engenharia','Assistente de Engenharia'].map(s=>`<option ${s===fc?'selected':''}>${s}</option>`).join('')}
-      </select>
+    <div class="sb_">
+      <input class="si" id="mo-bq" placeholder="Buscar nome ou função..." oninput="rMO()" value="${q}" style="min-width:200px">
+      <select class="si" id="mo-ff" onchange="rMO()"><option value="">Todas funções</option>${['Ajudante de Obras','Auxiliar de Engenharia','Assistente de Engenharia','Terceirizado Campo'].map(s=>`<option ${s===ff?'selected':''}>${s}</option>`).join('')}</select>
     </div>
-    <div class="card"><div class="card-body"><table>
-      <thead><tr><th>Nome</th><th>Função</th><th>Estado</th><th>Admissão</th></tr></thead>
-      <tbody>${lista.length?lista.map(c=>`<tr>
-        <td><strong>${c.nome}</strong></td><td>${c.funcao||'—'}</td>
-        <td>${c.estado||'—'}</td><td>${fmtD(c.admissao)}</td>
-      </tr>`).join(''):`<tr><td colspan="4"><div class="empty-st"><div class="ico">🏗️</div><p>Nenhum colaborador ativo.</p></div></td></tr>`}
-      </tbody>
-    </table></div></div>`;
+    <div class="card"><div class="cb"><table>
+    <thead><tr><th>Nome</th><th>Função</th><th>Estado</th><th>Admissão</th><th>Promoção</th></tr></thead>
+    <tbody>${lista.length?lista.map(c=>`<tr><td><strong>${c.nome}</strong></td><td>${c.funcao||'—'}</td><td>${c.estado||'—'}</td><td>${fmtD(c.admissao)}</td><td>${c.promocao_data?`${fmtD(c.promocao_data)} → ${c.novo_cargo||''}`:'—'}</td></tr>`).join(''):`<tr><td colspan="5"><div class="est">Nenhum colaborador ativo.</div></td></tr>`}
+    </tbody></table></div></div>`;
 }
-
-// ─── LANÇAR PRODUÇÃO ─────────────────────────────────────────
-function renderProd(){
-  document.getElementById('content').innerHTML=`
-    <div class="card" style="max-width:580px">
-      <div class="card-hdr"><h3>Lançamento de Produção Diária</h3></div>
-      <div class="card-body" style="padding:18px">
-        <div class="fg">
-          <div class="fgrp full"><label>Contrato *</label>
-            <select id="p-cont" onchange="loadDiscs()">
-              <option value="">Selecione...</option>
-              ${contratos.map(c=>`<option value="${c.id}">${c.nome} ${c.ano?'('+c.ano+')':''}</option>`).join('')}
-            </select></div>
-          <div class="fgrp full"><label>Disciplina *</label><select id="p-disc"><option>Selecione o contrato primeiro...</option></select></div>
-          <div class="fgrp"><label>Data *</label><input type="date" id="p-data" value="${new Date().toISOString().split('T')[0]}"></div>
-          <div class="fgrp"><label>Quantidade *</label><input type="number" id="p-qtd" min="0"></div>
-          <div class="fgrp full"><label>Colaborador</label>
-            <input id="p-colab" list="clist">
-            <datalist id="clist">${colaboradores.filter(c=>c.situacao==='Ativo').map(c=>`<option value="${c.nome}">`).join('')}</datalist>
-          </div>
-          <div class="fgrp full"><label>Obs</label><textarea id="p-obs"></textarea></div>
-        </div>
-        <button class="btn btn-g" style="width:100%;margin-top:14px" onclick="salvarProd()">⚡ Lançar Produção</button>
+function rLancar(){
+  const cl=colaboradores.filter(c=>c.situacao==='Ativo').map(c=>`<option value="${c.nome}">`).join('');
+  document.getElementById('ct').innerHTML=`
+    <div class="card" style="max-width:580px"><div class="ch"><h3>Lançamento de Produção Diária</h3></div><div class="cb" style="padding:16px">
+      <div class="fg">
+        <div class="fgp full"><label>Contrato *</label><select id="pr-ct" onchange="loadD2()"><option value="">Selecione...</option>${contratos.map(c=>`<option value="${c.id}">${c.nome} ${c.ano?'('+c.ano+')':''}</option>`).join('')}</select></div>
+        <div class="fgp full"><label>Disciplina *</label><select id="pr-di"><option>Selecione o contrato primeiro...</option></select></div>
+        <div class="fgp"><label>Data *</label><input type="date" id="pr-dt" value="${new Date().toISOString().split('T')[0]}"></div>
+        <div class="fgp"><label>Quantidade *</label><input type="number" id="pr-qt" min="0"></div>
+        <div class="fgp"><label>Colaborador *</label><input id="pr-co" list="cl-pr"><datalist id="cl-pr">${cl}</datalist></div>
+        <div class="fgp"><label>Dupla (se houver)</label><input id="pr-dp" list="cl-pr2"><datalist id="cl-pr2">${cl}</datalist></div>
+        <div class="fgp"><label>Taxa HHB</label><select id="pr-tx">
+          <option value="0.70">0.70 — Solo Ajudante de Obras</option>
+          <option value="0.75">0.75 — Solo Auxiliar de Engenharia</option>
+          <option value="0.85">0.85 — Solo Assistente de Engenharia</option>
+          <option value="1.00">1.00 — Dupla Ajudante + Ajudante</option>
+          <option value="1.10">1.10 — Dupla Ajudante + Auxiliar</option>
+          <option value="1.27">1.27 — Dupla Auxiliar + Auxiliar</option>
+          <option value="1.30">1.30 — Terceirizado Campo</option>
+        </select></div>
+        <div class="fgp"><label>É revisão? (não soma no saldo do contrato)</label><select id="pr-rv"><option value="">Não</option><option value="1">Sim — Revisão</option></select></div>
+        <div class="fgp full"><label>Obs</label><textarea id="pr-ob" rows="2"></textarea></div>
       </div>
-    </div>`;
-}
-
-// ─── PRODUÇÃO OTD (HISTÓRICO) ────────────────────────────────
-let prodData=[],prodSort={col:'data',asc:false};
-
-// Metas por disciplina (modo solo vs dupla) — da tabela Combinações
-const METAS_DISC = {
-  'Terrapleno':                    {solo:42, dupla:60, dupla_aux:66},
-  'Drenagem':                      {solo:119, dupla:170, dupla_aux:187},
-  'Sinalização Horizontal':        {solo:115.5, dupla:165, dupla_aux:181.5},
-  'Sinalização Vertical':          {solo:115.5, dupla:165, dupla_aux:181.5},
-  'Faixa de Domínio (AC e OC)':    {solo:154, dupla:220, dupla_aux:242},
-  'Faixa de Domínio (Cercas)':     {solo:140, dupla:200, dupla_aux:220},
-  'EPS':                           {solo:280, dupla:400, dupla_aux:440},
-  'Edificações (EDF)':             {solo:4.2, dupla:6, dupla_aux:6.6},
-  'Pontos de Iluminação e EDE':    {solo:5.6, dupla:8, dupla_aux:8.8},
-};
-
-function metaEsperada(disc, dupla){
-  const d = Object.entries(METAS_DISC).find(([k])=>disc&&disc.toLowerCase().includes(k.toLowerCase()));
-  if(!d) return null;
-  const m = d[1];
-  if(!dupla) return m.solo;
-  return m.dupla;
-}
-
-async function renderProdOTD(){
-  if(!prodData.length){
-    try{
-      prodData = await db('producao?order=data.desc&limit=2500&select=id,data,colaborador,dupla,contrato_id,disciplina_id,quantidade,taxa,hhb,revisoes,ano,obs,disciplinas(nome,unidade),contratos(nome)');
-    }catch(e){toast('Erro: '+e.message,'e');}
-  }
-  const q=(document.getElementById('po-b')?.value||'').toLowerCase();
-  const fc=document.getElementById('po-fc')?.value||'';
-  const fd=document.getElementById('po-fd')?.value||'';
-  const fa=document.getElementById('po-fa')?.value||'';
-  const fmodo=document.getElementById('po-fm')?.value||'';
-
-  const conts=[...new Set(prodData.map(r=>r.contratos?.nome).filter(Boolean))].sort();
-  const discs=[...new Set(prodData.map(r=>r.disciplinas?.nome).filter(Boolean))].sort();
-  const anos=[...new Set(prodData.map(r=>r.ano).filter(Boolean))].sort().reverse();
-
-  let lista=prodData;
-  if(q)lista=lista.filter(r=>(r.contratos?.nome||'').toLowerCase().includes(q)||(r.colaborador||'').toLowerCase().includes(q)||(r.dupla||'').toLowerCase().includes(q));
-  if(fc)lista=lista.filter(r=>r.contratos?.nome===fc);
-  if(fd)lista=lista.filter(r=>r.disciplinas?.nome===fd);
-  if(fa)lista=lista.filter(r=>r.ano===fa);
-  if(fmodo==='solo')lista=lista.filter(r=>!r.dupla);
-  if(fmodo==='dupla')lista=lista.filter(r=>!!r.dupla);
-
-  const total=lista.reduce((s,r)=>s+(r.quantidade||0),0);
-  const totalHHB=lista.reduce((s,r)=>s+(r.hhb||0),0);
-  const abaixo=lista.filter(r=>{
-    const meta=metaEsperada(r.disciplinas?.nome,r.dupla);
-    return meta && (r.quantidade||0)<meta;
-  }).length;
-
-  document.getElementById('content').innerHTML=`
-    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
-      <div class="kpi-card"><div class="kpi-lbl">Lançamentos</div><div class="kpi-val" style="font-size:22px">${lista.length}</div></div>
-      <div class="kpi-card g"><div class="kpi-lbl">Total Produzido</div><div class="kpi-val" style="font-size:22px">${fmtN(Math.round(total))}</div></div>
-      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">HHB Total</div><div class="kpi-val" style="font-size:22px;color:var(--azul2)">${fmtN(totalHHB.toFixed(1))}</div></div>
-      <div class="kpi-card r"><div class="kpi-lbl">Abaixo da Meta</div><div class="kpi-val" style="font-size:22px">${abaixo}</div></div>
-    </div>
-    <div class="sbar" style="flex-wrap:wrap">
-      <input class="sinput" id="po-b" placeholder="Buscar contrato, colaborador ou dupla..." oninput="renderProdOTD()" value="${q}" style="min-width:260px">
-      <select class="sselect" id="po-fc" onchange="renderProdOTD()">
-        <option value="">Todos os contratos</option>${conts.map(c=>`<option ${c===fc?'selected':''}>${c}</option>`).join('')}
-      </select>
-      <select class="sselect" id="po-fd" onchange="renderProdOTD()">
-        <option value="">Todas disciplinas</option>${discs.map(d=>`<option ${d===fd?'selected':''}>${d}</option>`).join('')}
-      </select>
-      <select class="sselect" id="po-fa" onchange="renderProdOTD()">
-        <option value="">Todos ciclos</option>${anos.map(a=>`<option ${a===fa?'selected':''}>${a}</option>`).join('')}
-      </select>
-      <select class="sselect" id="po-fm" onchange="renderProdOTD()">
-        <option value="">Solo e Dupla</option>
-        <option value="solo" ${fmodo==='solo'?'selected':''}>Solo apenas</option>
-        <option value="dupla" ${fmodo==='dupla'?'selected':''}>Dupla apenas</option>
-      </select>
-      <button class="btn btn-o btn-sm" onclick="prodData=[];renderProdOTD()">↻</button>
-    </div>
-    <div class="card"><div class="card-body">
-      <table>
-        <thead><tr>
-          <th>Data</th><th>Colaborador</th><th>Dupla</th><th>Modo</th>
-          <th>Contrato</th><th>Disciplina</th><th>Ciclo</th>
-          <th style="text-align:right">Produção</th><th style="text-align:right">Meta</th>
-          <th style="text-align:right">Taxa</th><th style="text-align:right">HHB</th>
-          <th>Revisões</th><th>Obs</th>
-        </tr></thead>
-        <tbody>${lista.length?lista.slice(0,300).map(r=>{
-          const meta = metaEsperada(r.disciplinas?.nome, r.dupla);
-          const qtd  = r.quantidade||0;
-          const abaixoMeta = meta && qtd < meta;
-          const acimaMeta  = meta && qtd >= meta;
-          const rowBg = abaixoMeta ? 'background:#fff5f5' : acimaMeta ? 'background:#f5fff8' : '';
-          const qtdColor = abaixoMeta ? 'color:var(--vermelho);font-weight:700' : acimaMeta ? 'color:var(--verde);font-weight:700' : 'font-weight:600';
-          return`<tr style="${rowBg}">
-            <td style="font-size:12px">${fmtD(r.data)}</td>
-            <td><strong>${r.colaborador||'—'}</strong></td>
-            <td style="font-size:12px;color:var(--text2)">${r.dupla||'<span style="color:#ccc">—</span>'}</td>
-            <td>${r.dupla?badge('Dupla','bb'):badge('Solo','bc')}</td>
-            <td style="font-size:12px">${r.contratos?.nome||'—'}</td>
-            <td style="font-size:12px">${r.disciplinas?.nome||'—'}</td>
-            <td style="font-size:11px;color:var(--text2)">${r.ano||'—'}</td>
-            <td style="text-align:right;${qtdColor}">${fmtN(qtd)} <span style="font-size:10px;font-weight:400;color:var(--text2)">${r.disciplinas?.unidade||''}</span></td>
-            <td style="text-align:right;font-size:12px;color:var(--text2)">${meta?fmtN(meta):'—'}</td>
-            <td style="text-align:right;font-size:12px">${r.taxa??'—'}</td>
-            <td style="text-align:right;font-size:12px;color:var(--azul2);font-weight:600">${r.hhb!=null?Number(r.hhb).toFixed(2):'—'}</td>
-            <td style="font-size:12px;text-align:center">${r.revisoes??'—'}</td>
-            <td style="font-size:11px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.obs||''}">${r.obs||'—'}</td>
-          </tr>`;
-        }).join(''):`<tr><td colspan="13"><div class="empty-st"><div class="ico">📦</div><p>Nenhum lançamento.<br>Rode o SQL de reimportação.</p></div></td></tr>`}
-        </tbody>
-      </table>
-      ${lista.length>300?`<div style="padding:10px 14px;font-size:12px;color:var(--text2)">Mostrando 300 de ${lista.length} registros. Use os filtros para refinar.</div>`:''}
+      <button class="btn bg_" style="width:100%;margin-top:14px" onclick="salvarPr()">⚡ Lançar Produção</button>
     </div></div>`;
 }
-
-// ─── PRODUTIVIDADE ───────────────────────────────────────────
-function getSemanas(){
-  const sem=[];const hoje=new Date();const dow=hoje.getDay()||7;
-  const seg=new Date(hoje);seg.setDate(hoje.getDate()-dow+1);
-  for(let i=0;i<52;i++){
-    const s=new Date(seg);s.setDate(seg.getDate()-i*7);
-    const f=new Date(s);f.setDate(s.getDate()+4);
-    const lbl=s.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' → '+f.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});
-    sem.push({seg:s,sex:f,lbl,key:isoD(s)});
-  }
-  return sem;
+function loadD2(){const cid=document.getElementById('pr-ct')?.value;const sel=document.getElementById('pr-di');if(!sel)return;const ds=disciplinas.filter(d=>d.contrato_id===cid);sel.innerHTML=ds.length?'<option value="">Selecione a disciplina...</option>'+ds.map(d=>`<option value="${d.id}">${d.nome}</option>`).join(''):'<option>Nenhuma disciplina</option>';}
+async function rProdOTD(){
+  if(!prodData.length){try{prodData=await db('producao?order=data.desc&limit=2500&select=id,data,colaborador,dupla,contrato_id,disciplina_id,quantidade,taxa,hhb,revisoes,ano,obs,disciplinas(nome,unidade),contratos(nome,ano)');}catch(e){toast('Erro: '+e.message,'e');}}
+  const q=(document.getElementById('po-bq')?.value||'').toLowerCase(),fc=document.getElementById('po-fc')?.value||'',fd=document.getElementById('po-fd')?.value||'',fa=document.getElementById('po-fa')?.value||'',fm=document.getElementById('po-fm')?.value||'';
+  const conts=[...new Set(prodData.map(r=>r.contratos?.nome).filter(Boolean))].sort();
+  const discs=[...new Set(prodData.map(r=>r.disciplinas?.nome).filter(Boolean))].sort();
+  const anos=[...new Set(prodData.map(r=>r.ano||r.contratos?.ano).filter(Boolean))].sort().reverse();
+  let lista=prodData;
+  if(q)lista=lista.filter(r=>(r.contratos?.nome||'').toLowerCase().includes(q)||(r.colaborador||'').toLowerCase().includes(q)||(r.dupla||'').toLowerCase().includes(q));
+  if(fc)lista=lista.filter(r=>r.contratos?.nome===fc);if(fd)lista=lista.filter(r=>r.disciplinas?.nome===fd);if(fa)lista=lista.filter(r=>(r.ano||r.contratos?.ano)===fa);
+  if(fm==='solo')lista=lista.filter(r=>!r.dupla);if(fm==='dupla')lista=lista.filter(r=>!!r.dupla);
+  const total=lista.reduce((s,r)=>s+(r.quantidade||0),0),totalHHB=lista.reduce((s,r)=>s+(r.hhb||0),0);
+  const abaixoM=lista.filter(r=>{const m=getMeta(r.disciplinas?.nome,r.colaborador,r.dupla);return m&&(r.quantidade||0)<m;}).length;
+  document.getElementById('ct').innerHTML=`
+    <div class="kg" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kc" style="border-left-color:var(--az2)"><div class="kl">Lançamentos</div><div class="kv" style="font-size:20px;color:var(--az2)">${lista.length}</div></div>
+      <div class="kc g"><div class="kl">Total Produzido</div><div class="kv" style="font-size:20px">${fmtN(Math.round(total))}</div></div>
+      <div class="kc r"><div class="kl">Abaixo da Meta</div><div class="kv" style="font-size:20px">${abaixoM}</div></div>
+      <div class="kc" style="border-left-color:#20c997"><div class="kl">HHB Total</div><div class="kv" style="font-size:20px;color:#20c997">${totalHHB.toFixed(1)}</div></div>
+    </div>
+    <div class="sb_" style="flex-wrap:wrap">
+      <input class="si" id="po-bq" placeholder="Buscar contrato, colaborador, dupla..." oninput="rProdOTD()" value="${q}" style="min-width:240px">
+      <select class="si" id="po-fc" onchange="rProdOTD()"><option value="">Todos os contratos</option>${conts.map(c=>`<option ${c===fc?'selected':''}>${c}</option>`).join('')}</select>
+      <select class="si" id="po-fd" onchange="rProdOTD()"><option value="">Todas disciplinas</option>${discs.map(d=>`<option ${d===fd?'selected':''}>${d}</option>`).join('')}</select>
+      <select class="si" id="po-fa" onchange="rProdOTD()"><option value="">Todos ciclos</option>${anos.map(a=>`<option ${a===fa?'selected':''}>${a}</option>`).join('')}</select>
+      <select class="si" id="po-fm" onchange="rProdOTD()"><option value="">Solo e Dupla</option><option value="solo" ${fm==='solo'?'selected':''}>Solo apenas</option><option value="dupla" ${fm==='dupla'?'selected':''}>Dupla apenas</option></select>
+      <button class="btn bo bs" onclick="prodData=[];rProdOTD()">↻</button>
+    </div>
+    <div class="card"><div class="cb"><table>
+    <thead><tr><th>Data</th><th>Colaborador</th><th>Dupla</th><th>Modo</th><th>Contrato</th><th>Disciplina</th><th>Ciclo</th><th style="text-align:right">Produção</th><th style="text-align:right">Meta</th><th style="text-align:right">Taxa</th><th style="text-align:right">HHB</th><th>Revisão</th><th>Obs</th></tr></thead>
+    <tbody>${lista.length?lista.slice(0,300).map(r=>{
+      const meta=getMeta(r.disciplinas?.nome,r.colaborador,r.dupla),qtd=r.quantidade||0;
+      const abx=meta&&qtd<meta,acm=meta&&qtd>=meta;
+      const rbg=abx?'background:#fff5f5':acm?'background:#f5fff8':'';
+      const qcl=abx?'color:var(--vm);font-weight:700':acm?'color:var(--vd);font-weight:700':'font-weight:600';
+      return`<tr style="${rbg}">
+        <td style="font-size:12px">${fmtD(r.data)}</td><td><strong>${r.colaborador||'—'}</strong></td>
+        <td style="font-size:12px;color:var(--tx2)">${r.dupla||'<span style="color:#ccc">—</span>'}</td>
+        <td>${r.dupla?badge('Dupla','bgb'):badge('Solo','bgc')}</td>
+        <td style="font-size:12px">${r.contratos?.nome||'—'}</td><td style="font-size:12px">${r.disciplinas?.nome||'—'}</td>
+        <td style="font-size:11px;color:var(--tx2)">${r.ano||r.contratos?.ano||'—'}</td>
+        <td style="text-align:right;${qcl}">${fmtN(qtd)} <span style="font-size:10px;font-weight:400;color:var(--tx2)">${r.disciplinas?.unidade||''}</span></td>
+        <td style="text-align:right;font-size:12px;color:var(--tx2)">${meta?fmtN(meta):'—'}</td>
+        <td style="text-align:right;font-size:12px">${r.taxa??'—'}</td>
+        <td style="text-align:right;font-size:12px;color:#20c997;font-weight:600">${r.hhb!=null?Number(r.hhb).toFixed(2):'—'}</td>
+        <td style="text-align:center">${r.revisoes?badge('Revisão','bgy'):'—'}</td>
+        <td style="font-size:11px;color:var(--tx2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.obs||''}">${r.obs||'—'}</td>
+      </tr>`;
+    }).join(''):`<tr><td colspan="13"><div class="est"><div class="ic">📦</div><p>Nenhum lançamento.</p></div></td></tr>`}
+    </tbody></table>${lista.length>300?`<div style="padding:10px;font-size:12px;color:var(--tx2)">Mostrando 300 de ${lista.length}. Use filtros.</div>`:''}</div></div>`;
 }
-async function renderProdutividade(){
-  const sems=getSemanas();
-  const semSel=document.getElementById('ps-sem')?.value||sems[0].key;
-  const sem=sems.find(s=>s.key===semSel)||sems[0];
-  const dtI=isoD(sem.seg),dtF=isoD(sem.sex);
-  const diasSem=[0,1,2,3,4].map(i=>isoD(addDays(sem.seg,i)));
-  let prod=[];
-  try{prod=await db(`producao?data=gte.${dtI}&data=lte.${dtF}&select=*,disciplinas(nome,unidade),contratos(nome,clientes(nome))`);}
-  catch(e){toast('Erro: '+e.message,'e');}
-  const fC=document.getElementById('ps-fc')?.value||'';
-  const fD=document.getElementById('ps-fd')?.value||'';
-  const fB=(document.getElementById('ps-fb')?.value||'').toLowerCase();
+function getSems(){const s=[];const h=new Date();const dw=h.getDay()||7;const seg=new Date(h);seg.setDate(h.getDate()-dw+1);for(let i=0;i<52;i++){const ss=new Date(seg);ss.setDate(seg.getDate()-i*7);const sf=new Date(ss);sf.setDate(ss.getDate()+4);const lbl=ss.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' → '+sf.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});s.push({seg:ss,sex:sf,lbl,key:isoD(ss)});}return s;}
+async function rProdutiv(){
+  const sems=getSems();const sel=document.getElementById('pv-sm')?.value||sems[0].key;const sem=sems.find(s=>s.key===sel)||sems[0];
+  const dI=isoD(sem.seg),dF=isoD(sem.sex);const dias=[0,1,2,3,4].map(i=>isoD(addDays(sem.seg,i)));
+  let prod=[];try{prod=await db(`producao?data=gte.${dI}&data=lte.${dF}&select=*,disciplinas(nome,unidade),contratos(nome,clientes(nome))`);}catch(e){toast('Erro: '+e.message,'e');}
+  const fC=document.getElementById('pv-fc')?.value||'',fD=document.getElementById('pv-fd')?.value||'',fB=(document.getElementById('pv-fb')?.value||'').toLowerCase();
   const conts=[...new Set(prod.map(r=>r.contratos?.nome).filter(Boolean))].sort();
   const discs=[...new Set(prod.map(r=>r.disciplinas?.nome).filter(Boolean))].sort();
-  let rows=prod;
-  if(fC)rows=rows.filter(r=>r.contratos?.nome===fC);
-  if(fD)rows=rows.filter(r=>r.disciplinas?.nome===fD);
-  if(fB)rows=rows.filter(r=>(r.colaborador||'').toLowerCase().includes(fB));
+  let rows=prod;if(fC)rows=rows.filter(r=>r.contratos?.nome===fC);if(fD)rows=rows.filter(r=>r.disciplinas?.nome===fD);if(fB)rows=rows.filter(r=>(r.colaborador||'').toLowerCase().includes(fB));
   const grupos={};
-  for(const r of rows){
-    const k=`${r.contratos?.nome}|||${r.colaborador||'?'}|||${r.disciplinas?.nome}`;
-    if(!grupos[k])grupos[k]={cNome:r.contratos?.nome||'—',colab:r.colaborador||'?',disc:r.disciplinas?.nome||'—',un:r.disciplinas?.unidade||'',dias:{},total:0};
-    grupos[k].dias[r.data]=(grupos[k].dias[r.data]||0)+Number(r.quantidade||0);
-    grupos[k].total+=Number(r.quantidade||0);
-  }
-  const linhas=Object.values(grupos);
-  const totProd=linhas.reduce((s,l)=>s+l.total,0);
-  const colabs=new Set(rows.map(r=>r.colaborador).filter(Boolean)).size;
-  const diasC=new Set(rows.map(r=>r.data)).size||1;
-  const porC={};for(const l of linhas){if(!porC[l.cNome])porC[l.cNome]=[];porC[l.cNome].push(l);}
-  document.getElementById('content').innerHTML=`
+  for(const r of rows){const k=`${r.contratos?.nome}|||${r.colaborador||'?'}|||${r.disciplinas?.nome}`;if(!grupos[k])grupos[k]={cN:r.contratos?.nome||'—',co:r.colaborador||'?',di:r.disciplinas?.nome||'—',un:r.disciplinas?.unidade||'',dp:r.dupla||'',dias:{},tot:0,hhb:0};grupos[k].dias[r.data]=(grupos[k].dias[r.data]||0)+Number(r.quantidade||0);grupos[k].tot+=Number(r.quantidade||0);grupos[k].hhb+=Number(r.hhb||0);if(r.dupla)grupos[k].dp=r.dupla;}
+  const linhas=Object.values(grupos);const totP=linhas.reduce((s,l)=>s+l.tot,0);const colabs=new Set(rows.map(r=>r.colaborador).filter(Boolean)).size;const dC=new Set(rows.map(r=>r.data)).size||1;
+  const porC={};for(const l of linhas){if(!porC[l.cN])porC[l.cN]=[];porC[l.cN].push(l);}
+  document.getElementById('ct').innerHTML=`
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end">
-      <div><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Semana</div>
-        <select id="ps-sem" onchange="renderProdutividade()" class="sselect" style="min-width:185px">
-          ${sems.map(s=>`<option value="${s.key}" ${s.key===semSel?'selected':''}>${s.lbl}</option>`).join('')}
-        </select></div>
-      <div><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Contrato</div>
-        <select id="ps-fc" onchange="renderProdutividade()" class="sselect" style="min-width:170px">
-          <option value="">Todos</option>${conts.map(c=>`<option ${c===fC?'selected':''}>${c}</option>`).join('')}
-        </select></div>
-      <div><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Disciplina</div>
-        <select id="ps-fd" onchange="renderProdutividade()" class="sselect" style="min-width:150px">
-          <option value="">Todas</option>${discs.map(d=>`<option ${d===fD?'selected':''}>${d}</option>`).join('')}
-        </select></div>
-      <div><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Colaborador</div>
-        <input id="ps-fb" value="${fB}" oninput="renderProdutividade()" class="sinput" style="width:130px" placeholder="nome..."></div>
-      <button class="btn btn-g btn-sm" style="margin-top:18px" onclick="exportProd('${semSel}')">⬇ Exportar</button>
+      <div><div style="font-size:11px;font-weight:600;color:var(--tx2);margin-bottom:4px">Semana</div><select class="si" id="pv-sm" onchange="rProdutiv()" style="min-width:185px">${sems.map(s=>`<option value="${s.key}" ${s.key===sel?'selected':''}>${s.lbl}</option>`).join('')}</select></div>
+      <div><div style="font-size:11px;font-weight:600;color:var(--tx2);margin-bottom:4px">Contrato</div><select class="si" id="pv-fc" onchange="rProdutiv()" style="min-width:170px"><option value="">Todos</option>${conts.map(c=>`<option ${c===fC?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div><div style="font-size:11px;font-weight:600;color:var(--tx2);margin-bottom:4px">Disciplina</div><select class="si" id="pv-fd" onchange="rProdutiv()" style="min-width:150px"><option value="">Todas</option>${discs.map(d=>`<option ${d===fD?'selected':''}>${d}</option>`).join('')}</select></div>
+      <div><div style="font-size:11px;font-weight:600;color:var(--tx2);margin-bottom:4px">Colaborador</div><input class="si" id="pv-fb" value="${fB}" oninput="rProdutiv()" style="width:130px" placeholder="nome..."></div>
+      <button class="btn bg_ bs" style="margin-top:18px" onclick="exportProd('${sel}')">⬇ CSV</button>
     </div>
-    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
-      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Produção Total</div><div class="kpi-val" style="color:var(--azul2);font-size:22px">${fmtN(totProd)}</div></div>
-      <div class="kpi-card g"><div class="kpi-lbl">Colabs</div><div class="kpi-val" style="font-size:22px">${colabs}</div></div>
-      <div class="kpi-card"><div class="kpi-lbl">Média/Dia</div><div class="kpi-val" style="font-size:22px">${Math.round(totProd/diasC)}</div></div>
-      <div class="kpi-card"><div class="kpi-lbl">Dias com Prod.</div><div class="kpi-val" style="font-size:22px">${diasC}</div></div>
+    <div class="kg" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kc" style="border-left-color:var(--az2)"><div class="kl">Produção Total</div><div class="kv" style="font-size:20px;color:var(--az2)">${fmtN(Math.round(totP))}</div></div>
+      <div class="kc g"><div class="kl">Colabs Ativos</div><div class="kv" style="font-size:20px">${colabs}</div></div>
+      <div class="kc"><div class="kl">Média/Dia</div><div class="kv" style="font-size:20px">${Math.round(totP/dC)}</div></div>
+      <div class="kc"><div class="kl">Dias com Prod.</div><div class="kv" style="font-size:20px">${dC}</div></div>
     </div>
-    ${Object.keys(porC).length===0?`<div class="empty-st"><div class="ico">📈</div><p>Nenhuma produção nesta semana.</p></div>`:
-    Object.entries(porC).sort(([a],[b])=>a.localeCompare(b)).map(([cNome,ls])=>{
-      const tot=ls.reduce((s,l)=>s+l.total,0);
-      return`<div class="card" style="margin-bottom:12px">
-        <div class="card-hdr" style="background:#f7f9fc">
-          <h3>📋 ${cNome}</h3>
-          <span style="font-size:12px;color:var(--text2)">${ls.length} linha(s) · <strong>${fmtN(tot)}</strong> und</span>
-        </div>
-        <div class="card-body"><table>
-          <thead><tr><th>Colaborador</th><th>Disciplina</th><th style="text-align:center">SEG</th><th style="text-align:center">TER</th><th style="text-align:center">QUA</th><th style="text-align:center">QUI</th><th style="text-align:center">SEX</th><th style="text-align:center">TOTAL</th><th style="text-align:center">MÉD/DIA</th></tr></thead>
-          <tbody>${ls.sort((a,b)=>a.colab.localeCompare(b.colab)).map(l=>{
-            const dc=Object.values(l.dias).filter(v=>v>0).length||1;
-            return`<tr>
-              <td><strong>${l.colab}</strong></td>
-              <td style="color:var(--text2);font-size:12px">${l.disc}</td>
-              ${diasSem.map(d=>`<td style="text-align:center">${l.dias[d]>0?l.dias[d].toLocaleString('pt-BR'):'<span style="color:#ccc">—</span>'}</td>`).join('')}
-              <td style="text-align:center;font-weight:700;color:var(--azul)">${fmtN(l.total)} <span style="font-size:10px;color:var(--text2)">${l.un}</span></td>
-              <td style="text-align:center;color:var(--verde);font-weight:600">${(l.total/dc).toFixed(1)}</td>
-            </tr>`;
-          }).join('')}</tbody>
-        </table></div>
-      </div>`;
+    ${Object.keys(porC).length===0?`<div class="est"><div class="ic">📈</div><p>Nenhuma produção nesta semana.</p></div>`:Object.entries(porC).sort(([a],[b])=>a.localeCompare(b)).map(([cN,ls])=>{
+      const tot=ls.reduce((s,l)=>s+l.tot,0);
+      return`<div class="card" style="margin-bottom:12px"><div class="ch" style="background:#f7f9fc"><h3>📋 ${cN}</h3><span style="font-size:12px;color:var(--tx2)">${ls.length} linha(s) · <strong>${fmtN(Math.round(tot))}</strong></span></div>
+      <div class="cb"><table><thead><tr><th>Colaborador</th><th>Dupla</th><th>Disciplina</th><th style="text-align:center">SEG</th><th style="text-align:center">TER</th><th style="text-align:center">QUA</th><th style="text-align:center">QUI</th><th style="text-align:center">SEX</th><th style="text-align:center">TOTAL</th><th style="text-align:center">MÉD/DIA</th><th style="text-align:center">META</th><th style="text-align:center">%</th></tr></thead>
+      <tbody>${ls.sort((a,b)=>a.co.localeCompare(b.co)).map(l=>{const dC2=Object.values(l.dias).filter(v=>v>0).length||1;const med=l.tot/dC2;const meta=getMeta(l.di,l.co,l.dp);const pM=meta?Math.round(med/meta*100):null;const mc=pM!=null?(pM>=100?'color:var(--vd);font-weight:700':'color:var(--vm);font-weight:700'):'';
+        return`<tr><td><strong>${l.co}</strong></td><td style="font-size:12px;color:var(--tx2)">${l.dp||'—'}</td><td style="color:var(--tx2);font-size:12px">${l.di}</td>${dias.map(d=>`<td style="text-align:center;font-size:13px">${l.dias[d]>0?l.dias[d].toLocaleString('pt-BR'):'<span style="color:#ccc">—</span>'}</td>`).join('')}<td style="text-align:center;font-weight:700;color:var(--az)">${fmtN(l.tot)}</td><td style="text-align:center;font-weight:600">${med.toFixed(1)}</td><td style="text-align:center;font-size:12px;color:var(--tx2)">${meta?fmtN(meta):'—'}</td><td style="text-align:center;${mc}">${pM!=null?pM+'%':'—'}</td></tr>`;
+      }).join('')}</tbody></table></div></div>`;
     }).join('')}`;
 }
-
 async function exportProd(semKey){
-  const sems=getSemanas();const sem=sems.find(s=>s.key===semKey)||sems[0];
-  const dtI=isoD(sem.seg),dtF=isoD(sem.sex);
-  const diasSem=[0,1,2,3,4].map(i=>isoD(addDays(sem.seg,i)));
+  const sems=getSems();const sem=sems.find(s=>s.key===semKey)||sems[0];const dI=isoD(sem.seg),dF=isoD(sem.sex);const dias=[0,1,2,3,4].map(i=>isoD(addDays(sem.seg,i)));
   try{
-    const prod=await db(`producao?data=gte.${dtI}&data=lte.${dtF}&select=*,disciplinas(nome,unidade),contratos(nome)`);
-    const grupos={};
-    for(const r of prod){
-      const k=`${r.contratos?.nome}|||${r.colaborador||''}|||${r.disciplinas?.nome}`;
-      if(!grupos[k])grupos[k]={conc:r.contratos?.nome||'',colab:r.colaborador||'',disc:r.disciplinas?.nome||'',un:r.disciplinas?.unidade||'',dias:{},total:0};
-      grupos[k].dias[r.data]=(grupos[k].dias[r.data]||0)+Number(r.quantidade||0);
-      grupos[k].total+=Number(r.quantidade||0);
-    }
-    const linhas=Object.values(grupos).sort((a,b)=>a.conc.localeCompare(b.conc)||a.colab.localeCompare(b.colab));
-    const totGeral=linhas.reduce((s,l)=>s+l.total,0);
-    const porC={},porD={};
-    for(const l of linhas){
-      if(!porC[l.conc])porC[l.conc]={colabs:new Set(),total:0};porC[l.conc].colabs.add(l.colab);porC[l.conc].total+=l.total;
-      if(!porD[l.disc])porD[l.disc]={colabs:new Set(),total:0,un:l.un};porD[l.disc].colabs.add(l.colab);porD[l.disc].total+=l.total;
-    }
-    const fmtObj=d=>d instanceof Date?d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}):'';
-    let csv='\uFEFF';
-    csv+=`PRODUTIVIDADE — Semana ${fmtObj(sem.seg)} a ${fmtObj(sem.sex)}\n`;
-    csv+=`${linhas.length} linha(s) | Total: ${totGeral}\n\n`;
-    csv+='Contrato;Colaborador;Disciplina;Unidade;Seg;Ter;Qua;Qui;Sex;Total;Média/dia\n';
-    for(const l of linhas){const dc=Object.values(l.dias).filter(v=>v>0).length||1;csv+=`${l.conc};${l.colab};${l.disc};${l.un};${diasSem.map(d=>l.dias[d]||0).join(';')};${l.total};${(l.total/dc).toFixed(1)}\n`;}
-    csv+='\n\nRANKING POR CONTRATO\nContrato;Colabs;Total;Média/dia\n';
-    for(const[c,v]of Object.entries(porC).sort(([,a],[,b])=>b.total-a.total))csv+=`${c};${v.colabs.size};${v.total};${(v.total/5).toFixed(1)}\n`;
-    csv+='\n\nRANKING POR DISCIPLINA\nDisciplina;Unidade;Colabs;Total;Média/dia\n';
-    for(const[d,v]of Object.entries(porD).sort(([,a],[,b])=>b.total-a.total))csv+=`${d};${v.un};${v.colabs.size};${v.total};${(v.total/5).toFixed(1)}\n`;
-    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-    a.download=`Produtividade_${dtI}.csv`;a.click();toast('Exportado!','s');
+    const prod=await db(`producao?data=gte.${dI}&data=lte.${dF}&select=*,disciplinas(nome,unidade),contratos(nome)`);
+    const grupos={};for(const r of prod){const k=`${r.contratos?.nome}|||${r.colaborador||''}|||${r.disciplinas?.nome}`;if(!grupos[k])grupos[k]={conc:r.contratos?.nome||'',co:r.colaborador||'',di:r.disciplinas?.nome||'',un:r.disciplinas?.unidade||'',dp:r.dupla||'',dias:{},tot:0};grupos[k].dias[r.data]=(grupos[k].dias[r.data]||0)+Number(r.quantidade||0);grupos[k].tot+=Number(r.quantidade||0);if(r.dupla)grupos[k].dp=r.dupla;}
+    const linhas=Object.values(grupos).sort((a,b)=>a.conc.localeCompare(b.conc)||a.co.localeCompare(b.co));
+    const totG=linhas.reduce((s,l)=>s+l.tot,0);const fL=d=>d instanceof Date?d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}):'';
+    let csv='\uFEFF';csv+=`PRODUTIVIDADE — ${fL(sem.seg)} a ${fL(sem.sex)}\nTotal: ${totG}\n\nContrato;Colaborador;Dupla;Disciplina;Unidade;Seg;Ter;Qua;Qui;Sex;Total;Média/dia;Meta;%Meta\n`;
+    for(const l of linhas){const dC=Object.values(l.dias).filter(v=>v>0).length||1;const med=(l.tot/dC).toFixed(1);const meta=getMeta(l.di,l.co,l.dp);const pM=meta?Math.round((l.tot/dC)/meta*100)+'%':'';csv+=`${l.conc};${l.co};${l.dp};${l.di};${l.un};${dias.map(d=>l.dias[d]||0).join(';')};${l.tot};${med};${meta||''};${pM}\n`;}
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download=`Produtividade_${dI}.csv`;a.click();toast('Exportado!','s');
   }catch(e){toast('Erro: '+e.message,'e');}
 }
-
-// ─── RECURSOS ────────────────────────────────────────────────
-// Exatamente igual ao dashboard antigo: tabela cronograma dia × mês
-// Passado = real (Colaboradores), Futuro = planejado (disciplinas × frentes)
-
-const HIER_FUNC = ['Ajudante de Obras','Auxiliar de Engenharia','Assistente de Engenharia','Terceirizado Campo'];
-
-function getColabInfo(){
-  // Monta colab_info a partir dos colaboradores carregados
-  const info = {};
-  const hoje_y = new Date().getFullYear();
-  colaboradores.forEach(c => {
-    if(!c.nome) return;
-    const ini = c.admissao || `${hoje_y}-01-01`;
-    let fim;
-    if(c.desligamento) fim = c.desligamento;
-    else if(c.situacao !== 'Ativo' && c.situacao !== '') fim = `${hoje_y}-06-30`; // corte conservador
-    else fim = `${hoje_y}-12-31`;
-    info[c.nome] = {
-      funcao: c.funcao || 'Ajudante de Obras',
-      inicio: ini.slice(0,10),
-      fim: fim.slice(0,10),
-      promocao_data: c.promocao_data ? c.promocao_data.slice(0,10) : null,
-      novo_cargo: c.novo_cargo || null,
-    };
-  });
-  return info;
+const HIER=['Ajudante de Obras','Auxiliar de Engenharia','Assistente de Engenharia','Terceirizado Campo'];
+function getCI(){const info={};const hy=new Date().getFullYear();colaboradores.forEach(c=>{if(!c.nome)return;const ini=c.admissao?c.admissao.slice(0,10):`${hy}-01-01`;let fim;if(c.desligamento)fim=c.desligamento.slice(0,10);else if(c.situacao==='Ativo')fim=`${hy}-12-31`;else fim=`${hy}-06-30`;info[c.nome]={fn:c.funcao||'Ajudante de Obras',ini,fim,pd:c.promocao_data?c.promocao_data.slice(0,10):null,nc:c.novo_cargo||null};});return info;}
+function calcCP(info,ano){const cp={};const pI=new Date(ano,0,1),pF=new Date(ano,11,31);Object.entries(info).forEach(([nm,c])=>{const ini=new Date(c.ini+'T00:00:00'),fim=new Date(c.fim+'T00:00:00');const sD=ini>pI?ini:pI,eD=fim<pF?fim:pF;const cur=new Date(sD);while(cur<=eD){const di=cur.toISOString().slice(0,10);const fv=(c.pd&&c.nc&&di>=c.pd)?c.nc:c.fn;if(!cp[di])cp[di]={TOTAL:0};if(!fv.toLowerCase().includes('terceirizado'))cp[di].TOTAL=(cp[di].TOTAL||0)+1;cp[di][fv]=(cp[di][fv]||0)+1;cur.setDate(cur.getDate()+1);}});return cp;}
+function getNP(di,dsFilt){const r={TOTAL:0,_c:0};dsFilt.forEach(d=>{const p2=Math.round(((d.qtd_feita||0)/(d.qtd_real||1))*100);if(p2>=100)return;const ini=d.inicio_real||d.inicio_planejado,fim=d.inicio_real?(d.termino_estimado||d.termino_planejado):d.termino_planejado;if(!ini||!fim||di<ini||di>fim)return;const fr=d.num_frentes||1;r.TOTAL+=fr*2;r._c+=fr;});return r;}
+function tblR(gFn,tots,titulo,cor,ano,hj,cat){
+  const mes=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];const mA=parseInt((hj||'').slice(5,7));const totG=tots.reduce((a,b)=>a+b,0);const cM=m=>m<mA?'#e6f4ea':m===mA?'#fff4d4':'#e8effb';
+  let h=`<div style="margin-bottom:18px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;flex-wrap:wrap;gap:6px"><div style="font-size:13px;font-weight:700;color:${cor}">${titulo}</div><div style="font-size:11px;color:var(--tx2)">Total ${ano}: <strong>${totG.toLocaleString('pt-BR')}</strong></div></div>
+  <div style="display:flex;gap:8px;margin-bottom:5px;font-size:10px;color:var(--tx2);align-items:center;flex-wrap:wrap"><span style="background:#e6f4ea;padding:2px 7px;border-radius:3px">real</span><span style="background:#fff4d4;padding:2px 7px;border-radius:3px">atual</span><span style="background:#e8effb;padding:2px 7px;border-radius:3px">projeção</span><span style="margin-left:auto;color:var(--az);font-weight:600;font-size:10px">💡 Clique em célula futura para auditar</span></div>
+  <div style="overflow-x:auto;border:1px solid var(--bd);border-radius:6px;background:#fff"><table style="border-collapse:collapse;width:100%;min-width:780px;font-size:11px;font-family:monospace">
+  <thead><tr style="background:#f7f9fc"><th style="position:sticky;left:0;background:#f7f9fc;padding:7px 8px;border-right:1px solid var(--bd);font-size:10px;color:var(--tx2);text-align:center;min-width:38px">DIA</th>`;
+  mes.forEach(m=>{h+=`<th style="padding:7px 5px;border-right:1px solid var(--bd);font-size:10px;color:var(--tx2);font-weight:600;text-align:center;min-width:48px">${m}/${String(ano).slice(2)}</th>`;});
+  h+=`</tr></thead><tbody>`;
+  for(let d=1;d<=31;d++){h+=`<tr><td style="position:sticky;left:0;background:#fff;padding:3px 8px;border-right:1px solid var(--bd);font-weight:700;color:var(--tx);text-align:center">${d}</td>`;
+    for(let m=1;m<=12;m++){const last=new Date(ano,m,0).getDate();if(d>last){h+=`<td style="background:rgba(0,0,0,.03);border-right:1px solid rgba(0,0,0,.04)"></td>`;continue;}
+      const v=gFn(ano,m,d);const cor2=cM(m);const di=`${ano}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const ep=di>hj;
+      const ca=(ep&&cat&&v>0)?` onclick="auditD('${di}','${cat}')" style="background:${cor2};border-right:1px solid rgba(0,0,0,.04);padding:3px 5px;text-align:center;font-weight:600;cursor:pointer;color:var(--az)" title="Auditar"`:` style="background:${cor2};border-right:1px solid rgba(0,0,0,.04);padding:3px 5px;text-align:center;color:var(--tx);font-weight:${v>0?'600':'400'}"`;
+      h+=`<td${ca}>${v>0?v:''}</td>`;}h+=`</tr>`;}
+  h+=`<tr style="background:#f7f9fc;border-top:2px solid var(--bd)"><td style="position:sticky;left:0;background:#f7f9fc;padding:7px 8px;border-right:1px solid var(--bd);font-weight:700;text-align:center;font-size:10px">∑</td>`;
+  tots.forEach(t=>{h+=`<td style="padding:7px 5px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid var(--bd)">${t.toLocaleString('pt-BR')}</td>`;});
+  h+=`</tr></tbody></table></div></div>`;return h;
 }
-
-function calcContPessoas(colabInfo, ano, fContrato, colabContratos){
-  const cont = {};
-  const pIni = new Date(ano,0,1), pFim = new Date(ano,11,31);
-  Object.entries(colabInfo).forEach(([nome, info]) => {
-    if(fContrato && colabContratos){
-      const ctrs = colabContratos[nome] || [];
-      if(!ctrs.includes(fContrato)) return;
-    }
-    const ini = new Date(info.inicio + 'T00:00:00');
-    const fim = new Date(info.fim + 'T00:00:00');
-    const startDt = ini > pIni ? ini : pIni;
-    const endDt   = fim < pFim ? fim : pFim;
-    const cur = new Date(startDt);
-    while(cur <= endDt){
-      const di = cur.toISOString().slice(0,10);
-      const funcaoVig = (info.promocao_data && info.novo_cargo && di >= info.promocao_data)
-        ? info.novo_cargo : info.funcao;
-      if(!cont[di]) cont[di] = {TOTAL:0};
-      if(!funcaoVig.toLowerCase().includes('terceirizado')){
-        cont[di].TOTAL = (cont[di].TOTAL||0) + 1;
-      }
-      cont[di][funcaoVig] = (cont[di][funcaoVig]||0) + 1;
-      cur.setDate(cur.getDate()+1);
-    }
-  });
-  return cont;
+function rRecursos(){
+  const ano=parseInt(document.getElementById('rc-an')?.value)||new Date().getFullYear();const fCt=document.getElementById('rc-ct')?.value||'';const hj=new Date().toISOString().slice(0,10);
+  const ci=getCI();const cp=calcCP(ci,ano);const dsFilt=fCt?disciplinas.filter(d=>d.contratos?.nome===fCt):disciplinas;
+  const g=(cat)=>(a,m,d)=>{const di=`${a}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;if(di<=hj)return(cp[di]||{})[cat]||0;const np=getNP(di,dsFilt);return cat==='_c'?np._c:(np[cat]||0);};
+  const calcT=(fn)=>{const arr=[];for(let m=1;m<=12;m++){const l=new Date(ano,m,0).getDate();let s=0;for(let d=1;d<=l;d++)s+=fn(ano,m,d);arr.push(s);}return arr;};
+  const ativos=colaboradores.filter(c=>c.situacao==='Ativo'&&!c.funcao?.toLowerCase().includes('terceirizado'));
+  const aj=ativos.filter(c=>c.funcao==='Ajudante de Obras'||!c.funcao).length;const aux=ativos.filter(c=>c.funcao==='Auxiliar de Engenharia').length;const ass=ativos.filter(c=>c.funcao==='Assistente de Engenharia').length;
+  const anos=[...new Set([ano-1,ano,ano+1])];const ctOpts=[...new Set(disciplinas.map(d=>d.contratos?.nome).filter(Boolean))].sort();
+  document.getElementById('ct').innerHTML=`
+    <div class="kg" style="grid-template-columns:repeat(4,1fr);max-width:560px">
+      <div class="kc g"><div class="kl">Total Ativos</div><div class="kv">${ativos.length}</div></div>
+      <div class="kc"><div class="kl">Ajudantes de Obras</div><div class="kv">${aj}</div></div>
+      <div class="kc" style="border-left-color:var(--az2)"><div class="kl">Auxiliares</div><div class="kv" style="color:var(--az2)">${aux}</div></div>
+      <div class="kc y"><div class="kl">Assistentes</div><div class="kv">${ass}</div></div>
+    </div>
+    <div class="sb_">
+      <label style="font-size:11px;font-weight:600;color:var(--tx2)">Ano</label>
+      <select class="si" id="rc-an" onchange="rRecursos()">${anos.map(y=>`<option value="${y}" ${y===ano?'selected':''}>${y}</option>`).join('')}</select>
+      <label style="font-size:11px;font-weight:600;color:var(--tx2)">Contrato</label>
+      <select class="si" id="rc-ct" onchange="rRecursos()"><option value="">Todos</option>${ctOpts.map(c=>`<option value="${c}" ${c===fCt?'selected':''}>${c}</option>`).join('')}</select>
+    </div>
+    <div style="background:#e8effb;border-left:3px solid var(--az);padding:10px 14px;border-radius:7px;font-size:12px;margin-bottom:14px;line-height:1.6">
+      <strong>Como funciona:</strong> <strong>Passado/hoje</strong> = pessoal REAL (colaboradores, com promoções). <strong>Futuro</strong> = PLANEJADO (disciplinas × frentes). TOTAL exclui Terceirizado Campo. Conta todos os dias (mensalistas). <span style="color:var(--az);font-weight:600">💡 Clique em célula futura para auditar.</span>
+    </div>
+    <div id="rc-tb"></div>`;
+  const el=document.getElementById('rc-tb');let html='';
+  html+=tblR(g('TOTAL'),calcT(g('TOTAL')),'👷 PESSOAL — TOTAL <span style="font-size:11px;color:var(--tx2);font-weight:400">(sem Terceirizado Campo)</span>','var(--tx)',ano,hj,'TOTAL');
+  HIER.forEach(f=>{const ts=calcT(g(f));if(ts.some(v=>v>0)||f!=='Terceirizado Campo')html+=tblR(g(f),ts,`  ↳ ${f}`,'var(--tx2)',ano,hj,f);});
+  html+=tblR(g('_c'),calcT(g('_c')),'🚗 CARROS','var(--la)',ano,hj,'_c');
+  el.innerHTML=html;
 }
-
-function getNecPlanejada(dataIso, disciplinasFiltradas){
-  const dt = new Date(dataIso+'T00:00:00');
-  if(isNaN(dt)) return null;
-  const r = {TOTAL:0, _carros:0};
-  disciplinasFiltradas.forEach(d => {
-    const pct2 = Math.round(((d.qtd_feita||0)/(d.qtd_real||1))*100);
-    if(pct2 >= 100) return;
-    const ini = d.inicio_planejado||d.inicio_real;
-    const fim = d.inicio_real ? (d.termino_estimado||d.termino_planejado) : d.termino_planejado;
-    if(!ini||!fim) return;
-    if(dataIso < ini || dataIso > fim) return;
-    const frentes = d.num_frentes||1;
-    const pessoas = 2; // padrão 2 pessoas/frente
-    r.TOTAL += frentes * pessoas;
-    r._carros += frentes;
-  });
-  return r;
-}
-
-function tabelaRecursos(getterFn, totaisMes, titulo, corTema, ano, hojeStr, categoria){
-  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const mesAtual = parseInt((hojeStr||'').slice(5,7));
-  const totalGeral = totaisMes.reduce((a,b)=>a+b,0);
-  const corMes = m => m < mesAtual ? '#e6f4ea' : (m === mesAtual ? '#fff4d4' : '#e8effb');
-
-  let h = `<div style="margin-bottom:20px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px">
-      <div style="font-size:13px;font-weight:700;color:${corTema}">${titulo}</div>
-      <div style="font-size:11px;color:var(--text2)">Total ${ano}: <strong>${totalGeral.toLocaleString('pt-BR')}</strong></div>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:6px;font-size:10px;color:var(--text2);align-items:center;flex-wrap:wrap">
-      <span style="background:#e6f4ea;padding:2px 8px;border-radius:3px">real</span>
-      <span style="background:#fff4d4;padding:2px 8px;border-radius:3px">atual</span>
-      <span style="background:#e8effb;padding:2px 8px;border-radius:3px">projeção</span>
-      <span style="margin-left:auto;color:var(--azul);font-weight:600;font-size:10px">💡 Clique em célula futura para auditar</span>
-    </div>
-    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:6px;background:#fff">
-    <table style="border-collapse:collapse;width:100%;min-width:780px;font-size:11px;font-family:monospace">
-      <thead><tr style="background:#f7f9fc">
-        <th style="position:sticky;left:0;background:#f7f9fc;padding:8px 10px;border-right:1px solid var(--border);font-size:10px;color:var(--text2);text-align:center;min-width:40px">DIA</th>`;
-  meses.forEach(m => {
-    h += `<th style="padding:8px 6px;border-right:1px solid var(--border);font-size:10px;color:var(--text2);font-weight:600;text-align:center;min-width:50px">${m}/${String(ano).slice(2)}</th>`;
-  });
-  h += `</tr></thead><tbody>`;
-
-  for(let dia=1;dia<=31;dia++){
-    h += `<tr>`;
-    h += `<td style="position:sticky;left:0;background:#fff;padding:4px 10px;border-right:1px solid var(--border);font-weight:700;color:var(--text);text-align:center">${dia}</td>`;
-    for(let m=1;m<=12;m++){
-      const lastDay = new Date(ano,m,0).getDate();
-      if(dia > lastDay){ h+=`<td style="background:rgba(0,0,0,.03);border-right:1px solid rgba(0,0,0,.04)"></td>`; continue; }
-      const v = getterFn(ano,m,dia);
-      const cor = corMes(m);
-      const di = `${ano}-${String(m).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-      const ehProj = di > hojeStr;
-      const clk = (ehProj && categoria && v > 0)
-        ? ` onclick="auditarDia('${di}','${categoria}')" style="background:${cor};border-right:1px solid rgba(0,0,0,.04);padding:4px 6px;text-align:center;font-weight:600;cursor:pointer;color:var(--azul)" title="Clique para auditar"`
-        : ` style="background:${cor};border-right:1px solid rgba(0,0,0,.04);padding:4px 6px;text-align:center;color:var(--text);font-weight:${v>0?'600':'400'}"`;
-      h += `<td${clk}>${v>0?v:''}</td>`;
-    }
-    h += `</tr>`;
-  }
-  h += `<tr style="background:#f7f9fc;border-top:2px solid var(--border)">
-    <td style="position:sticky;left:0;background:#f7f9fc;padding:8px 10px;border-right:1px solid var(--border);font-weight:700;text-align:center;font-size:10px">∑</td>`;
-  totaisMes.forEach(t => { h+=`<td style="padding:8px 6px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid var(--border)">${t.toLocaleString('pt-BR')}</td>`; });
-  h += `</tr></tbody></table></div></div>`;
-  return h;
-}
-
-function renderRecursos(){
-  const ano = parseInt(document.getElementById('rec-ano')?.value) || new Date().getFullYear();
-  const fContr = document.getElementById('rec-contr')?.value || '';
-  const hojeStr = new Date().toISOString().slice(0,10);
-
-  const colabInfo = getColabInfo();
-
-  // Contagem REAL (passado): de colaboradores
-  const contPessoas = calcContPessoas(colabInfo, ano, fContr, null);
-
-  // Contagem CARROS real: de produção (frentes únicas por dia)
-  // Usamos os dados de produção já carregados (prodData se disponível)
-  const contCarros = {};
-
-  // Getter: passado = real, futuro = planejado
-  const discFiltradas = fContr
-    ? disciplinas.filter(d => d.contratos?.nome === fContr)
-    : disciplinas;
-
-  const getter = (cat) => (ano_, m, dia) => {
-    const di = `${ano_}-${String(m).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-    if(di <= hojeStr){
-      return (contPessoas[di]||{})[cat] || 0;
-    } else {
-      const np = getNecPlanejada(di, discFiltradas);
-      if(!np) return 0;
-      return cat === '_carros' ? (np._carros||0) : (np[cat]||0);
-    }
-  };
-
-  const getterCarros = (ano_, m, dia) => {
-    const di = `${ano_}-${String(m).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-    if(di <= hojeStr){
-      return contCarros[di] || 0;
-    } else {
-      const np = getNecPlanejada(di, discFiltradas);
-      return np ? (np._carros||0) : 0;
-    }
-  };
-
-  const calcTotais = (fn) => {
-    const arr = [];
-    for(let m=1;m<=12;m++){
-      const last = new Date(ano,m,0).getDate();
-      let s=0; for(let d=1;d<=last;d++) s+=fn(ano,m,d);
-      arr.push(s);
-    }
-    return arr;
-  };
-
-  // KPIs
-  const ativos = colaboradores.filter(c=>c.situacao==='Ativo'&&!c.funcao?.toLowerCase().includes('terceirizado'));
-  const aj  = ativos.filter(c=>c.funcao==='Ajudante de Obras'||!c.funcao).length;
-  const aux = ativos.filter(c=>c.funcao==='Auxiliar de Engenharia').length;
-  const ass = ativos.filter(c=>c.funcao==='Assistente de Engenharia').length;
-
-  const anos = [...new Set([ano-1,ano,ano+1])];
-  const contratos_opts = [...new Set(disciplinas.map(d=>d.contratos?.nome).filter(Boolean))].sort();
-
-  document.getElementById('content').innerHTML = `
-    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);max-width:560px">
-      <div class="kpi-card g"><div class="kpi-lbl">Total Ativos</div><div class="kpi-val">${ativos.length}</div></div>
-      <div class="kpi-card"><div class="kpi-lbl">Ajudantes de Obras</div><div class="kpi-val">${aj}</div></div>
-      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Auxiliares</div><div class="kpi-val" style="color:var(--azul2)">${aux}</div></div>
-      <div class="kpi-card y"><div class="kpi-lbl">Assistentes</div><div class="kpi-val">${ass}</div></div>
-    </div>
-    <div class="sbar">
-      <label style="font-size:11px;font-weight:600;color:var(--text2)">Ano</label>
-      <select class="sselect" id="rec-ano" onchange="renderRecursos()">
-        ${anos.map(y=>`<option value="${y}" ${y===ano?'selected':''}>${y}</option>`).join('')}
-      </select>
-      <label style="font-size:11px;font-weight:600;color:var(--text2)">Contrato</label>
-      <select class="sselect" id="rec-contr" onchange="renderRecursos()">
-        <option value="">Todos</option>
-        ${contratos_opts.map(c=>`<option value="${c}" ${c===fContr?'selected':''}>${c}</option>`).join('')}
-      </select>
-    </div>
-    <div style="background:#e8effb;border-left:3px solid var(--azul);padding:10px 14px;border-radius:7px;font-size:12px;margin-bottom:16px;line-height:1.6">
-      <strong>Como funciona:</strong>
-      <strong>Passado/hoje</strong> = pessoal REAL (Colaboradores com promoções aplicadas).
-      <strong>Futuro</strong> = pessoal PLANEJADO (disciplinas × frentes × pessoas).
-      TOTAL <strong>exclui Terceirizado Campo</strong>.
-      Conta <strong>todos os dias</strong> do mês (mensalistas geram custo fixo).
-      <strong>💡 Clique em célula futura</strong> para ver de quais contratos o número vem.
-    </div>
-    <div id="rec-tabelas"></div>`;
-
-  // Renderizar tabelas
-  const el = document.getElementById('rec-tabelas');
-  let html = '';
-
-  // TOTAL (sem terceirizado)
-  const totT = calcTotais(getter('TOTAL'));
-  html += tabelaRecursos(getter('TOTAL'), totT,
-    '👷 PESSOAL DE CAMPO — TOTAL <span style="font-size:11px;color:var(--text2);font-weight:400">(sem Terceirizado Campo)</span>',
-    'var(--text)', ano, hojeStr, 'TOTAL');
-
-  // Por função
-  HIER_FUNC.forEach(f => {
-    const tots = calcTotais(getter(f));
-    const temAlguem = tots.some(v=>v>0);
-    if(temAlguem || f !== 'Terceirizado Campo'){
-      const sub = temAlguem ? '' : ' <span style="font-size:11px;color:var(--text2);font-weight:400">(sem ninguém)</span>';
-      html += tabelaRecursos(getter(f), tots,
-        `  ↳ ${f}${sub}`, 'var(--text2)', ano, hojeStr, f);
-    }
-  });
-
-  // CARROS
-  const totC = calcTotais(getterCarros);
-  html += tabelaRecursos(getterCarros, totC,
-    '🚗 CARROS', 'var(--laranja)', ano, hojeStr, '_carros');
-
-  el.innerHTML = html;
-}
-
-// Modal de auditoria — mostra quais contratos contribuem para uma célula futura
-window.auditarDia = function(dataIso, categoria){
-  const discFiltradas = disciplinas;
-  const linhas = [];
-  let totalSoma = 0;
-  const fmtD2 = d => d ? d.split('-').reverse().join('/') : '—';
-  discFiltradas.forEach(d => {
-    const pct2 = Math.round(((d.qtd_feita||0)/(d.qtd_real||1))*100);
-    if(pct2 >= 100) return;
-    const ini = d.inicio_planejado||d.inicio_real;
-    const fim = d.inicio_real ? (d.termino_estimado||d.termino_planejado) : d.termino_planejado;
-    if(!ini||!fim) return;
-    if(dataIso < ini || dataIso > fim) return;
-    const frentes = d.num_frentes||1;
-    const pessoas = 2;
-    let valor = 0;
-    if(categoria==='_carros') valor = frentes;
-    else if(categoria==='TOTAL') valor = frentes * pessoas;
-    else valor = 0;
-    if(valor > 0){
-      linhas.push({contrato:d.contratos?.nome||'—',disc:d.nome,frentes,pessoas,valor,ini,fim,pct:pct2});
-      totalSoma += valor;
-    }
-  });
-  linhas.sort((a,b)=>b.valor-a.valor);
-  const catLabel = categoria==='_carros'?'Carros':categoria==='TOTAL'?'TOTAL pessoas':categoria;
-  const dt = new Date(dataIso+'T00:00:00');
-  const dias=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  const html = `<div onclick="event.stopPropagation()" style="background:#fff;border-radius:10px;max-width:900px;width:96%;max-height:88vh;overflow:auto;padding:20px 24px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <div>
-        <div style="font-size:17px;font-weight:700;color:var(--azul)">Auditoria — ${dias[dt.getDay()]} ${fmtD2(dataIso)}</div>
-        <div style="font-size:12px;color:var(--text2)">${catLabel}: ${totalSoma} de ${linhas.length} linha(s)</div>
-      </div>
-      <button onclick="document.getElementById('rec-modal').remove()" style="background:var(--vermelho);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600">Fechar</button>
-    </div>
-    ${linhas.length===0?'<p style="text-align:center;color:var(--text2);padding:30px">Nenhuma linha ativa nesse dia.</p>':`
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead><tr style="background:#f7f9fc">
-        <th style="padding:8px 10px;text-align:left">Contrato</th><th style="padding:8px 10px;text-align:left">Disciplina</th>
-        <th style="text-align:center;padding:8px">Frentes</th><th style="text-align:center;padding:8px">Contribui</th>
-        <th style="text-align:center;padding:8px">% Concl.</th><th style="padding:8px;text-align:left">Período</th>
-      </tr></thead>
-      <tbody>${linhas.map(l=>`<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:6px 10px"><strong>${l.contrato}</strong></td>
-        <td style="padding:6px 10px">${l.disc}</td>
-        <td style="text-align:center;padding:6px">${l.frentes}</td>
-        <td style="text-align:center;padding:6px;font-weight:700;font-size:14px;color:var(--azul)">${l.valor}</td>
-        <td style="text-align:center;padding:6px;color:${l.pct>=70?'var(--verde)':l.pct>0?'var(--laranja)':'var(--vermelho)'}">${l.pct}%</td>
-        <td style="padding:6px;font-size:10px;color:var(--text2)">${fmtD2(l.ini)} → ${fmtD2(l.fim)}</td>
-      </tr>`).join('')}
-      <tr style="background:#f7f9fc;font-weight:700;border-top:2px solid var(--text)">
-        <td colspan="3" style="padding:8px 10px;text-align:right">TOTAL</td>
-        <td style="text-align:center;padding:8px;font-size:14px;color:var(--azul)">${totalSoma}</td>
-        <td colspan="2"></td>
-      </tr>
-      </tbody>
-    </table>`}
+window.auditD=function(di,cat){
+  const dsFilt=disciplinas;const linhas=[];let tot=0;const fd=d=>d?d.split('-').reverse().join('/'):'—';const dt=new Date(di+'T00:00:00');
+  dsFilt.forEach(d=>{const p2=Math.round(((d.qtd_feita||0)/(d.qtd_real||1))*100);if(p2>=100)return;const ini=d.inicio_real||d.inicio_planejado,fim=d.inicio_real?(d.termino_estimado||d.termino_planejado):d.termino_planejado;if(!ini||!fim||di<ini||di>fim)return;const fr=d.num_frentes||1;const v=cat==='_c'?fr:fr*2;if(v>0){linhas.push({ct:d.contratos?.nome||'—',di:d.nome,fr,v,ini,fim,p2});tot+=v;}});linhas.sort((a,b)=>b.v-a.v);
+  const dias=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];const lbl=cat==='_c'?'Carros':cat==='TOTAL'?'TOTAL pessoas':cat;
+  const html=`<div onclick="event.stopPropagation()" style="background:#fff;border-radius:10px;max-width:860px;width:96%;max-height:88vh;overflow:auto;padding:18px 22px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px"><div><div style="font-size:16px;font-weight:700;color:var(--az)">Auditoria — ${dias[dt.getDay()]} ${fd(di)}</div><div style="font-size:12px;color:var(--tx2)">${lbl}: ${tot} de ${linhas.length} linha(s)</div></div>
+    <button onclick="document.getElementById('rc-modal').remove()" style="background:var(--vm);color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-weight:600">Fechar</button></div>
+    ${linhas.length===0?'<p style="text-align:center;color:var(--tx2);padding:30px">Nenhuma linha ativa.</p>':`<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f7f9fc"><th style="padding:7px 10px;text-align:left">Contrato</th><th style="padding:7px 10px;text-align:left">Disciplina</th><th style="text-align:center;padding:7px">Frentes</th><th style="text-align:right;padding:7px">Contribui</th><th style="text-align:center;padding:7px">% Concl.</th><th style="padding:7px;text-align:left">Período</th></tr></thead>
+    <tbody>${linhas.map(l=>`<tr style="border-bottom:1px solid var(--bd)"><td style="padding:5px 10px"><strong>${l.ct}</strong></td><td style="padding:5px 10px">${l.di}</td><td style="text-align:center;padding:5px">${l.fr}</td><td style="text-align:right;padding:5px;font-weight:700;font-size:14px;color:var(--az)">${l.v}</td><td style="text-align:center;padding:5px;color:${l.p2>=70?'var(--vd)':l.p2>0?'var(--la)':'var(--vm)'}">${l.p2}%</td><td style="padding:5px;font-size:10px;color:var(--tx2)">${fd(l.ini)} → ${fd(l.fim)}</td></tr>`).join('')}
+    <tr style="background:#f7f9fc;font-weight:700;border-top:2px solid var(--tx)"><td colspan="3" style="padding:7px 10px;text-align:right">TOTAL</td><td style="text-align:right;padding:7px;font-size:14px;color:var(--az)">${tot}</td><td colspan="2"></td></tr></tbody></table>`}
   </div>`;
-  let modal = document.getElementById('rec-modal');
-  if(modal) modal.remove();
-  modal = document.createElement('div');
-  modal.id='rec-modal';
-  modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-  modal.onclick=()=>modal.remove();
-  modal.innerHTML=html;
-  document.body.appendChild(modal);
+  let m=document.getElementById('rc-modal');if(m)m.remove();m=document.createElement('div');m.id='rc-modal';m.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';m.onclick=()=>m.remove();m.innerHTML=html;document.body.appendChild(m);
 };
-
-// ─── FROTAS ──────────────────────────────────────────────────
-async function renderFrotas(){
+async function rFrotas(){
   try{frotas=await db('frotas?order=data_retirada_ini.desc');}catch(e){toast('Erro: '+e.message,'e');}
-  const fSt=document.getElementById('fr-fst')?.value||'';
-  const q=(document.getElementById('fr-b')?.value||'').toLowerCase();
-  const ativos=frotas.filter(f=>f.status==='Ativo').length;
-  const dev=frotas.filter(f=>f.status==='Devolvido').length;
-  let lista=frotas;
-  if(fSt)lista=lista.filter(f=>f.status===fSt);
-  if(q)lista=lista.filter(f=>(f.colaborador_atual||'').toLowerCase().includes(q)||(f.placa_atual||'').toLowerCase().includes(q)||(f.locadora||'').toLowerCase().includes(q));
-  document.getElementById('content').innerHTML=`
-    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:420px">
-      <div class="kpi-card"><div class="kpi-lbl">Reservas</div><div class="kpi-val">${frotas.length}</div></div>
-      <div class="kpi-card g"><div class="kpi-lbl">Ativos</div><div class="kpi-val">${ativos}</div></div>
-      <div class="kpi-card" style="border-left-color:var(--cinza)"><div class="kpi-lbl">Devolvidos</div><div class="kpi-val" style="color:var(--cinza)">${dev}</div></div>
+  const fs=document.getElementById('fr-fs2')?.value||'',q=(document.getElementById('fr-bq')?.value||'').toLowerCase();
+  const atv=frotas.filter(f=>f.status==='Ativo').length,dev=frotas.filter(f=>f.status==='Devolvido').length;
+  let lista=frotas;if(fs)lista=lista.filter(f=>f.status===fs);if(q)lista=lista.filter(f=>(f.colaborador_atual||'').toLowerCase().includes(q)||(f.placa_atual||'').toLowerCase().includes(q)||(f.locadora||'').toLowerCase().includes(q)||(f.reserva||'').toLowerCase().includes(q));
+  document.getElementById('ct').innerHTML=`
+    <div class="kg" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+      <div class="kc"><div class="kl">Reservas</div><div class="kv">${frotas.length}</div></div>
+      <div class="kc g"><div class="kl">Ativos</div><div class="kv">${atv}</div></div>
+      <div class="kc c"><div class="kl">Devolvidos</div><div class="kv" style="color:var(--ci)">${dev}</div></div>
     </div>
-    <div class="sbar">
-      <input class="sinput" id="fr-b" placeholder="Buscar colaborador, placa, locadora..." oninput="renderFrotas()" value="${q}">
-      <select class="sselect" id="fr-fst" onchange="renderFrotas()">
-        <option value="">Todos</option><option ${fSt==='Ativo'?'selected':''}>Ativo</option><option ${fSt==='Devolvido'?'selected':''}>Devolvido</option>
-      </select>
-      <button class="btn btn-p" onclick="abrirMFr()">+ Nova Frota</button>
+    <div class="sb_">
+      <input class="si" id="fr-bq" placeholder="Buscar colaborador, placa, reserva..." oninput="rFrotas()" value="${q}" style="min-width:220px">
+      <select class="si" id="fr-fs2" onchange="rFrotas()"><option value="">Todos</option><option ${fs==='Ativo'?'selected':''}>Ativo</option><option ${fs==='Devolvido'?'selected':''}>Devolvido</option></select>
+      <button class="btn bp" onclick="abrirMFr()">+ Nova Frota</button>
     </div>
-    <div class="card"><div class="card-body"><table>
-      <thead><tr><th>Colaborador Atual</th><th>Placa</th><th>Veículo</th><th>Locadora</th><th>Retirada</th><th>Status</th><th>Ações</th></tr></thead>
-      <tbody>${lista.length?lista.map(f=>`
-        <tr>
-          <td><strong>${f.colaborador_atual||'—'}</strong></td>
-          <td><code style="background:#f0f2f5;padding:2px 6px;border-radius:4px;font-size:12px">${f.placa_atual||'—'}</code></td>
-          <td>${f.veiculo||'—'}</td><td style="font-size:12px">${f.locadora||'—'}</td>
-          <td style="font-size:12px">${fmtD(f.data_retirada_ini)}</td>
-          <td>${f.status==='Ativo'?badge('Ativo','bg'):badge('Devolvido','bc')}</td>
-          <td style="display:flex;gap:4px">
-            <button class="btn btn-sm btn-o" onclick="verHistFr('${f.id}')" title="Histórico">📋</button>
-            <button class="btn btn-sm btn-o" onclick="abrirMFr('${f.id}')">✏️</button>
-            <button class="btn btn-sm btn-d" onclick="delFrota('${f.id}')">🗑</button>
-          </td>
-        </tr>
-        <tr id="fh-${f.id}" style="display:none"><td colspan="7" style="padding:0;background:#f7f9fc">
-          <div id="fhb-${f.id}" style="padding:10px 16px"></div>
-        </td></tr>`).join(''):`<tr><td colspan="7"><div class="empty-st"><div class="ico">🚗</div><p>Nenhum veículo.</p></div></td></tr>`}
-      </tbody>
-    </table></div></div>`;
+    <div class="card"><div class="cb"><table>
+    <thead><tr><th>Colaborador Atual</th><th>Placa</th><th>Veículo</th><th>Locadora</th><th>Reserva</th><th>Retirada</th><th>Status</th><th>Ações</th></tr></thead>
+    <tbody>${lista.length?lista.map(f=>`
+      <tr>
+        <td><strong>${f.colaborador_atual||'—'}</strong></td>
+        <td><code style="background:#f0f2f5;padding:2px 6px;border-radius:4px;font-size:12px">${f.placa_atual||'—'}</code></td>
+        <td>${f.veiculo||'—'}</td><td style="font-size:12px">${f.locadora||'—'}</td>
+        <td style="font-size:11px;color:var(--tx2)">${f.reserva||'—'}</td>
+        <td style="font-size:12px">${fmtD(f.data_retirada_ini)}</td>
+        <td>${f.status==='Ativo'?badge('Ativo','bgg'):badge('Devolvido','bgc')}</td>
+        <td style="display:flex;gap:3px">
+          <button class="btn bo bs" onclick="verHF('${f.id}')" title="Histórico">📋</button>
+          <button class="btn bo bs" onclick="abrirMFr('${f.id}')">✏️</button>
+          <button class="btn br_ bs" onclick="delFr('${f.id}')">🗑</button>
+        </td>
+      </tr>
+      <tr id="fh-${f.id}" style="display:none"><td colspan="8" style="padding:0;background:#f7f9fc"><div id="fhb-${f.id}" style="padding:10px 14px"></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="est"><div class="ic">🚗</div><p>Nenhum veículo.</p></div></td></tr>`}
+    </tbody></table></div></div>`;
 }
-
-async function verHistFr(fid){
-  const tr=document.getElementById('fh-'+fid),body=document.getElementById('fhb-'+fid);
-  if(!tr)return;
-  if(tr.style.display!=='none'){tr.style.display='none';return;}
-  tr.style.display='table-row';
-  body.innerHTML='<em style="color:var(--text2);font-size:13px">Carregando...</em>';
+async function verHF(fid){
+  const tr=document.getElementById('fh-'+fid),body=document.getElementById('fhb-'+fid);if(!tr)return;
+  if(tr.style.display!=='none'){tr.style.display='none';return;}tr.style.display='table-row';body.innerHTML='<em style="color:var(--tx2);font-size:13px">Carregando...</em>';
   try{
     const hist=await db('frotas_historico?frota_id=eq.'+fid+'&order=data_retirada.asc');
     if(!hist.length){body.innerHTML='<em>Sem histórico.</em>';return;}
-    body.innerHTML=`<strong style="font-size:12px;color:var(--azul);display:block;margin-bottom:7px">Histórico de movimentações</strong>
-    <table style="width:100%;font-size:12px;border-collapse:collapse">
-      <thead><tr style="background:#e8edf5">${['Colaborador','Placa','Retirada','Devolução','KM','Gasto','Status','Obs'].map(h=>`<th style="padding:5px 9px;text-align:left">${h}</th>`).join('')}</tr></thead>
-      <tbody>${hist.map(h=>`<tr style="border-bottom:1px solid #e0e5ef">
-        <td style="padding:5px 9px"><strong>${h.colaborador||'—'}</strong></td>
-        <td style="padding:5px 9px;font-family:monospace">${h.placa||'—'}</td>
-        <td style="padding:5px 9px">${fmtD(h.data_retirada)}</td>
-        <td style="padding:5px 9px">${fmtD(h.data_devolucao)}</td>
-        <td style="padding:5px 9px">${h.km_inicial&&h.km_final?(h.km_final-h.km_inicial).toLocaleString('pt-BR')+' km':'—'}</td>
-        <td style="padding:5px 9px">${h.gasto?'R$ '+Number(h.gasto).toLocaleString('pt-BR',{minimumFractionDigits:0}):'—'}</td>
-        <td style="padding:5px 9px">${badge(h.status||'—',h.status==='Ativo'?'bg':h.status==='Transferido'?'by':'bc')}</td>
-        <td style="padding:5px 9px;color:var(--text2);font-size:11px">${h.observacao||'—'}</td>
-      </tr>`).join('')}</tbody>
-    </table>`;
-  }catch(e){body.innerHTML='<em style="color:var(--vermelho)">Erro: '+e.message+'</em>';}
+    body.innerHTML=`<strong style="font-size:12px;color:var(--az);display:block;margin-bottom:7px">Histórico de movimentações</strong>
+    <table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr style="background:#e8edf5">${['Colaborador','Placa','Retirada','Devolução','KM','Gasto','Status','Obs'].map(h=>`<th style="padding:5px 9px;text-align:left">${h}</th>`).join('')}</tr></thead>
+    <tbody>${hist.map(h=>`<tr style="border-bottom:1px solid #e0e5ef"><td style="padding:5px 9px"><strong>${h.colaborador||'—'}</strong></td><td style="padding:5px 9px;font-family:monospace">${h.placa||'—'}</td><td style="padding:5px 9px">${fmtD(h.data_retirada)}</td><td style="padding:5px 9px">${fmtD(h.data_devolucao)}</td><td style="padding:5px 9px">${h.km_inicial&&h.km_final?(h.km_final-h.km_inicial).toLocaleString('pt-BR')+' km':'—'}</td><td style="padding:5px 9px">${h.gasto?'R$ '+Number(h.gasto).toLocaleString('pt-BR',{minimumFractionDigits:0}):'—'}</td><td style="padding:5px 9px">${badge(h.status||'—',h.status==='Ativo'?'bgg':h.status==='Transferido'?'bgy':'bgc')}</td><td style="padding:5px 9px;color:var(--tx2);font-size:11px">${h.observacao||'—'}</td></tr>`).join('')}</tbody></table>
+    <div style="margin-top:8px"><button class="btn bg_ bs" onclick="abrirMFr('${fid}')">+ Registrar Transferência</button></div>`;
+  }catch(e){body.innerHTML=`<em style="color:var(--vm)">Erro: ${e.message}</em>`;}
 }
-
-// ─── FOLGA ───────────────────────────────────────────────────
-async function renderFolga(){
-  let folgas=[];
+async function rFolga(){
   try{folgas=await db('folgas?order=proxima_folga.asc');}catch(e){toast('Erro folga: '+e.message,'e');}
-  const q=(document.getElementById('fg-b')?.value||'').toLowerCase();
-  const fg=(document.getElementById('fg-g')?.value||'');
-  let lista=folgas;
-  if(q)lista=lista.filter(f=>(f.nome||'').toLowerCase().includes(q)||(f.contrato_atual||'').toLowerCase().includes(q));
-  if(fg)lista=lista.filter(f=>String(f.grupo)===fg);
-  const grupos=[...new Set(folgas.map(f=>f.grupo).filter(Boolean))].sort();
-  const urgente=folgas.filter(f=>(f.dias_restantes||99)<=7).length;
-  const ok=folgas.filter(f=>(f.dias_restantes||0)>7).length;
-  function corFolga(dias){
-    if(dias==null)return'bc';
-    if(dias<=7)return'br';if(dias<=20)return'by';return'bg';
-  }
-  document.getElementById('content').innerHTML=`
-    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:420px">
-      <div class="kpi-card"><div class="kpi-lbl">Total</div><div class="kpi-val">${folgas.length}</div></div>
-      <div class="kpi-card r"><div class="kpi-lbl">Urgente (≤7 dias)</div><div class="kpi-val">${urgente}</div></div>
-      <div class="kpi-card g"><div class="kpi-lbl">OK</div><div class="kpi-val">${ok}</div></div>
+  const q=(document.getElementById('fg-bq')?.value||'').toLowerCase(),fg2=document.getElementById('fg-gr2')?.value||'',fs=document.getElementById('fg-st')?.value||'';
+  let lista=folgas;if(q)lista=lista.filter(f=>(f.nome||'').toLowerCase().includes(q)||(f.contrato_atual||'').toLowerCase().includes(q));if(fg2)lista=lista.filter(f=>String(f.grupo)===fg2);
+  if(fs){lista=lista.filter(f=>{const dr=f.dias_restantes??99;if(fs==='vencida')return dr<0;if(fs==='alerta')return dr>=0&&dr<=7;if(fs==='ok')return dr>7;return true;});}
+  const grupos=[...new Set(folgas.map(f=>f.grupo).filter(Boolean))].sort((a,b)=>a-b);
+  const urgente=folgas.filter(f=>(f.dias_restantes??99)<=7&&(f.dias_restantes??99)>=0).length;
+  const vencida=folgas.filter(f=>(f.dias_restantes??99)<0).length;
+  const hoje=new Date();hoje.setHours(0,0,0,0);const fim60=new Date(hoje);fim60.setDate(fim60.getDate()+60);
+  const porDia={};folgas.forEach(f=>{if(!f.proxima_folga)return;const d=new Date(f.proxima_folga+'T00:00:00');if(d<hoje||d>fim60)return;const k=f.proxima_folga.slice(0,10);if(!porDia[k])porDia[k]=[];porDia[k].push(f);});
+  const meses=[];let cur2=new Date(hoje.getFullYear(),hoje.getMonth(),1);for(let m=0;m<3;m++)meses.push(new Date(cur2.getFullYear(),cur2.getMonth()+m,1));
+  const mesNm=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const calHtml=meses.map(mes=>{
+    const a=mes.getFullYear(),mm=mes.getMonth(),fd2=new Date(a,mm,1).getDay(),nd=new Date(a,mm+1,0).getDate();
+    let h=`<div style="flex:1 1 260px;min-width:240px"><div style="text-align:center;font-weight:600;margin-bottom:6px;font-size:13px">${mesNm[mm]} ${a}</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">`;
+    ['D','S','T','Q','Q','S','S'].forEach(d=>{h+=`<div style="text-align:center;font-size:10px;color:var(--tx2);padding:3px 0">${d}</div>`;});
+    for(let i=0;i<fd2;i++)h+=`<div></div>`;
+    for(let d=1;d<=nd;d++){const dt=new Date(a,mm,d);dt.setHours(0,0,0,0);const iso=dt.toISOString().slice(0,10);const isH=dt.getTime()===hoje.getTime();const fl=porDia[iso]||[];let bg='var(--cd)',brd='transparent';if(isH){bg='rgba(74,124,255,0.15)';brd='#4a7cff';}if(fl.length>0){bg='rgba(245,166,35,0.12)';brd='rgba(245,166,35,0.5)';}const tip=fl.length>0?fl.map(f=>`${f.nome} (Gr.${f.grupo})`).join('\n'):'';
+    h+=`<div title="${tip}" style="aspect-ratio:1;min-height:30px;padding:2px;background:${bg};border:1px solid ${brd};border-radius:4px;display:flex;flex-direction:column;justify-content:space-between;font-size:10px;cursor:${fl.length>0?'help':'default'}"><div style="font-weight:${isH?'700':'500'};font-size:11px">${d}</div>${fl.length>0?`<div style="display:flex;flex-wrap:wrap;gap:1px">${fl.slice(0,3).map(f=>`<span style="background:#f5a623;color:#1a1d24;border-radius:2px;padding:0 2px;font-size:9px;font-weight:600">${f.nome.split(' ')[0].slice(0,4)}</span>`).join('')}${fl.length>3?`<span style="font-size:9px">+${fl.length-3}</span>`:''}</div>`:''}</div>`;}
+    h+=`</div></div>`;return h;
+  }).join('');
+  document.getElementById('ct').innerHTML=`
+    <div class="kg" style="grid-template-columns:repeat(4,1fr);max-width:560px">
+      <div class="kc"><div class="kl">Total</div><div class="kv">${folgas.length}</div></div>
+      <div class="kc r"><div class="kl">Vencidas</div><div class="kv">${vencida}</div></div>
+      <div class="kc y"><div class="kl">≤7 dias</div><div class="kv">${urgente}</div></div>
+      <div class="kc g"><div class="kl">Em dia</div><div class="kv">${folgas.length-vencida-urgente}</div></div>
     </div>
-    <div class="sbar">
-      <input class="sinput" id="fg-b" placeholder="Buscar colaborador ou contrato..." oninput="renderFolga()" value="${q}">
-      <select class="sselect" id="fg-g" onchange="renderFolga()">
-        <option value="">Todos os grupos</option>
-        ${grupos.map(g=>`<option value="${g}" ${String(g)===fg?'selected':''}>Grupo ${g}</option>`).join('')}
-      </select>
+    <div style="background:#fff;border:1px solid var(--bd);border-radius:9px;padding:14px;margin-bottom:16px">
+      <div style="font-weight:700;font-size:13px;color:var(--az);margin-bottom:10px">📅 Calendário de folgas — próximos 60 dias</div>
+      <div style="display:flex;flex-wrap:wrap;gap:14px">${calHtml}</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--tx2);display:flex;gap:12px;flex-wrap:wrap">
+        <span><span style="display:inline-block;width:10px;height:10px;background:#4a7cff;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Hoje</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:rgba(245,166,35,0.5);border:1px solid #f5a623;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Folga marcada</span>
+      </div>
     </div>
-    <div class="card"><div class="card-body"><table>
-      <thead><tr><th>Colaborador</th><th>Grupo</th><th>Contrato Atual</th><th>Última Folga</th><th>Próxima Folga</th><th>Dias Restantes</th><th>Status</th></tr></thead>
-      <tbody>${lista.length?lista.map(f=>`<tr>
-        <td><strong>${f.nome||'—'}</strong></td>
-        <td style="text-align:center">${f.grupo||'—'}</td>
-        <td>${f.contrato_atual||'—'}</td>
-        <td>${fmtD(f.ultima_folga)}</td>
-        <td>${fmtD(f.proxima_folga)}</td>
-        <td style="text-align:center;font-weight:700;color:${(f.dias_restantes||99)<=7?'var(--vermelho)':(f.dias_restantes||99)<=20?'var(--amarelo)':'var(--verde)'}">${f.dias_restantes??'—'}</td>
-        <td>${badge(f.status_alerta||'—',corFolga(f.dias_restantes))}</td>
-      </tr>`).join(''):`<tr><td colspan="7"><div class="empty-st"><div class="ico">🏖️</div><p>Nenhuma folga cadastrada.<br>Rode o SQL de importação.</p></div></td></tr>`}
-      </tbody>
-    </table></div></div>`;
+    <div class="sb_">
+      <input class="si" id="fg-bq" placeholder="Buscar colaborador..." oninput="rFolga()" value="${q}" style="min-width:200px">
+      <select class="si" id="fg-gr2" onchange="rFolga()"><option value="">Todos os grupos</option>${grupos.map(g=>`<option value="${g}" ${String(g)===fg2?'selected':''}>Grupo ${g}</option>`).join('')}</select>
+      <select class="si" id="fg-st" onchange="rFolga()"><option value="">Todos os status</option><option value="vencida" ${fs==='vencida'?'selected':''}>Vencida</option><option value="alerta" ${fs==='alerta'?'selected':''}>≤7 dias</option><option value="ok" ${fs==='ok'?'selected':''}>Em dia</option></select>
+      <button class="btn bp" onclick="abrirMFg()">+ Nova / Editar Folga</button>
+    </div>
+    <div class="card"><div class="cb"><table>
+    <thead><tr><th>Colaborador</th><th style="text-align:center">Grupo</th><th>Contrato</th><th>Última Folga</th><th>Próxima Folga</th><th style="text-align:center">Dias</th><th>Status</th><th>Ações</th></tr></thead>
+    <tbody>${lista.length?lista.map(f=>{const dr=f.dias_restantes??null;const st=dr===null?'bgc':dr<0?'bgr':dr<=7?'bgy':'bgg';const stT=dr===null?'—':dr<0?'VENCIDA':dr<=7?'ALERTA':'AGUARDANDO';
+      return`<tr><td><strong>${f.nome||'—'}</strong></td><td style="text-align:center">${f.grupo||'—'}</td><td>${f.contrato_atual||'—'}</td><td>${fmtD(f.ultima_folga)}</td><td>${fmtD(f.proxima_folga)}</td><td style="text-align:center;font-weight:700;color:${dr<0?'var(--vm)':dr<=7?'var(--am)':'var(--vd)'}">${dr??'—'}</td><td>${badge(stT,st)}</td><td style="display:flex;gap:4px"><button class="btn bo bs" onclick="abrirMFg('${f.id}')">✏️</button><button class="btn br_ bs" onclick="delFg('${f.id}')">🗑</button></td></tr>`;
+    }).join(''):`<tr><td colspan="8"><div class="est"><div class="ic">🏖️</div><p>Nenhuma folga encontrada.</p></div></td></tr>`}
+    </tbody></table></div></div>`;
 }
-
-// ─── PARCIAIS ────────────────────────────────────────────────
-function renderParciais(){
-  const q=(document.getElementById('pa-b')?.value||'').toLowerCase();
-  const fc=document.getElementById('pa-fc')?.value||'';
-  const fs=document.getElementById('pa-fs')?.value||'';
+function rParciais(){
+  const q=(document.getElementById('pa-bq')?.value||'').toLowerCase(),fc=document.getElementById('pa-fc')?.value||'',fs=document.getElementById('pa-fs')?.value||'';
   const ciclos=[...new Set(contratos.map(c=>c.ano).filter(Boolean))].sort().reverse();
   let lista=disciplinas.filter(d=>d.qtd_real>0);
   if(q)lista=lista.filter(d=>(d.contratos?.nome||'').toLowerCase().includes(q)||(d.nome||'').toLowerCase().includes(q));
   if(fc){const ids=new Set(contratos.filter(c=>c.ano===fc).map(c=>c.id));lista=lista.filter(d=>ids.has(d.contrato_id));}
-  if(fs){
-    lista=lista.filter(d=>{
-      const p2=pct(d.qtd_feita||0,d.qtd_real);
-      if(fs==='concluido')return p2>=100;
-      if(fs==='avancado')return p2>=70&&p2<100;
-      if(fs==='andamento')return p2>=30&&p2<70;
-      if(fs==='inicio')return p2<30;
-      return true;
-    });
-  }
+  if(fs){lista=lista.filter(d=>{const p2=pct(d.qtd_feita||0,d.qtd_real);if(fs==='100')return p2>=100;if(fs==='70')return p2>=70&&p2<100;if(fs==='30')return p2>=30&&p2<70;if(fs==='0')return p2<30;return true;});}
   lista=lista.sort((a,b)=>pct(a.qtd_feita||0,a.qtd_real)-pct(b.qtd_feita||0,b.qtd_real));
   const concl=disciplinas.filter(d=>pct(d.qtd_feita||0,d.qtd_real)>=100).length;
-  const emAndamento=disciplinas.filter(d=>{const p2=pct(d.qtd_feita||0,d.qtd_real);return p2>0&&p2<100;}).length;
-  document.getElementById('content').innerHTML=`
-    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:420px">
-      <div class="kpi-card"><div class="kpi-lbl">Total Disciplinas</div><div class="kpi-val">${disciplinas.length}</div></div>
-      <div class="kpi-card g"><div class="kpi-lbl">Concluídas</div><div class="kpi-val">${concl}</div></div>
-      <div class="kpi-card" style="border-left-color:var(--azul2)"><div class="kpi-lbl">Em Andamento</div><div class="kpi-val" style="color:var(--azul2)">${emAndamento}</div></div>
+  const and2=disciplinas.filter(d=>{const p2=pct(d.qtd_feita||0,d.qtd_real);return p2>0&&p2<100;}).length;
+  document.getElementById('ct').innerHTML=`
+    <div class="kg" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+      <div class="kc"><div class="kl">Total Disciplinas</div><div class="kv">${disciplinas.length}</div></div>
+      <div class="kc g"><div class="kl">Concluídas</div><div class="kv">${concl}</div></div>
+      <div class="kc" style="border-left-color:var(--az2)"><div class="kl">Em Andamento</div><div class="kv" style="color:var(--az2)">${and2}</div></div>
     </div>
-    <div class="sbar">
-      <input class="sinput" id="pa-b" placeholder="Buscar contrato ou disciplina..." oninput="renderParciais()" value="${q}">
-      <select class="sselect" id="pa-fc" onchange="renderParciais()">
-        <option value="">Todos os ciclos</option>${ciclos.map(c=>`<option ${c===fc?'selected':''}>${c}</option>`).join('')}
-      </select>
-      <select class="sselect" id="pa-fs" onchange="renderParciais()">
-        <option value="">Todos os status</option>
-        <option value="concluido" ${fs==='concluido'?'selected':''}>Concluído</option>
-        <option value="avancado" ${fs==='avancado'?'selected':''}>Avançado (≥70%)</option>
-        <option value="andamento" ${fs==='andamento'?'selected':''}>Em andamento</option>
-        <option value="inicio" ${fs==='inicio'?'selected':''}>Início (&lt;30%)</option>
-      </select>
+    <div class="sb_">
+      <input class="si" id="pa-bq" placeholder="Buscar contrato ou disciplina..." oninput="rParciais()" value="${q}" style="min-width:220px">
+      <select class="si" id="pa-fc" onchange="rParciais()"><option value="">Todos os ciclos</option>${ciclos.map(c=>`<option ${c===fc?'selected':''}>${c}</option>`).join('')}</select>
+      <select class="si" id="pa-fs" onchange="rParciais()"><option value="">Todos</option><option value="100" ${fs==='100'?'selected':''}>Concluído (100%)</option><option value="70" ${fs==='70'?'selected':''}>Avançado (≥70%)</option><option value="30" ${fs==='30'?'selected':''}>Em andamento</option><option value="0" ${fs==='0'?'selected':''}>Início (&lt;30%)</option></select>
     </div>
-    <div class="card"><div class="card-body"><table>
-      <thead><tr><th>Contrato</th><th>Disciplina</th><th>Unid.</th><th>Qtd Real</th><th>Qtd Feita</th><th>Restante</th><th>Progresso</th><th>Status</th></tr></thead>
-      <tbody>${lista.length?lista.map(d=>{
-        const p2=pct(d.qtd_feita||0,d.qtd_real);
-        const restante=(d.qtd_real||0)-(d.qtd_feita||0);
-        const st=p2>=100?badge('Concluído','bg'):p2>=70?badge('Avançado','bb'):p2>=30?badge('Em andamento','by'):badge('Início','bo');
-        return`<tr>
-          <td><strong>${d.contratos?.nome||'—'}</strong></td>
-          <td>${d.nome||'—'}</td><td>${d.unidade||'—'}</td>
-          <td>${fmtN(d.qtd_real)}</td><td>${fmtN(d.qtd_feita)}</td>
-          <td style="color:${restante>0?'var(--laranja)':'var(--verde)'};font-weight:600">${fmtN(Math.max(0,restante))}</td>
-          <td><div style="display:flex;align-items:center;gap:7px">
-            <div class="progress" style="width:90px"><div class="progress-bar" style="width:${p2}%;background:${p2>=100?'var(--verde)':p2>=50?'var(--azul)':'var(--laranja)'}"></div></div>
-            <span style="font-size:12px;font-weight:600">${p2}%</span></div></td>
-          <td>${st}</td>
-        </tr>`;
-      }).join(''):`<tr><td colspan="8"><div class="empty-st"><div class="ico">📬</div><p>Nenhuma disciplina encontrada.</p></div></td></tr>`}
-      </tbody>
-    </table></div></div>`;
+    <div class="card"><div class="cb"><table>
+    <thead><tr><th>Contrato</th><th>Ciclo</th><th>Disciplina</th><th>Unid.</th><th style="text-align:right">Qtd Real</th><th style="text-align:right">Qtd Feita</th><th style="text-align:right">Restante</th><th>Progresso</th><th>Status</th></tr></thead>
+    <tbody>${lista.length?lista.map(d=>{const p2=pct(d.qtd_feita||0,d.qtd_real);const rest=Math.max(0,(d.qtd_real||0)-(d.qtd_feita||0));const st=p2>=100?badge('Concluído','bgg'):p2>=70?badge('Avançado','bgb'):p2>=30?badge('Em andamento','bgy'):badge('Início','bgo');
+      return`<tr><td><strong>${d.contratos?.nome||'—'}</strong></td><td style="font-size:11px;color:var(--tx2)">${d.contratos?.ano||'—'}</td><td>${d.nome||'—'}</td><td>${d.unidade||'—'}</td><td style="text-align:right">${fmtN(d.qtd_real)}</td><td style="text-align:right">${fmtN(d.qtd_feita)}</td><td style="text-align:right;color:${rest>0?'var(--la)':'var(--vd)'};font-weight:600">${fmtN(Math.round(rest))}</td><td><div style="display:flex;align-items:center;gap:6px"><div class="pr" style="width:90px"><div class="pb" style="width:${p2}%;background:${p2>=100?'var(--vd)':p2>=50?'var(--az)':'var(--la)'}"></div></div><span style="font-size:12px;font-weight:600">${p2}%</span></div></td><td>${st}</td></tr>`;
+    }).join(''):`<tr><td colspan="9"><div class="est"><div class="ic">📬</div><p>Nenhuma disciplina.</p></div></td></tr>`}
+    </tbody></table></div></div>`;
 }
-
-// ─── BONIFICAÇÕES / HHB ──────────────────────────────────────
-async function renderBonificacoes(){
-  let hhbData=[];
-  try{hhbData=await db('hhb?order=pct_hhb.desc');}catch(e){toast('Erro HHB: '+e.message,'e');}
-  const q=(document.getElementById('bo-b')?.value||'').toLowerCase();
-  const fa=document.getElementById('bo-a')?.value||'';
+async function rBonif(){
+  let hhbData=[];try{hhbData=await db('hhb?order=pct_hhb.desc');}catch(e){toast('Erro HHB: '+e.message,'e');}
+  const q=(document.getElementById('bo-bq')?.value||'').toLowerCase(),fa=document.getElementById('bo-fa')?.value||'';
   const anos=[...new Set(hhbData.map(h=>h.ano).filter(Boolean))].sort().reverse();
-  let lista=hhbData;
-  if(q)lista=lista.filter(h=>(h.concessionaria||'').toLowerCase().includes(q)||(h.disciplina||'').toLowerCase().includes(q));
-  if(fa)lista=lista.filter(h=>h.ano===fa);
-  const totPlan=lista.reduce((s,h)=>s+(h.hhb_planejado||0),0);
-  const totReal=lista.reduce((s,h)=>s+(h.hhb_real||0),0);
-  const pctMed=totPlan>0?((totReal/totPlan)*100).toFixed(1):0;
-  document.getElementById('content').innerHTML=`
-    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);max-width:420px">
-      <div class="kpi-card"><div class="kpi-lbl">HHB Planejado</div><div class="kpi-val" style="font-size:20px">${(totPlan/1000).toFixed(1)}k</div></div>
-      <div class="kpi-card g"><div class="kpi-lbl">HHB Real</div><div class="kpi-val" style="font-size:20px">${(totReal/1000).toFixed(1)}k</div></div>
-      <div class="kpi-card ${pctMed>=100?'g':'r'}"><div class="kpi-lbl">Performance</div><div class="kpi-val" style="font-size:20px">${pctMed}%</div></div>
+  let lista=hhbData;if(q)lista=lista.filter(h=>(h.concessionaria||'').toLowerCase().includes(q)||(h.disciplina||'').toLowerCase().includes(q));if(fa)lista=lista.filter(h=>h.ano===fa);
+  const totP=lista.reduce((s,h)=>s+(h.hhb_planejado||0),0),totR=lista.reduce((s,h)=>s+(h.hhb_real||0),0);const pM=totP>0?((totR/totP)*100).toFixed(1):0;
+  document.getElementById('ct').innerHTML=`
+    <div class="kg" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+      <div class="kc"><div class="kl">HHB Planejado</div><div class="kv" style="font-size:20px">${(totP/1000).toFixed(1)}k</div></div>
+      <div class="kc g"><div class="kl">HHB Real</div><div class="kv" style="font-size:20px">${(totR/1000).toFixed(1)}k</div></div>
+      <div class="kc ${parseFloat(pM)>=100?'g':'r'}"><div class="kl">Performance</div><div class="kv" style="font-size:20px">${pM}%</div></div>
     </div>
-    <div class="sbar">
-      <input class="sinput" id="bo-b" placeholder="Buscar concessionária ou disciplina..." oninput="renderBonificacoes()" value="${q}">
-      <select class="sselect" id="bo-a" onchange="renderBonificacoes()">
-        <option value="">Todos os ciclos</option>${anos.map(a=>`<option ${a===fa?'selected':''}>${a}</option>`).join('')}
-      </select>
+    <div class="sb_">
+      <input class="si" id="bo-bq" placeholder="Buscar concessionária ou disciplina..." oninput="rBonif()" value="${q}" style="min-width:240px">
+      <select class="si" id="bo-fa" onchange="rBonif()"><option value="">Todos os ciclos</option>${anos.map(a=>`<option ${a===fa?'selected':''}>${a}</option>`).join('')}</select>
     </div>
-    <div class="card"><div class="card-body"><table>
-      <thead><tr><th>Concessionária</th><th>Disciplina</th><th>Ciclo</th><th>HHB Planejado</th><th>HHB Real</th><th>% HHB</th><th>Análise</th></tr></thead>
-      <tbody>${lista.length?lista.map(h=>{
-        const p2=h.pct_hhb?Math.round(h.pct_hhb*100):0;
-        return`<tr>
-          <td><strong>${h.concessionaria||'—'}</strong></td>
-          <td>${h.disciplina||'—'}</td><td>${h.ano||'—'}</td>
-          <td>${fmtN(h.hhb_planejado)}</td>
-          <td>${fmtN(h.hhb_real)}</td>
-          <td style="font-weight:700;color:${p2>=100?'var(--verde)':p2>=80?'var(--amarelo)':'var(--vermelho)'}">${p2}%</td>
-          <td style="font-size:12px;color:var(--text2)">${h.analise||'—'}</td>
-        </tr>`;
-      }).join(''):`<tr><td colspan="7"><div class="empty-st"><div class="ico">🏆</div><p>Nenhum dado de HHB.<br>Rode o SQL de importação.</p></div></td></tr>`}
-      </tbody>
-    </table></div></div>`;
+    <div class="card"><div class="cb"><table>
+    <thead><tr><th>Concessionária</th><th>Disciplina</th><th>Ciclo</th><th style="text-align:right">HHB Planejado</th><th style="text-align:right">HHB Real</th><th style="text-align:center">% HHB</th><th>Análise</th></tr></thead>
+    <tbody>${lista.length?lista.map(h=>{const p2=h.pct_hhb?Math.round(h.pct_hhb*100):0;
+      return`<tr><td><strong>${h.concessionaria||'—'}</strong></td><td>${h.disciplina||'—'}</td><td style="font-size:11px;color:var(--tx2)">${h.ano||'—'}</td><td style="text-align:right">${fmtN(h.hhb_planejado)}</td><td style="text-align:right">${fmtN(h.hhb_real)}</td><td style="text-align:center;font-weight:700;color:${p2>=100?'var(--vd)':p2>=80?'var(--am)':'var(--vm)'}">${p2}%</td><td style="font-size:12px;color:var(--tx2)">${h.analise||'—'}</td></tr>`;
+    }).join(''):`<tr><td colspan="7"><div class="est"><div class="ic">🏆</div><p>Nenhum dado de HHB.<br>Rode o SQL importar_complementar.sql</p></div></td></tr>`}
+    </tbody></table></div></div>`;
 }
+// CRUD
 
-// ─── CRUD CONTRATOS ──────────────────────────────────────────
-function abrirMC(id=null){
-  discTemp=[];
-  document.getElementById('mc-title').textContent=id?'Editar Contrato':'Novo Contrato';
-  ['mc-id','mc-nome','mc-ano','mc-est','mc-obs'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
-  ['mc-ini-p','mc-fim-p','mc-ini-r','mc-fim-e'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
-  document.getElementById('mc-status').value='Aguardando início';
-  const sel=document.getElementById('mc-cli');
-  sel.innerHTML='<option value="">Selecione...</option>'+clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
-  if(id){
-    const c=contratos.find(x=>x.id===id);
-    if(c){
-      document.getElementById('mc-id').value=c.id;
-      document.getElementById('mc-nome').value=c.nome||'';
-      document.getElementById('mc-cli').value=c.cliente_id||'';
-      document.getElementById('mc-ano').value=c.ano||'';
-      document.getElementById('mc-est').value=c.estado||'';
-      document.getElementById('mc-status').value=c.status||'Aguardando início';
-      document.getElementById('mc-ini-p').value=c.inicio_planejado||'';
-      document.getElementById('mc-fim-p').value=c.termino_planejado||'';
-      document.getElementById('mc-ini-r').value=c.inicio_real||'';
-      document.getElementById('mc-fim-e').value=c.termino_estimado||'';
-      document.getElementById('mc-obs').value=c.obs||'';
-      discTemp=disciplinas.filter(d=>d.contrato_id===id).map(d=>({...d,_saved:true}));
-    }
-  }
-  renderDL();
-  document.getElementById('dform').style.display='none';
-  openM('mc');
-}
-function toggleDF(){const f=document.getElementById('dform');f.style.display=f.style.display==='none'?'block':'none';}
-function addD(){
-  const n=document.getElementById('d-nome').value;if(!n){toast('Selecione a disciplina','e');return;}
-  discTemp.push({nome:n,unidade:document.getElementById('d-un').value,num_frentes:parseInt(document.getElementById('d-fr').value)||1,
-    qtd_prevista:parseFloat(document.getElementById('d-qp').value)||0,qtd_real:parseFloat(document.getElementById('d-qr').value)||0,
-    produtividade_frente:parseFloat(document.getElementById('d-pr').value)||null,
-    inicio_planejado:document.getElementById('d-ini').value||null,termino_planejado:document.getElementById('d-fim').value||null,
-    termino_estimado:document.getElementById('d-est').value||null});
-  toggleDF();renderDL();toast('Disciplina adicionada','s');
-}
-function renderDL(){
-  const el=document.getElementById('disc-added-list');
-  if(!discTemp.length){el.innerHTML='<div style="color:var(--text2);font-size:13px;text-align:center;padding:10px">Nenhuma disciplina ainda</div>';return;}
-  el.innerHTML=discTemp.map((d,i)=>`<div class="dai">
-    <div><strong>${d.nome}</strong><span style="color:var(--text2);font-size:12px;margin-left:7px">${d.qtd_real||0} ${d.unidade||''} · ${d.num_frentes} frente(s)</span>
-    ${d._saved?badge('salvo','bg'):badge('novo','by')}</div>
-    ${d._saved?'':` <span onclick="discTemp.splice(${i},1);renderDL()" style="cursor:pointer;color:var(--vermelho);font-weight:700">✕</span>`}
-  </div>`).join('');
-}
-async function salvarC(){
-  const nome=document.getElementById('mc-nome').value.trim();if(!nome){toast('Nome obrigatório','e');return;}
-  try{
-    const p={nome,cliente_id:document.getElementById('mc-cli').value||null,ano:document.getElementById('mc-ano').value||null,
-      estado:document.getElementById('mc-est').value||null,status:document.getElementById('mc-status').value,
-      inicio_planejado:document.getElementById('mc-ini-p').value||null,termino_planejado:document.getElementById('mc-fim-p').value||null,
-      inicio_real:document.getElementById('mc-ini-r').value||null,termino_estimado:document.getElementById('mc-fim-e').value||null,
-      obs:document.getElementById('mc-obs').value||null,updated_at:new Date().toISOString()};
-    const cid=document.getElementById('mc-id').value;let ctrId;
-    if(cid){await db('contratos?id=eq.'+cid,'PATCH',p);ctrId=cid;}
-    else{const r=await db('contratos','POST',p);ctrId=r[0].id;}
-    for(const d of discTemp){if(d._saved)continue;await db('disciplinas','POST',{contrato_id:ctrId,...d,qtd_feita:0});}
-    toast(cid?'Contrato atualizado!':'Contrato salvo!','s');closeM('mc');await loadAll();
-  }catch(e){toast('Erro: '+e.message,'e');}
-}
-async function delC(id){if(!confirm('Excluir contrato e todas suas disciplinas?'))return;try{await db('disciplinas?contrato_id=eq.'+id,'DELETE');await db('contratos?id=eq.'+id,'DELETE');toast('Excluído','s');await loadAll();}catch(e){toast('Erro: '+e.message,'e');}}
+function abrirMC(id=null){discTemp=[];document.getElementById('mc-t').textContent=id?'Editar Contrato':'Novo Contrato';['mc-id','mc-nm','mc-an','mc-es','mc-ob'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});['mc-ip','mc-fp','mc-ir','mc-fe'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});document.getElementById('mc-st').value='Aguardando início';const sel=document.getElementById('mc-cl');sel.innerHTML='<option value="">Selecione...</option>'+clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');if(id){const c=contratos.find(x=>x.id===id);if(c){document.getElementById('mc-id').value=c.id;document.getElementById('mc-nm').value=c.nome||'';document.getElementById('mc-cl').value=c.cliente_id||'';document.getElementById('mc-an').value=c.ano||'';document.getElementById('mc-es').value=c.estado||'';document.getElementById('mc-st').value=c.status||'Aguardando início';document.getElementById('mc-ip').value=c.inicio_planejado||'';document.getElementById('mc-fp').value=c.termino_planejado||'';document.getElementById('mc-ir').value=c.inicio_real||'';document.getElementById('mc-fe').value=c.termino_estimado||'';document.getElementById('mc-ob').value=c.obs||'';discTemp=disciplinas.filter(d=>d.contrato_id===id).map(d=>({...d,_sv:true}));}}rDL();document.getElementById('dform').style.display='none';openM('mc');}
+function tDF(){const f=document.getElementById('dform');f.style.display=f.style.display==='none'?'block':'none';}
+function addD(){const n=document.getElementById('d-nm').value;if(!n){toast('Selecione a disciplina','e');return;}discTemp.push({nome:n,unidade:document.getElementById('d-un').value,num_frentes:parseInt(document.getElementById('d-fr').value)||1,qtd_prevista:parseFloat(document.getElementById('d-qp').value)||0,qtd_real:parseFloat(document.getElementById('d-qr').value)||0,produtividade_frente:parseFloat(document.getElementById('d-pr').value)||null,inicio_planejado:document.getElementById('d-ii').value||null,termino_planejado:document.getElementById('d-fi').value||null,termino_estimado:document.getElementById('d-fe').value||null});tDF();rDL();toast('Disciplina adicionada','s');}
+function rDL(){const el=document.getElementById('dl');if(!discTemp.length){el.innerHTML='<div style="color:var(--tx2);font-size:13px;text-align:center;padding:10px">Nenhuma disciplina</div>';return;}el.innerHTML=discTemp.map((d,i)=>`<div class="dib"><div><strong>${d.nome}</strong><span style="color:var(--tx2);font-size:12px;margin-left:7px">${d.qtd_real||0} ${d.unidade||''} · ${d.num_frentes} frente(s)</span>${d._sv?badge('salvo','bgg'):badge('novo','bgy')}</div>${d._sv?'':` <span onclick="discTemp.splice(${i},1);rDL()" style="cursor:pointer;color:var(--vm);font-weight:700">✕</span>`}</div>`).join('');}
+async function salvarC(){const nm=document.getElementById('mc-nm').value.trim();if(!nm){toast('Nome obrigatório','e');return;}try{const p={nome:nm,cliente_id:document.getElementById('mc-cl').value||null,ano:document.getElementById('mc-an').value||null,estado:document.getElementById('mc-es').value||null,status:document.getElementById('mc-st').value,inicio_planejado:document.getElementById('mc-ip').value||null,termino_planejado:document.getElementById('mc-fp').value||null,inicio_real:document.getElementById('mc-ir').value||null,termino_estimado:document.getElementById('mc-fe').value||null,obs:document.getElementById('mc-ob').value||null,updated_at:new Date().toISOString()};const cid=document.getElementById('mc-id').value;let ctrId;if(cid){await db('contratos?id=eq.'+cid,'PATCH',p);ctrId=cid;}else{const r=await db('contratos','POST',p);ctrId=r[0].id;}for(const d of discTemp){if(d._sv)continue;await db('disciplinas','POST',{contrato_id:ctrId,...d,qtd_feita:0});}toast(cid?'Contrato atualizado!':'Contrato salvo!','s');closeM('mc');await loadAll();}catch(e){toast('Erro: '+e.message,'e');}}
+async function delC(id){if(!confirm('Excluir contrato e disciplinas?'))return;try{await db('disciplinas?contrato_id=eq.'+id,'DELETE');await db('contratos?id=eq.'+id,'DELETE');toast('Excluído','s');await loadAll();}catch(e){toast('Erro: '+e.message,'e');}}
 async function delD(id){if(!confirm('Remover disciplina?'))return;try{await db('disciplinas?id=eq.'+id,'DELETE');toast('Removido','s');await loadAll();}catch(e){toast('Erro: '+e.message,'e');}}
-
-// ─── CRUD COLABORADORES ──────────────────────────────────────
-function autoTaxa(){const t={'Ajudante de Obras':0.70,'Auxiliar de Engenharia':0.75,'Assistente de Engenharia':0.90,'Terceirizado Campo':1.30};const f=document.getElementById('col-fn')?.value;const tx=document.getElementById('col-taxa');if(tx&&t[f])tx.value=t[f];}
-function abrirMCo(id=null){
-  document.getElementById('mco-title').textContent=id?'Editar Colaborador':'Novo Colaborador';
-  ['mco-id','col-nome','col-est','col-obs','col-nc'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
-  ['col-adm','col-des','col-pd','col-taxa'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
-  document.getElementById('col-fn').value='Ajudante de Obras';
-  document.getElementById('col-sit').value='Ativo';
-  autoTaxa();
-  if(id){const c=colaboradores.find(x=>x.id===id);if(c){
-    document.getElementById('mco-id').value=c.id;
-    document.getElementById('col-nome').value=c.nome||'';
-    document.getElementById('col-fn').value=c.funcao||'Ajudante de Obras';
-    document.getElementById('col-sit').value=c.situacao||'Ativo';
-    document.getElementById('col-est').value=c.estado||'';
-    document.getElementById('col-taxa').value=c.taxa||'';
-    document.getElementById('col-adm').value=c.admissao||'';
-    document.getElementById('col-des').value=c.desligamento||'';
-    document.getElementById('col-pd').value=c.promocao_data||'';
-    document.getElementById('col-nc').value=c.novo_cargo||'';
-    document.getElementById('col-obs').value=c.obs||'';
-  }}
-  openM('mco');
-}
-async function salvarColab(){
-  const nome=document.getElementById('col-nome').value.trim();if(!nome){toast('Nome obrigatório','e');return;}
-  try{
-    const p={nome,funcao:document.getElementById('col-fn').value,situacao:document.getElementById('col-sit').value,
-      estado:document.getElementById('col-est').value||null,taxa:parseFloat(document.getElementById('col-taxa').value)||null,
-      admissao:document.getElementById('col-adm').value||null,desligamento:document.getElementById('col-des').value||null,
-      promocao_data:document.getElementById('col-pd').value||null,novo_cargo:document.getElementById('col-nc').value||null,
-      obs:document.getElementById('col-obs').value||null,updated_at:new Date().toISOString()};
-    const cid=document.getElementById('mco-id').value;
-    if(cid){await db('colaboradores?id=eq.'+cid,'PATCH',p);toast('Atualizado!','s');}
-    else{await db('colaboradores','POST',p);toast('Salvo!','s');}
-    closeM('mco');await loadAll();
-  }catch(e){toast('Erro: '+e.message,'e');}
-}
-async function delColab(id){if(!confirm('Excluir colaborador?'))return;try{await db('colaboradores?id=eq.'+id,'DELETE');toast('Excluído','s');await loadAll();}catch(e){toast('Erro: '+e.message,'e');}}
-
-// ─── CRUD PRODUÇÃO ───────────────────────────────────────────
-function loadDiscs(){
-  const cid=document.getElementById('p-cont')?.value;
-  const sel=document.getElementById('p-disc');if(!sel)return;
-  const ds=disciplinas.filter(d=>d.contrato_id===cid);
-  sel.innerHTML=ds.length?'<option value="">Selecione...</option>'+ds.map(d=>`<option value="${d.id}">${d.nome}</option>`).join(''):'<option>Nenhuma disciplina</option>';
-}
-async function salvarProd(){
-  const cid=document.getElementById('p-cont')?.value,did=document.getElementById('p-disc')?.value,
-    data=document.getElementById('p-data')?.value,qtd=parseFloat(document.getElementById('p-qtd')?.value);
-  if(!cid||!did||!data||!qtd){toast('Preencha todos os campos obrigatórios','e');return;}
-  try{
-    await db('producao','POST',{contrato_id:cid,disciplina_id:did,data,quantidade:qtd,
-      colaborador:document.getElementById('p-colab')?.value||null,obs:document.getElementById('p-obs')?.value||null});
-    const disc=disciplinas.find(d=>d.id===did);
-    if(disc)await db('disciplinas?id=eq.'+did,'PATCH',{qtd_feita:(disc.qtd_feita||0)+qtd,updated_at:new Date().toISOString()});
-    toast('Produção lançada!','s');
-    ['p-qtd','p-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-    prodData=[];await loadAll();
-  }catch(e){toast('Erro: '+e.message,'e');}
-}
-
-// ─── CRUD FROTAS ─────────────────────────────────────────────
-function abrirMFr(id=null){
-  document.getElementById('mfr-title').textContent=id?'Editar Frota':'Nova Frota';
-  ['mfr-id','fr-res','fr-col','fr-placa','fr-loc2','fr-obs','fr-men'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
-  document.getElementById('fr-dt').value='';
-  document.getElementById('fr-loc').value='Localiza';
-  document.getElementById('fr-vei').value='Kwid';
-  document.getElementById('fr-st').value='Ativo';
-  const dl=document.getElementById('fr-clist');if(dl)dl.innerHTML=colaboradores.map(c=>`<option value="${c.nome}">`).join('');
-  if(id){const f=frotas.find(x=>x.id===id);if(f){
-    document.getElementById('mfr-id').value=f.id;
-    document.getElementById('fr-loc').value=f.locadora||'Localiza';
-    document.getElementById('fr-res').value=f.reserva||'';
-    document.getElementById('fr-col').value=f.colaborador_atual||'';
-    document.getElementById('fr-placa').value=f.placa_atual||'';
-    document.getElementById('fr-vei').value=f.veiculo||'Kwid';
-    document.getElementById('fr-st').value=f.status||'Ativo';
-    document.getElementById('fr-men').value=f.mensalidade||'';
-    document.getElementById('fr-dt').value=f.data_retirada_ini||'';
-    document.getElementById('fr-loc2').value=f.local_retirada||'';
-    document.getElementById('fr-obs').value=f.observacao||'';
-  }}
-  openM('mfr');
-}
-async function salvarFrota(){
-  const colab=document.getElementById('fr-col').value.trim();if(!colab){toast('Colaborador obrigatório','e');return;}
-  try{
-    const p={locadora:document.getElementById('fr-loc').value,reserva:document.getElementById('fr-res').value||null,
-      colaborador_atual:colab,placa_atual:document.getElementById('fr-placa').value.toUpperCase()||null,
-      local_retirada:document.getElementById('fr-loc2').value||null,veiculo:document.getElementById('fr-vei').value,
-      mensalidade:parseFloat(document.getElementById('fr-men').value)||null,
-      data_retirada_ini:document.getElementById('fr-dt').value||null,
-      status:document.getElementById('fr-st').value,observacao:document.getElementById('fr-obs').value||null,
-      updated_at:new Date().toISOString()};
-    const fid=document.getElementById('mfr-id').value;
-    if(fid){await db('frotas?id=eq.'+fid,'PATCH',p);toast('Atualizado!','s');}
-    else{await db('frotas','POST',p);toast('Cadastrado!','s');}
-    closeM('mfr');await renderFrotas();
-  }catch(e){toast('Erro: '+e.message,'e');}
-}
-async function delFrota(id){if(!confirm('Excluir reserva e histórico?'))return;try{await db('frotas_historico?frota_id=eq.'+id,'DELETE');await db('frotas?id=eq.'+id,'DELETE');toast('Excluído','s');await renderFrotas();}catch(e){toast('Erro: '+e.message,'e');}}
-
-// FECHAR MODAL CLICANDO FORA
-document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
-
-// INIT
+const TAXAS={'Ajudante de Obras':0.70,'Auxiliar de Engenharia':0.75,'Assistente de Engenharia':0.85,'Terceirizado Campo':1.30};
+function autoTx(){const f=document.getElementById('co-fn')?.value;const t=document.getElementById('co-tx');if(t&&TAXAS[f])t.value=TAXAS[f];}
+function abrirMCo(id=null){document.getElementById('mco-t').textContent=id?'Editar Colaborador':'Novo Colaborador';['co-id','co-nm','co-es','co-ob','co-nc'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});['co-ad','co-de','co-pd','co-tx'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});document.getElementById('co-fn').value='Ajudante de Obras';document.getElementById('co-si').value='Ativo';autoTx();if(id){const c=colaboradores.find(x=>x.id===id);if(c){document.getElementById('co-id').value=c.id;document.getElementById('co-nm').value=c.nome||'';document.getElementById('co-fn').value=c.funcao||'Ajudante de Obras';document.getElementById('co-si').value=c.situacao||'Ativo';document.getElementById('co-es').value=c.estado||'';document.getElementById('co-tx').value=c.taxa||'';document.getElementById('co-ad').value=c.admissao||'';document.getElementById('co-de').value=c.desligamento||'';document.getElementById('co-pd').value=c.promocao_data||'';document.getElementById('co-nc').value=c.novo_cargo||'';document.getElementById('co-ob').value=c.obs||'';}}openM('mco');}
+async function salvarCo(){const nm=document.getElementById('co-nm').value.trim();if(!nm){toast('Nome obrigatório','e');return;}try{const p={nome:nm,funcao:document.getElementById('co-fn').value,situacao:document.getElementById('co-si').value,estado:document.getElementById('co-es').value||null,taxa:parseFloat(document.getElementById('co-tx').value)||null,admissao:document.getElementById('co-ad').value||null,desligamento:document.getElementById('co-de').value||null,promocao_data:document.getElementById('co-pd').value||null,novo_cargo:document.getElementById('co-nc').value||null,obs:document.getElementById('co-ob').value||null,updated_at:new Date().toISOString()};const cid=document.getElementById('co-id').value;if(cid){await db('colaboradores?id=eq.'+cid,'PATCH',p);toast('Atualizado!','s');}else{await db('colaboradores','POST',p);toast('Salvo!','s');}closeM('mco');await loadAll();}catch(e){toast('Erro: '+e.message,'e');}}
+async function delCo(id){if(!confirm('Excluir colaborador?'))return;try{await db('colaboradores?id=eq.'+id,'DELETE');toast('Excluído','s');await loadAll();}catch(e){toast('Erro: '+e.message,'e');}}
+async function salvarPr(){const cid=document.getElementById('pr-ct')?.value,did=document.getElementById('pr-di')?.value,dt=document.getElementById('pr-dt')?.value,qtd=parseFloat(document.getElementById('pr-qt')?.value),co=document.getElementById('pr-co')?.value?.trim();if(!cid||!did||!dt||!qtd||!co){toast('Preencha: contrato, disciplina, data, quantidade e colaborador','e');return;}const dp=document.getElementById('pr-dp')?.value?.trim()||null;const tx=parseFloat(document.getElementById('pr-tx')?.value)||0.70;const hhb=parseFloat((qtd*tx*0.45).toFixed(3));const ehRev=document.getElementById('pr-rv')?.value==='1'?1:null;try{await db('producao','POST',{contrato_id:cid,disciplina_id:did,data:dt,quantidade:qtd,colaborador:co,dupla:dp,taxa:tx,hhb,revisoes:ehRev,obs:document.getElementById('pr-ob')?.value||null});if(!ehRev){const disc=disciplinas.find(d=>d.id===did);if(disc)await db('disciplinas?id=eq.'+did,'PATCH',{qtd_feita:(disc.qtd_feita||0)+qtd,updated_at:new Date().toISOString()});}toast('Produção lançada!','s');['pr-qt','pr-ob'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});prodData=[];await loadAll();}catch(e){toast('Erro: '+e.message,'e');}}
+function abrirMFr(id=null){document.getElementById('mfr-t').textContent=id?'Editar / Transferir Frota':'Nova Frota';['fr-id','fr-rs','fr-co','fr-pl','fr-lo','fr-ob','fr-mn','fr-nc','fr-np','fr-kf','fr-ki','fr-gs'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});document.getElementById('fr-dt').value='';document.getElementById('fr-lc').value='Localiza';document.getElementById('fr-ve').value='Kwid';document.getElementById('fr-st').value='Ativo';const dl=document.getElementById('cl-fr');if(dl)dl.innerHTML=colaboradores.map(c=>`<option value="${c.nome}">`).join('');const dl2=document.getElementById('cl-fr2');if(dl2)dl2.innerHTML=colaboradores.map(c=>`<option value="${c.nome}">`).join('');const hs=document.getElementById('fr-hs');if(hs)hs.style.display=id?'block':'none';if(id){const f=frotas.find(x=>x.id===id);if(f){document.getElementById('fr-id').value=f.id;document.getElementById('fr-lc').value=f.locadora||'Localiza';document.getElementById('fr-rs').value=f.reserva||'';document.getElementById('fr-co').value=f.colaborador_atual||'';document.getElementById('fr-pl').value=f.placa_atual||'';document.getElementById('fr-ve').value=f.veiculo||'Kwid';document.getElementById('fr-st').value=f.status||'Ativo';document.getElementById('fr-mn').value=f.mensalidade||'';document.getElementById('fr-dt').value=f.data_retirada_ini||'';document.getElementById('fr-lo').value=f.local_retirada||'';document.getElementById('fr-ob').value=f.observacao||'';}}openM('mfr');}
+async function salvarFr(){const co=document.getElementById('fr-co').value.trim();if(!co){toast('Colaborador obrigatório','e');return;}try{const p={locadora:document.getElementById('fr-lc').value,reserva:document.getElementById('fr-rs').value||null,colaborador_atual:co,placa_atual:document.getElementById('fr-pl').value.toUpperCase()||null,local_retirada:document.getElementById('fr-lo').value||null,veiculo:document.getElementById('fr-ve').value,mensalidade:parseFloat(document.getElementById('fr-mn').value)||null,data_retirada_ini:document.getElementById('fr-dt').value||null,status:document.getElementById('fr-st').value,observacao:document.getElementById('fr-ob').value||null,updated_at:new Date().toISOString()};const fid=document.getElementById('fr-id').value;if(fid){await db('frotas?id=eq.'+fid,'PATCH',p);toast('Atualizado!','s');}else{const r=await db('frotas','POST',p);await db('frotas_historico','POST',{frota_id:r[0].id,reserva:p.reserva,colaborador:co,placa:p.placa_atual,data_retirada:p.data_retirada_ini,status:'Ativo'});toast('Cadastrado!','s');}closeM('mfr');await rFrotas();}catch(e){toast('Erro: '+e.message,'e');}}
+async function salvarTransf(){const fid=document.getElementById('fr-id').value;if(!fid)return;const nc=document.getElementById('fr-nc')?.value?.trim();if(!nc){toast('Informe o novo colaborador','e');return;}try{const fOld=frotas.find(x=>x.id===fid);await db('frotas_historico','POST',{frota_id:fid,reserva:fOld?.reserva,colaborador:fOld?.colaborador_atual,placa:fOld?.placa_atual,data_retirada:fOld?.data_retirada_ini,data_devolucao:document.getElementById('fr-nt')?.value||null,status:'Transferido',km_inicial:parseFloat(document.getElementById('fr-ki')?.value)||null,km_final:parseFloat(document.getElementById('fr-kf')?.value)||null,gasto:parseFloat(document.getElementById('fr-gs')?.value)||null});const np=document.getElementById('fr-np')?.value?.toUpperCase()||fOld?.placa_atual;await db('frotas?id=eq.'+fid,'PATCH',{colaborador_atual:nc,placa_atual:np,updated_at:new Date().toISOString()});await db('frotas_historico','POST',{frota_id:fid,reserva:fOld?.reserva,colaborador:nc,placa:np,data_retirada:document.getElementById('fr-nt')?.value||null,status:'Ativo'});toast('Transferência registrada!','s');closeM('mfr');await rFrotas();}catch(e){toast('Erro: '+e.message,'e');}}
+async function delFr(id){if(!confirm('Excluir reserva e histórico?'))return;try{await db('frotas_historico?frota_id=eq.'+id,'DELETE');await db('frotas?id=eq.'+id,'DELETE');toast('Excluído','s');await rFrotas();}catch(e){toast('Erro: '+e.message,'e');}}
+function abrirMFg(id=null){document.getElementById('mfg-t').textContent=id?'Editar Folga':'Nova Folga';['fg-id','fg-nm','fg-ct'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});['fg-gr','fg-ul','fg-pr'].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});const dl=document.getElementById('cl-fg');if(dl)dl.innerHTML=colaboradores.filter(c=>c.situacao==='Ativo').map(c=>`<option value="${c.nome}">`).join('');if(id){const f=folgas.find(x=>x.id===id);if(f){document.getElementById('fg-id').value=f.id;document.getElementById('fg-nm').value=f.nome||'';document.getElementById('fg-gr').value=f.grupo||'';document.getElementById('fg-ct').value=f.contrato_atual||'';document.getElementById('fg-ul').value=f.ultima_folga||'';document.getElementById('fg-pr').value=f.proxima_folga||'';}}openM('mfg');}
+async function salvarFg(){const nm=document.getElementById('fg-nm').value.trim();if(!nm){toast('Nome obrigatório','e');return;}const pr=document.getElementById('fg-pr').value,ul=document.getElementById('fg-ul').value;let dr=null;if(pr){const hj=new Date();hj.setHours(0,0,0,0);dr=Math.round((new Date(pr+'T00:00:00')-hj)/(1000*60*60*24));}try{const p={nome:nm,grupo:parseInt(document.getElementById('fg-gr').value)||null,contrato_atual:document.getElementById('fg-ct').value||null,ultima_folga:ul||null,proxima_folga:pr||null,dias_restantes:dr,updated_at:new Date().toISOString()};const fid=document.getElementById('fg-id').value;if(fid){await db('folgas?id=eq.'+fid,'PATCH',p);toast('Atualizado!','s');}else{await db('folgas','POST',p);toast('Salvo!','s');}closeM('mfg');await rFolga();}catch(e){toast('Erro: '+e.message,'e');}}
+async function delFg(id){if(!confirm('Excluir?'))return;try{await db('folgas?id=eq.'+id,'DELETE');toast('Excluído','s');await rFolga();}catch(e){toast('Erro: '+e.message,'e');}}
+document.querySelectorAll('.mb').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
 loadAll();
 </script>
 </body>
