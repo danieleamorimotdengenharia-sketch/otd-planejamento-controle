@@ -279,6 +279,7 @@ async function loadAll(){
     ]);
     document.getElementById('lupd').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR');
     rAloc && alocColabs.length===0 && db('alocacao_colabs?order=nome').then(d=>{alocColabs=d||[];}).catch(()=>{});
+    carregarMetasCustom().catch(()=>{});
     renderPg(curPg);
   }catch(e){toast('Erro ao carregar: '+e.message,'e');}
 }
@@ -560,59 +561,7 @@ async function rParciais(){
     </div>`;
 }
 // ── BONIFICAÇÕES COMPLETO ─────────────────────────────────────
-async function rBonif(){
-  let hhbData=[];
-  try{hhbData=await db('hhb?order=pct_hhb.desc');}catch(e){}
-  const q=(document.getElementById('bo-bq')?.value||'').toLowerCase();
-  const fa=document.getElementById('bo-fa')?.value||'';
-  const anos=[...new Set(hhbData.map(h=>h.ano).filter(Boolean))].sort().reverse();
-  let lista=hhbData;
-  if(q)lista=lista.filter(h=>(h.concessionaria||'').toLowerCase().includes(q)||(h.disciplina||'').toLowerCase().includes(q));
-  if(fa)lista=lista.filter(h=>h.ano===fa);
-  const totP=lista.reduce((s,h)=>s+(h.hhb_planejado||0),0);
-  const totR=lista.reduce((s,h)=>s+(h.hhb_real||0),0);
-  const pM=totP>0?((totR/totP)*100).toFixed(1):0;
-  const acima=lista.filter(h=>h.pct_hhb>=1).length;
-  const abaixo=lista.filter(h=>h.pct_hhb<1&&h.pct_hhb>0).length;
-  document.getElementById('ct').innerHTML=`
-    <div class="kg" style="grid-template-columns:repeat(4,1fr)">
-      <div class="kc"><div class="kl">HHB Planejado</div><div class="kv" style="font-size:20px">${(totP/1000).toFixed(1)}k</div></div>
-      <div class="kc g"><div class="kl">HHB Real</div><div class="kv" style="font-size:20px">${(totR/1000).toFixed(1)}k</div></div>
-      <div class="kc ${parseFloat(pM)>=100?'g':'r'}"><div class="kl">Performance Geral</div><div class="kv" style="font-size:20px">${pM}%</div></div>
-      <div class="kc"><div class="kl">Acima da meta</div><div class="kv" style="font-size:20px;color:var(--vd)">${acima}</div></div>
-    </div>
-    <div class="sb_">
-      <input class="si" id="bo-bq" placeholder="Buscar concessionária ou disciplina..." oninput="rBonif()" value="${q}" style="min-width:240px">
-      <select class="si" id="bo-fa" onchange="rBonif()"><option value="">Todos os ciclos</option>${anos.map(a=>`<option ${a===fa?'selected':''}>${a}</option>`).join('')}</select>
-    </div>
-    ${lista.length===0?`<div class="est"><div class="ic">🏆</div><p>Nenhum dado HHB.<br>Rode o SQL importar_complementar.sql</p></div>`:''}
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">
-    ${lista.map(h=>{
-      const p2=h.pct_hhb?Math.round(h.pct_hhb*100):0;
-      const cor=p2>=100?'var(--vd)':p2>=80?'var(--am)':'var(--vm)';
-      const bordL=p2>=100?'var(--vd)':p2>=80?'var(--am)':'var(--vm)';
-      return`<div class="card" style="margin-bottom:0;border-left:4px solid ${bordL}">
-        <div class="ch" style="background:#f7f9fc">
-          <div><div style="font-size:13px;font-weight:700;color:var(--az)">${h.concessionaria||'—'}</div>
-          <div style="font-size:11px;color:var(--tx2)">${h.disciplina||'—'} · ${h.ano||'—'}</div></div>
-          <span style="font-size:20px;font-weight:800;color:${cor}">${p2}%</span>
-        </div>
-        <div style="padding:12px 14px">
-          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
-            <span style="color:var(--tx2)">Planejado: <strong>${fmtN(h.hhb_planejado)}</strong></span>
-            <span style="color:var(--tx2)">Real: <strong style="color:${cor}">${fmtN(h.hhb_real)}</strong></span>
-          </div>
-          <div style="background:#e9ecef;border-radius:4px;height:10px;overflow:hidden">
-            <div style="background:${cor};width:${Math.min(200,p2)}%;height:100%;border-radius:4px;transition:width .3s"></div>
-          </div>
-          ${h.analise?`<div style="font-size:11px;color:var(--tx2);margin-top:7px;font-style:italic">📝 ${h.analise}</div>`:''}
-        </div>
-      </div>`;
-    }).join('')}
-    </div>`;
-}
-// ── ALOCAÇÃO / GANTT ─────────────────────────────────────────
-let alocColabs=[],alocFuturos=[];
+
 async function rAloc(){
   try{
     [alocColabs,alocFuturos]=await Promise.all([
@@ -798,6 +747,7 @@ async function rProdutiv(){
       <div><div style="font-size:11px;font-weight:600;color:var(--tx2);margin-bottom:4px">Disciplina</div><select class="si" id="pv-fd" onchange="rProdutiv()" style="min-width:150px"><option value="">Todas</option>${discs.map(d=>`<option ${d===fD?'selected':''}>${d}</option>`).join('')}</select></div>
       <div><div style="font-size:11px;font-weight:600;color:var(--tx2);margin-bottom:4px">Colaborador</div><input class="si" id="pv-fb" value="${fB}" oninput="rProdutiv()" style="width:130px" placeholder="nome..."></div>
       <button class="btn bg_ bs" style="margin-top:18px" onclick="exportProd('${sel}')">⬇ CSV</button>
+      <button class="btn bo bs" style="margin-top:18px" onclick="abrirModalMeta()">⚙️ Metas</button>
     </div>
     <div class="kg" style="grid-template-columns:repeat(4,1fr)">
       <div class="kc" style="border-left-color:var(--az2)"><div class="kl">Produção Total</div><div class="kv" style="font-size:20px;color:var(--az2)">${fmtN(Math.round(totP))}</div></div>
@@ -1012,6 +962,287 @@ function abrirMFg(id=null){document.getElementById('mfg-t').textContent=id?'Edit
 async function salvarFg(){const nm=document.getElementById('fg-nm').value.trim();if(!nm){toast('Nome obrigatório','e');return;}const pr=document.getElementById('fg-pr').value,ul=document.getElementById('fg-ul').value;let dr=null;if(pr){const hj=new Date();hj.setHours(0,0,0,0);dr=Math.round((new Date(pr+'T00:00:00')-hj)/(1000*60*60*24));}try{const p={nome:nm,grupo:parseInt(document.getElementById('fg-gr').value)||null,contrato_atual:document.getElementById('fg-ct').value||null,ultima_folga:ul||null,proxima_folga:pr||null,dias_restantes:dr,updated_at:new Date().toISOString()};const fid=document.getElementById('fg-id').value;if(fid){await db('folgas?id=eq.'+fid,'PATCH',p);toast('Atualizado!','s');}else{await db('folgas','POST',p);toast('Salvo!','s');}closeM('mfg');await rFolga();}catch(e){toast('Erro: '+e.message,'e');}}
 async function delFg(id){if(!confirm('Excluir?'))return;try{await db('folgas?id=eq.'+id,'DELETE');toast('Excluído','s');await rFolga();}catch(e){toast('Erro: '+e.message,'e');}}
 document.querySelectorAll('.mb').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
+// ══════════════════════════════════════════════════════
+// REGRAS DE BONIFICAÇÃO (do dashboard antigo)
+// ══════════════════════════════════════════════════════
+const REGRAS_BONUS = {
+  'drenagem':{nome:'Drenagem',
+    simples:{gatilho:120,faixa1Max:150,faixa1Valor:2.50,faixa2Valor:3.50},
+    dupla:{gatilho:170,faixa1Max:215,faixa1Valor:3.50,faixa2Valor:4.90}},
+  'terrapleno':{nome:'Terrapleno',
+    simples:{gatilho:40,faixa1Max:50,faixa1Valor:10.00,faixa2Valor:15.00},
+    dupla:{gatilho:57,faixa1Max:70,faixa1Valor:15.00,faixa2Valor:20.00}},
+  'faixa de dominio':{nome:'Faixa de Domínio',
+    simples:{gatilho:135,faixa1Max:170,faixa1Valor:2.50,faixa2Valor:3.50},
+    dupla:{gatilho:190,faixa1Max:235,faixa1Valor:3.50,faixa2Valor:4.90}},
+  'sinalizacao vertical':{nome:'Sinalização Vertical',
+    simples:{gatilho:175,faixa1Max:9999,faixa1Valor:3.00,faixa2Valor:3.00},
+    dupla:{gatilho:175,faixa1Max:9999,faixa1Valor:3.00,faixa2Valor:3.00}},
+  'sinalizacao horizontal':{nome:'Sinalização Horizontal',
+    simples:{gatilho:115,faixa1Max:150,faixa1Valor:2.00,faixa2Valor:3.00},
+    dupla:{gatilho:165,faixa1Max:210,faixa1Valor:3.00,faixa2Valor:4.00}},
+};
+
+function normDisc(d){return(d||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();}
+
+function buscarRegra(disc){
+  const k=normDisc(disc);
+  if(REGRAS_BONUS[k])return REGRAS_BONUS[k];
+  for(const key of Object.keys(REGRAS_BONUS)){if(k.includes(key)||key.includes(k))return REGRAS_BONUS[key];}
+  return null;
+}
+
+function calcBonusDia(producao,disc,isDupla){
+  const regra=buscarRegra(disc);
+  if(!regra)return{bonus:0,motivo:'Disciplina sem bônus'};
+  const r=isDupla?regra.dupla:regra.simples;
+  if(producao<r.gatilho)return{bonus:0,motivo:`Abaixo do gatilho (${r.gatilho})`,gatilho:r.gatilho};
+  const f1=Math.min(producao,r.faixa1Max)-r.gatilho;
+  const f2=Math.max(0,producao-r.faixa1Max);
+  const bruto=f1*r.faixa1Valor+f2*r.faixa2Valor;
+  const final=isDupla?bruto/2:bruto;
+  let formula=`${r.gatilho} gatilho`;
+  if(f1>0)formula+=` + ${f1}×R$${r.faixa1Valor.toFixed(2)}`;
+  if(f2>0)formula+=` + ${f2}×R$${r.faixa2Valor.toFixed(2)}`;
+  if(isDupla)formula+=` ÷ 2`;
+  return{bonus:final,bruto,motivo:'OK',formula,gatilho:r.gatilho};
+}
+
+function getSemSeg(dataIso){
+  const[a,m,d]=dataIso.split('-').map(Number);
+  const dt=new Date(a,m-1,d);const dow=dt.getDay();
+  const off=dow===0?-6:(1-dow);dt.setDate(dt.getDate()+off);
+  return`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+
+// ══════════════════════════════════════════════════════
+// BONIFICAÇÕES COMPLETO
+// ══════════════════════════════════════════════════════
+let bonDados=[];
+async function rBonif(){
+  // Carregar produção para calcular bonificações
+  const semAtual=getSemSeg(new Date().toISOString().slice(0,10));
+  const q=(document.getElementById('bo-bq')?.value||'').toLowerCase();
+  const fa=document.getElementById('bo-fa')?.value||'';
+  const fdisc=document.getElementById('bo-fd')?.value||'';
+  const tab=document.getElementById('bo-tab')?.value||'bonus';
+
+  // Se aba HHB, mostrar dados de HHB do banco
+  if(tab==='hhb'){
+    let hhbData=[];
+    try{hhbData=await db('hhb?order=pct_hhb.desc');}catch(e){}
+    const anos=[...new Set(hhbData.map(h=>h.ano).filter(Boolean))].sort().reverse();
+    let lista=hhbData;
+    if(q)lista=lista.filter(h=>(h.concessionaria||'').toLowerCase().includes(q)||(h.disciplina||'').toLowerCase().includes(q));
+    if(fa)lista=lista.filter(h=>h.ano===fa);
+    const totP=lista.reduce((s,h)=>s+(h.hhb_planejado||0),0);
+    const totR=lista.reduce((s,h)=>s+(h.hhb_real||0),0);
+    const pM=totP>0?((totR/totP)*100).toFixed(1):0;
+    document.getElementById('ct').innerHTML=`
+      ${renderBonHeader(q,fa,fdisc,tab,anos,[])}
+      <div class="kg" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+        <div class="kc"><div class="kl">HHB Planejado</div><div class="kv" style="font-size:20px">${(totP/1000).toFixed(1)}k</div></div>
+        <div class="kc g"><div class="kl">HHB Real</div><div class="kv" style="font-size:20px">${(totR/1000).toFixed(1)}k</div></div>
+        <div class="kc ${parseFloat(pM)>=100?'g':'r'}"><div class="kl">Performance</div><div class="kv" style="font-size:20px">${pM}%</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+      ${lista.map(h=>{const p2=h.pct_hhb?Math.round(h.pct_hhb*100):0;const cor=p2>=100?'var(--vd)':p2>=80?'var(--am)':'var(--vm)';
+        return`<div class="card" style="margin-bottom:0;border-left:4px solid ${cor}">
+          <div class="ch" style="background:#f7f9fc"><div><div style="font-size:13px;font-weight:700;color:var(--az)">${h.concessionaria||'—'}</div><div style="font-size:11px;color:var(--tx2)">${h.disciplina||'—'} · ${h.ano||'—'}</div></div><span style="font-size:20px;font-weight:800;color:${cor}">${p2}%</span></div>
+          <div style="padding:12px 14px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span style="color:var(--tx2)">Plan: <strong>${fmtN(h.hhb_planejado)}</strong></span><span style="color:var(--tx2)">Real: <strong style="color:${cor}">${fmtN(h.hhb_real)}</strong></span></div>
+          <div style="background:#e9ecef;border-radius:4px;height:8px"><div style="background:${cor};width:${Math.min(150,p2)}%;height:100%;border-radius:4px"></div></div>
+          ${h.analise?`<div style="font-size:11px;color:var(--tx2);margin-top:6px">📝 ${h.analise}</div>`:''}</div>
+        </div>`;
+      }).join('')||'<div class="est"><div class="ic">🏆</div><p>Rode importar_complementar.sql</p></div>'}
+      </div>`;
+    return;
+  }
+
+  // Aba BÔNUS - calcular a partir da produção
+  if(!bonDados.length){
+    try{bonDados=await db('producao?order=data.desc&limit=3000&select=data,colaborador,dupla,quantidade,revisoes,disciplinas(nome),contratos(nome)');}
+    catch(e){toast('Erro bônus: '+e.message,'e');}
+  }
+  const cicloAtual={inicio:'2026-06-01',fim:'2026-12-31'};
+  // Agrupa por (colaborador, data)
+  const por={};
+  for(const r of bonDados){
+    const dt=(r.data||'').slice(0,10);
+    if(!dt||dt<cicloAtual.inicio||dt>cicloAtual.fim)continue;
+    const disc=r.disciplinas?.nome||'';
+    const prod=r.quantidade||0;
+    const co1=r.colaborador||'';
+    const co2=r.dupla||'';
+    const isDupla=!!co2;
+    const pagar=isDupla?[co1,co2]:[co1];
+    pagar.forEach(co=>{
+      if(!co)return;
+      const k=`${co}|${dt}`;
+      if(!por[k])por[k]={co,dt,disc,prod:0,isDupla,rev:0};
+      por[k].prod+=prod;
+      if(r.revisoes)por[k].rev+=prod;
+    });
+  }
+  // Calcular bônus por colaborador
+  const res={};
+  for(const[k,p] of Object.entries(por)){
+    if(!res[p.co])res[p.co]={nome:p.co,total:0,diasOk:0,diasAbaixo:0,dias:[]};
+    const prodLiq=Math.max(0,p.prod-p.rev);
+    const calc=calcBonusDia(prodLiq,p.disc,p.isDupla);
+    res[p.co].total+=calc.bonus;
+    if(calc.bonus>0)res[p.co].diasOk++;else res[p.co].diasAbaixo++;
+    res[p.co].dias.push({dt:p.dt,disc:p.disc,prod:p.prod,prodLiq,isDupla:p.isDupla,...calc});
+  }
+  let lista=Object.values(res).sort((a,b)=>b.total-a.total);
+  if(q)lista=lista.filter(c=>c.nome.toLowerCase().includes(q));
+  if(fdisc)lista=lista.filter(c=>c.dias.some(d=>normDisc(d.disc).includes(normDisc(fdisc))));
+  const totalGeral=lista.reduce((s,c)=>s+c.total,0);
+  const colElegiveis=lista.filter(c=>c.total>0).length;
+  const discs=[...new Set(bonDados.map(r=>r.disciplinas?.nome).filter(Boolean))].sort();
+  document.getElementById('ct').innerHTML=`
+    ${renderBonHeader(q,fa,fdisc,tab,[],discs)}
+    <div class="kg" style="grid-template-columns:repeat(3,1fr);max-width:420px">
+      <div class="kc g"><div class="kl">Total Bônus Calc.</div><div class="kv" style="font-size:18px">R$ ${totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
+      <div class="kc" style="border-left-color:var(--az2)"><div class="kl">Colaboradores elegíveis</div><div class="kv" style="font-size:20px;color:var(--az2)">${colElegiveis}</div></div>
+      <div class="kc"><div class="kl">Colaboradores avaliados</div><div class="kv" style="font-size:20px">${lista.length}</div></div>
+    </div>
+    <div class="card"><div class="cb"><table>
+    <thead><tr><th>Colaborador</th><th style="text-align:right">Bônus Calculado</th><th style="text-align:center">Dias c/ Bônus</th><th style="text-align:center">Dias sem Bônus</th><th>Disciplinas</th><th>Detalhes</th></tr></thead>
+    <tbody>${lista.length?lista.map((c,i)=>{
+      const discsUnicas=[...new Set(c.dias.map(d=>d.disc).filter(Boolean))];
+      return`<tr>
+        <td><strong>${c.nome}</strong></td>
+        <td style="text-align:right;font-weight:700;font-size:14px;color:${c.total>0?'var(--vd)':'var(--tx2)'}">R$ ${c.total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+        <td style="text-align:center;color:var(--vd);font-weight:600">${c.diasOk}</td>
+        <td style="text-align:center;color:var(--tx2)">${c.diasAbaixo}</td>
+        <td style="font-size:12px;color:var(--tx2)">${discsUnicas.join(', ')}</td>
+        <td><button class="btn bo bs" onclick="verDetalhesBon('${c.nome}')">Ver dias</button></td>
+      </tr>`;
+    }).join(''):`<tr><td colspan="6"><div class="est"><div class="ic">🏆</div><p>Nenhum dado de bonificação.<br>Rode reimportar_producao_completa.sql</p></div></td></tr>`}
+    </tbody></table></div></div>`;
+  window._bonRes=res;
+}
+
+function renderBonHeader(q,fa,fdisc,tab,anos,discs){
+  return`<div class="sb_" style="flex-wrap:wrap;margin-bottom:16px">
+    <select class="si" id="bo-tab" onchange="bonDados=[];rBonif()" style="min-width:160px">
+      <option value="bonus" ${tab==='bonus'?'selected':''}>Bônus por Colaborador</option>
+      <option value="hhb" ${tab==='hhb'?'selected':''}>HHB / Performance</option>
+    </select>
+    <input class="si" id="bo-bq" placeholder="Buscar colaborador..." oninput="rBonif()" value="${q}" style="min-width:180px">
+    ${anos.length?`<select class="si" id="bo-fa" onchange="rBonif()"><option value="">Todos os ciclos</option>${anos.map(a=>`<option ${a===fa?'selected':''}>${a}</option>`).join('')}</select>`:'<select class="si" id="bo-fa" style="display:none"></select>'}
+    ${discs.length?`<select class="si" id="bo-fd" onchange="rBonif()"><option value="">Todas disciplinas</option>${discs.map(d=>`<option ${d===fdisc?'selected':''}>${d}</option>`).join('')}</select>`:'<select class="si" id="bo-fd" style="display:none"></select>'}
+    <button class="btn bo bs" onclick="bonDados=[];rBonif()">↻</button>
+  </div>`;
+}
+
+window.verDetalhesBon=function(nome){
+  const res=window._bonRes||{};const c=res[nome];if(!c)return;
+  const dias=[...c.dias].sort((a,b)=>a.dt.localeCompare(b.dt));
+  const html=`<div onclick="event.stopPropagation()" style="background:#fff;border-radius:10px;max-width:820px;width:96%;max-height:88vh;overflow:auto;padding:18px 22px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+      <div><div style="font-size:16px;font-weight:700;color:var(--az)">${nome} — Detalhes de Bônus</div>
+      <div style="font-size:12px;color:var(--tx2)">Total: <strong style="color:var(--vd)">R$ ${c.total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</strong></div></div>
+      <button onclick="document.getElementById('bon-modal').remove()" style="background:var(--vm);color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-weight:600">Fechar</button>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:#f7f9fc"><th style="padding:7px 10px;text-align:left">Data</th><th style="padding:7px 10px;text-align:left">Disciplina</th><th style="text-align:center;padding:7px">Modo</th><th style="text-align:right;padding:7px">Produção</th><th style="text-align:right;padding:7px">Prod.Líquida</th><th style="text-align:right;padding:7px">Gatilho</th><th style="text-align:right;padding:7px;color:var(--vd)">Bônus</th><th style="padding:7px">Situação</th></tr></thead>
+      <tbody>${dias.map(d=>`<tr style="border-bottom:1px solid var(--bd)">
+        <td style="padding:5px 10px">${fmtD(d.dt)}</td>
+        <td style="padding:5px 10px">${d.disc||'—'}</td>
+        <td style="text-align:center;padding:5px">${d.isDupla?badge('Dupla','bgb'):badge('Solo','bgc')}</td>
+        <td style="text-align:right;padding:5px">${fmtN(d.prod)}</td>
+        <td style="text-align:right;padding:5px">${fmtN(d.prodLiq)}</td>
+        <td style="text-align:right;padding:5px;color:var(--tx2)">${d.gatilho||'—'}</td>
+        <td style="text-align:right;padding:5px;font-weight:700;color:${d.bonus>0?'var(--vd)':'var(--tx2)'}">R$ ${d.bonus.toFixed(2)}</td>
+        <td style="padding:5px;font-size:11px;color:var(--tx2)">${d.motivo||'—'}</td>
+      </tr>`).join('')}
+      <tr style="background:#f7f9fc;border-top:2px solid var(--bd);font-weight:700">
+        <td colspan="6" style="padding:7px 10px;text-align:right">TOTAL</td>
+        <td style="text-align:right;padding:7px;color:var(--vd);font-size:14px">R$ ${c.total.toFixed(2)}</td><td></td>
+      </tr></tbody>
+    </table>
+  </div>`;
+  let m=document.getElementById('bon-modal');if(m)m.remove();
+  m=document.createElement('div');m.id='bon-modal';
+  m.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  m.onclick=()=>m.remove();m.innerHTML=html;document.body.appendChild(m);
+};
+
+// ══════════════════════════════════════════════════════
+// METAS EDITÁVEIS EM PRODUTIVIDADE
+// ══════════════════════════════════════════════════════
+let metasCustom=[];// [{id,colab,contrato,disciplina,modo,meta_dia,motivo}]
+
+async function carregarMetasCustom(){
+  try{metasCustom=await db('metas_custom?order=colab');}
+  catch(e){metasCustom=[];}// tabela pode não existir ainda
+}
+
+function getMeta(disc,co,dp){
+  // 1. Checar meta personalizada
+  const modo=dp?'dupla':'solo';
+  const mc=metasCustom.find(m=>m.colab===co&&normDisc(m.disciplina)===normDisc(disc)&&(m.modo===modo||!m.modo));
+  if(mc&&mc.meta_dia)return mc.meta_dia;
+  // 2. Meta padrão por combinação
+  const fn=norm(colaboradores.find(c=>c.nome===co)?.funcao||'Ajudante');
+  const fn2=dp?norm(colaboradores.find(c=>c.nome===dp)?.funcao||''):null;
+  const keys=fn2?[fn+'+'+fn2,fn2+'+'+fn,[fn,fn2].sort().join('+')]:[fn];
+  let tbl=null;
+  for(const k of keys){if(METAS[k]){tbl=METAS[k];break;}}
+  if(!tbl)tbl=METAS[fn]||{};
+  for(const[k,v]of Object.entries(tbl)){if(disc&&disc.toLowerCase().includes(k.toLowerCase()))return v;}
+  return null;
+}
+
+function abrirModalMeta(colab='',disc='',modo='dupla',metaAtual=null){
+  let m=document.getElementById('meta-modal');if(m)m.remove();
+  m=document.createElement('div');m.id='meta-modal';
+  m.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  m.onclick=e=>{if(e.target===m)m.remove();};
+  const discs=['Terrapleno','Drenagem','Sinalização Horizontal','Sinalização Vertical','Faixa de Dominio (AC e OC)','Faixa de Dominio (Cercas)','EPS','Edificações (EDF)','Pontos de Iluminação e EDE'];
+  m.innerHTML=`<div onclick="event.stopPropagation()" style="background:#fff;border-radius:10px;max-width:480px;width:96%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="font-size:16px;font-weight:700;color:var(--az);margin-bottom:16px">Editar Meta de Produtividade</div>
+    <div class="fg" style="margin-bottom:14px">
+      <div class="fgp full"><label>Colaborador</label><input id="mm-co" value="${colab}" list="mm-cl"><datalist id="mm-cl">${colaboradores.map(c=>`<option value="${c.nome}">`).join('')}</datalist></div>
+      <div class="fgp"><label>Disciplina</label><select id="mm-di">${discs.map(d=>`<option ${d===disc?'selected':''}>${d}</option>`).join('')}</select></div>
+      <div class="fgp"><label>Modo</label><select id="mm-mo"><option value="dupla" ${modo==='dupla'?'selected':''}>Dupla</option><option value="solo" ${modo==='solo'?'selected':''}>Solo</option></select></div>
+      <div class="fgp full"><label>Meta/dia (quantidade)</label><input type="number" id="mm-mt" value="${metaAtual||''}"></div>
+      <div class="fgp full"><label>Motivo</label><input id="mm-mo2" placeholder="Ex: Trecho com muito tráfego"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bo" onclick="document.getElementById('meta-modal').remove()">Cancelar</button>
+      <button class="btn bp" onclick="salvarMeta()">Salvar Meta</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+}
+
+async function salvarMeta(){
+  const co=document.getElementById('mm-co')?.value?.trim();
+  const di=document.getElementById('mm-di')?.value;
+  const mo=document.getElementById('mm-mo')?.value;
+  const mt=parseFloat(document.getElementById('mm-mt')?.value);
+  const motivo=document.getElementById('mm-mo2')?.value||'';
+  if(!co||!di||!mt){toast('Preencha colaborador, disciplina e meta','e');return;}
+  try{
+    // Verificar se já existe
+    const exist=await db(`metas_custom?colab=eq.${encodeURIComponent(co)}&disciplina=eq.${encodeURIComponent(di)}&modo=eq.${mo}`);
+    if(exist&&exist.length>0){
+      await db(`metas_custom?id=eq.${exist[0].id}`,'PATCH',{meta_dia:mt,motivo,updated_at:new Date().toISOString()});
+    }else{
+      await db('metas_custom','POST',{colab:co,disciplina:di,modo:mo,meta_dia:mt,motivo,created_at:new Date().toISOString()});
+    }
+    await carregarMetasCustom();
+    toast('Meta salva!','s');
+    document.getElementById('meta-modal')?.remove();
+    rProdutiv();
+  }catch(e){
+    // Tabela pode não existir, criar via SQL
+    toast('Crie a tabela metas_custom primeiro (SQL disponível em outputs)','e');
+  }
+}
+
 loadAll();
 </script>
 </body>
