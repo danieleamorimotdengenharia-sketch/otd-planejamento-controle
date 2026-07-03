@@ -278,7 +278,7 @@ async function loadAll(){
       db('colaboradores?order=nome'),
     ]);
     document.getElementById('lupd').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR');
-    rAloc && alocColabs.length===0 && db('alocacao_colabs?order=nome').then(d=>{alocColabs=d||[];}).catch(()=>{});
+    if(alocColabs.length===0)db('alocacao_colabs?order=nome').then(d=>{alocColabs=d||[];}).catch(()=>{});
     carregarMetasCustom().catch(()=>{});
     renderPg(curPg);
   }catch(e){toast('Erro ao carregar: '+e.message,'e');}
@@ -560,8 +560,8 @@ async function rParciais(){
     }).join('')}
     </div>`;
 }
-// ── BONIFICAÇÕES COMPLETO ─────────────────────────────────────
-
+// ── ALOCAÇÃO / GANTT ─────────────────────────────────────────
+let alocColabs=[],alocFuturos=[];
 async function rAloc(){
   try{
     [alocColabs,alocFuturos]=await Promise.all([
