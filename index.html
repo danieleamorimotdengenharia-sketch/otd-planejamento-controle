@@ -290,17 +290,25 @@ function renderPg(p){const m={dashboard:rDash,contratos:rContr,colaboradores:rCo
 function rDash(){
   const ciclos=[...new Set(contratos.map(c=>c.ano).filter(Boolean))].sort().reverse();
   const sel=document.getElementById('f-ci')?.value||'';
+  const fst=document.getElementById('f-st')?.value||'';
   const lista=sel?contratos.filter(c=>c.ano===sel):contratos;
   const total=lista.length,concl=lista.filter(c=>c.status==='Concluído').length,campo=lista.filter(c=>c.status==='Em campo').length,atraso=lista.filter(c=>c.status==='Em atraso').length,aguard=lista.filter(c=>c.status==='Aguardando início').length;
   const ids=new Set(lista.map(c=>c.id));
   const dc=disciplinas.filter(d=>ids.has(d.contrato_id)&&d.qtd_real>0);
   const avg=dc.length?Math.round(dc.reduce((s,d)=>s+pct(d.qtd_feita||0,d.qtd_real),0)/dc.length):0;
+  let tabela=lista;
+  if(fst)tabela=tabela.filter(c=>c.status===fst);
   document.getElementById('ct').innerHTML=`
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <label style="font-size:12px;font-weight:600;color:var(--tx2)">Ciclo:</label>
       <select class="si" id="f-ci" onchange="rDash()">
         <option value="" ${!sel?'selected':''}>Todos os ciclos</option>
         ${ciclos.map(c=>`<option value="${c}" ${c===sel?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <label style="font-size:12px;font-weight:600;color:var(--tx2)">Status:</label>
+      <select class="si" id="f-st" onchange="rDash()">
+        <option value="" ${!fst?'selected':''}>Todos</option>
+        ${['Em campo','Em atraso','Aguardando início','Concluído','Pausado'].map(s=>`<option value="${s}" ${s===fst?'selected':''}>${s}</option>`).join('')}
       </select>
     </div>
     <div class="kg">
@@ -311,14 +319,14 @@ function rDash(){
       <div class="kc y"><div class="kl">Aguardando</div><div class="kv">${aguard}</div></div>
       <div class="kc"><div class="kl">Avanço Médio</div><div class="kv">${avg}%</div></div>
     </div>
-    <div class="card"><div class="ch"><h3>Contratos ativos / em atraso — ${sel||'Todos os ciclos'}</h3></div>
+    <div class="card"><div class="ch"><h3>Todos os contratos — ${sel||'Todos os ciclos'}${fst?' · '+fst:''}</h3><span style="font-size:12px;color:var(--tx2)">${tabela.length} contrato(s)</span></div>
     <div class="cb"><table><thead><tr><th>Contrato</th><th>Cliente</th><th>Ciclo</th><th>Avanço</th><th>Status</th><th>Prazo Cliente</th><th>Previsão OTD</th></tr></thead>
-    <tbody>${lista.filter(c=>c.status!=='Concluído'&&c.status!=='Aguardando início').map(c=>{
+    <tbody>${tabela.length?tabela.map(c=>{
       const ds=disciplinas.filter(d=>d.contrato_id===c.id),p=cpct(ds);
       return`<tr><td><strong>${c.nome}</strong></td><td>${c.clientes?.nome||'—'}</td><td>${c.ano||'—'}</td>
       <td><div style="display:flex;align-items:center;gap:6px"><div class="pr" style="width:80px"><div class="pb" style="width:${p}%;background:${p>=100?'var(--vd)':p>=50?'var(--az)':'var(--la)'}"></div></div><span style="font-size:12px;font-weight:600">${p}%</span><span class="bge bgb">${ds.length}</span></div></td>
       <td>${badgeSt(c.status)}</td><td>${fmtD(c.termino_planejado)}</td><td>${fmtD(c.termino_estimado)}</td></tr>`;
-    }).join('')||'<tr><td colspan="7" class="est">Nenhum contrato ativo neste ciclo.</td></tr>'}
+    }).join(''):'<tr><td colspan="7" class="est">Nenhum contrato encontrado.</td></tr>'}
     </tbody></table></div></div>`;
 }
 let cSrt={col:'nome',asc:true};
@@ -705,7 +713,7 @@ async function rProdOTD(){
       <button class="btn bo bs" onclick="prodData=[];rProdOTD()">↻</button>
     </div>
     <div class="card"><div class="cb"><table>
-    <thead><tr><th>Data</th><th>Colaborador</th><th>Dupla</th><th>Modo</th><th>Contrato</th><th>Disciplina</th><th>Ciclo</th><th style="text-align:right">Produção</th><th style="text-align:right">Meta</th><th style="text-align:right">Taxa</th><th style="text-align:right">HHB</th><th>Revisão</th><th>Obs</th></tr></thead>
+    <thead><tr><th>Data</th><th>Colaborador</th><th>Dupla</th><th>Modo</th><th>Contrato</th><th>Disciplina</th><th>Ciclo</th><th style="text-align:right">Produção</th><th style="text-align:right">Meta</th><th style="text-align:right">Taxa</th><th style="text-align:right">HHB</th><th>Revisão</th><th>Obs</th><th>Ações</th></tr></thead>
     <tbody>${lista.length?lista.slice(0,300).map(r=>{
       const meta=getMeta(r.disciplinas?.nome,r.colaborador,r.dupla),qtd=r.quantidade||0;
       const abx=meta&&qtd<meta,acm=meta&&qtd>=meta;
@@ -723,8 +731,12 @@ async function rProdOTD(){
         <td style="text-align:right;font-size:12px;color:#20c997;font-weight:600">${r.hhb!=null?Number(r.hhb).toFixed(2):'—'}</td>
         <td style="text-align:center">${r.revisoes?badge('Revisão','bgy'):'—'}</td>
         <td style="font-size:11px;color:var(--tx2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.obs||''}">${r.obs||'—'}</td>
+        <td style="display:flex;gap:3px">
+          <button class="btn bo bs" onclick='editProd(${JSON.stringify(r)})'>✏️</button>
+          <button class="btn br_ bs" onclick="delProd('${r.id}','${r.disciplina_id}',${qtd},${r.revisoes||0})">🗑</button>
+        </td>
       </tr>`;
-    }).join(''):`<tr><td colspan="13"><div class="est"><div class="ic">📦</div><p>Nenhum lançamento.</p></div></td></tr>`}
+    }).join(''):`<tr><td colspan="14"><div class="est"><div class="ic">📦</div><p>Nenhum lançamento.</p></div></td></tr>`}
     </tbody></table>${lista.length>300?`<div style="padding:10px;font-size:12px;color:var(--tx2)">Mostrando 300 de ${lista.length}. Use filtros.</div>`:''}</div></div>`;
 }
 function getSems(){const s=[];const h=new Date();const dw=h.getDay()||7;const seg=new Date(h);seg.setDate(h.getDate()-dw+1);for(let i=0;i<52;i++){const ss=new Date(seg);ss.setDate(seg.getDate()-i*7);const sf=new Date(ss);sf.setDate(ss.getDate()+4);const lbl=ss.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' → '+sf.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});s.push({seg:ss,sex:sf,lbl,key:isoD(ss)});}return s;}
@@ -1247,3 +1259,69 @@ loadAll();
 </script>
 </body>
 </html>
+
+// ── EDITAR / EXCLUIR PRODUÇÃO ──────────────────────────────
+window.editProd=function(r){
+  let m=document.getElementById('ep-modal');if(m)m.remove();
+  m=document.createElement('div');m.id='ep-modal';
+  m.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  m.onclick=e=>{if(e.target===m)m.remove();};
+  const cl=colaboradores.filter(c=>c.situacao==='Ativo').map(c=>`<option value="${c.nome}" ${c.nome===r.colaborador?'selected':''}>${c.nome}</option>`).join('');
+  const cl2=colaboradores.filter(c=>c.situacao==='Ativo').map(c=>`<option value="${c.nome}" ${c.nome===r.dupla?'selected':''}>${c.nome}</option>`).join('');
+  m.innerHTML=`<div onclick="event.stopPropagation()" style="background:#fff;border-radius:10px;max-width:520px;width:96%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="font-size:16px;font-weight:700;color:var(--az);margin-bottom:16px">Editar Lançamento de Produção</div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:14px;background:#f7f9fc;padding:10px;border-radius:7px">
+      <strong>${r.contratos?.nome||'—'}</strong> · ${r.disciplinas?.nome||'—'}
+    </div>
+    <div class="fg" style="margin-bottom:14px">
+      <div class="fgp"><label>Data *</label><input type="date" id="ep-dt" value="${r.data||''}"></div>
+      <div class="fgp"><label>Quantidade *</label><input type="number" id="ep-qt" value="${r.quantidade||''}"></div>
+      <div class="fgp full"><label>Colaborador</label><select id="ep-co"><option value="">—</option>${cl}</select></div>
+      <div class="fgp full"><label>Dupla</label><select id="ep-dp"><option value="">Sem dupla</option>${cl2}</select></div>
+      <div class="fgp"><label>Taxa HHB</label><select id="ep-tx">
+        <option value="0.70" ${r.taxa==0.70?'selected':''}>0.70 — Solo Ajudante</option>
+        <option value="0.75" ${r.taxa==0.75?'selected':''}>0.75 — Solo Auxiliar</option>
+        <option value="0.85" ${r.taxa==0.85?'selected':''}>0.85 — Solo Assistente</option>
+        <option value="1.00" ${r.taxa==1.00?'selected':''}>1.00 — Dupla Ajud+Ajud</option>
+        <option value="1.10" ${r.taxa==1.10?'selected':''}>1.10 — Dupla Ajud+Aux</option>
+        <option value="1.27" ${r.taxa==1.27?'selected':''}>1.27 — Dupla Aux+Aux</option>
+        <option value="1.30" ${r.taxa==1.30?'selected':''}>1.30 — Terceirizado</option>
+      </select></div>
+      <div class="fgp"><label>Revisão?</label><select id="ep-rv">
+        <option value="" ${!r.revisoes?'selected':''}>Não</option>
+        <option value="1" ${r.revisoes?'selected':''}>Sim — Revisão</option>
+      </select></div>
+      <div class="fgp full"><label>Obs</label><input id="ep-ob" value="${r.obs||''}"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bo" onclick="document.getElementById('ep-modal').remove()">Cancelar</button>
+      <button class="btn bp" onclick="salvarEditProd('${r.id}','${r.disciplina_id}',${r.quantidade||0},${r.revisoes||0})">Salvar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+};
+window.salvarEditProd=async function(id,discId,qtdAnt,revAnt){
+  const dt=document.getElementById('ep-dt')?.value;
+  const qt=parseFloat(document.getElementById('ep-qt')?.value||'0');
+  const co=document.getElementById('ep-co')?.value||'';
+  const dp=document.getElementById('ep-dp')?.value||null;
+  const tx=parseFloat(document.getElementById('ep-tx')?.value||'0.70');
+  const rv=document.getElementById('ep-rv')?.value==='1'?1:null;
+  const ob=document.getElementById('ep-ob')?.value||null;
+  if(!dt||!qt){toast('Data e quantidade obrigatórios','e');return;}
+  try{
+    const hhb=parseFloat((qt*tx*0.45).toFixed(3));
+    await db('producao?id=eq.'+id,'PATCH',{data:dt,quantidade:qt,colaborador:co||null,dupla:dp||null,taxa:tx,hhb,revisoes:rv,obs:ob});
+    const disc=disciplinas.find(d=>d.id===discId);
+    if(disc){let nova=disc.qtd_feita||0;if(!revAnt)nova-=qtdAnt;if(!rv)nova+=qt;nova=Math.max(0,nova);await db('disciplinas?id=eq.'+discId,'PATCH',{qtd_feita:nova,updated_at:new Date().toISOString()});}
+    toast('Lançamento atualizado!','s');document.getElementById('ep-modal')?.remove();prodData=[];await loadAll();
+  }catch(e){toast('Erro: '+e.message,'e');}
+};
+window.delProd=async function(id,discId,qtd,ehRev){
+  if(!confirm('Excluir este lançamento?'))return;
+  try{
+    await db('producao?id=eq.'+id,'DELETE');
+    if(!ehRev){const disc=disciplinas.find(d=>d.id===discId);if(disc)await db('disciplinas?id=eq.'+discId,'PATCH',{qtd_feita:Math.max(0,(disc.qtd_feita||0)-qtd),updated_at:new Date().toISOString()});}
+    toast('Excluído','s');prodData=[];await loadAll();
+  }catch(e){toast('Erro: '+e.message,'e');}
+};
