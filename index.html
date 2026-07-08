@@ -1256,9 +1256,6 @@ async function salvarMeta(){
 }
 
 loadAll();
-</script>
-</body>
-</html>
 
 // ── EDITAR / EXCLUIR PRODUÇÃO ──────────────────────────────
 window.editProd=function(r){
@@ -1325,3 +1322,6 @@ window.delProd=async function(id,discId,qtd,ehRev){
     toast('Excluído','s');prodData=[];await loadAll();
   }catch(e){toast('Erro: '+e.message,'e');}
 };
+</script>
+</body>
+</html>
